@@ -1,0 +1,17 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite thread-count="1" verbose="1" name="Knowledge System">
+    <listeners>
+        <listener class-name="com.biit.ks.core.TestListener"></listener>
+    </listeners>
+
+    <test name="Knowledge System" enabled="true" preserve-order="true">
+        <groups>
+            <run>
+                <include name="myEntityListeners"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="com.biit.ks.core.MyEntityTest"/>
+        </classes>
+    </test>
+</suite>
