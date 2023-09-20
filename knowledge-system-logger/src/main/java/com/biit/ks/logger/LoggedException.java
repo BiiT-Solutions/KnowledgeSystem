@@ -1,6 +1,7 @@
 package com.biit.ks.logger;
 
 
+import com.biit.logger.ExceptionType;
 import org.springframework.http.HttpStatus;
 
 public class LoggedException extends RuntimeException {

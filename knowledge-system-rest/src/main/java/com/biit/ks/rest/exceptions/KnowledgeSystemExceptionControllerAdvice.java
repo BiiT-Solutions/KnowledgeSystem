@@ -3,7 +3,6 @@ package com.biit.ks.rest.exceptions;
 import com.biit.server.exceptions.NotFoundException;
 import com.biit.server.exceptions.ServerExceptionControllerAdvice;
 import com.biit.server.logger.RestServerExceptionLogger;
-import com.biit.server.security.rest.exceptions.InvalidPasswordException;
 import org.modelmapper.spi.ErrorMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

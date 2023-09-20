@@ -30,12 +30,12 @@ import org.springframework.web.servlet.DispatcherServlet;
 @ComponentScan({"com.biit.ks", "com.biit.server.security", "com.biit.server", "com.biit.messagebird.client", "com.biit.usermanager.client"})
 @ConfigurationPropertiesScan({"com.biit.ks.rest"})
 @EntityScan({"com.biit.ks.persistence.entities", "com.biit.server"})
-public class ServicesServer {
+public class KnowledgeSystemServer {
     private static final int POOL_SIZE = 20;
     private static final int MAX_POOL_SIZE = 100;
 
     public static void main(String[] args) {
-        SpringApplication.run(ServicesServer.class, args);
+        SpringApplication.run(KnowledgeSystemServer.class, args);
     }
 
     @Bean(name = DispatcherServletAutoConfiguration.DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)
@@ -61,6 +61,6 @@ public class ServicesServer {
 
     @Bean
     public ApplicationListener<ContextRefreshedEvent> startupLoggingListener() {
-        return event -> KnowledgeSystemLogger.info(ServicesServer.class, "### Server started ###");
+        return event -> KnowledgeSystemLogger.info(KnowledgeSystemServer.class, "### Server started ###");
     }
 }
