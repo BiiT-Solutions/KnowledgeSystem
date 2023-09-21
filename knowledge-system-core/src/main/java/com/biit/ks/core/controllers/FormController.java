@@ -9,7 +9,9 @@ import com.biit.ks.persistence.entities.Form;
 import com.biit.ks.persistence.repositories.FormRepository;
 import com.biit.server.controller.BasicElementController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
+@Controller
 public class FormController extends BasicElementController<Form, FormDTO, FormRepository,
         FormProvider, FormConverterRequest, FormConverter> {
 

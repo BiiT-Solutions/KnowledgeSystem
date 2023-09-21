@@ -6,7 +6,9 @@ import com.biit.ks.core.models.FormDTO;
 import com.biit.ks.persistence.entities.Form;
 import com.biit.server.controller.converters.ElementConverter;
 import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
+@Component
 public class FormConverter extends ElementConverter<Form, FormDTO, FormConverterRequest> {
 
     @Override

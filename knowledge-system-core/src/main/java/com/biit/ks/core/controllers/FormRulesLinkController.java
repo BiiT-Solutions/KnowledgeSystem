@@ -9,7 +9,9 @@ import com.biit.ks.persistence.entities.FormRulesLink;
 import com.biit.ks.persistence.repositories.FormRulesLinkRepository;
 import com.biit.server.controller.BasicElementController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
+@Controller
 public class FormRulesLinkController extends BasicElementController<FormRulesLink, FormRulesLinkDTO, FormRulesLinkRepository,
         FormRulesLinkProvider, FormRulesLinkConverterRequest, FormRulesLinkConverter> {
 

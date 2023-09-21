@@ -5,7 +5,9 @@ import com.biit.ks.core.models.FormRulesLinkDTO;
 import com.biit.ks.persistence.entities.FormRulesLink;
 import com.biit.server.controller.converters.ElementConverter;
 import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
+@Component
 public class FormRulesLinkConverter extends ElementConverter<FormRulesLink, FormRulesLinkDTO, FormRulesLinkConverterRequest> {
 
     @Override

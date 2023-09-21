@@ -8,7 +8,9 @@ import com.biit.ks.persistence.entities.FormRules;
 import com.biit.ks.persistence.repositories.FormRulesRepository;
 import com.biit.server.controller.BasicElementController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
+@Controller
 public class FormRulesController extends BasicElementController<FormRules, FormRulesDTO, FormRulesRepository,
         FormRulesProvider, FormRulesConverterRequest, FormRulesConverter> {
 
