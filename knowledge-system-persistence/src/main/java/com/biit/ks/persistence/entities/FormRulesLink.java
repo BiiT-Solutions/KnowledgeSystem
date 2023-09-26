@@ -5,12 +5,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.context.annotation.Primary;
 
 
 
 @Entity
 @Primary
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "form_rules_link")
 public class FormRulesLink extends Element {
 

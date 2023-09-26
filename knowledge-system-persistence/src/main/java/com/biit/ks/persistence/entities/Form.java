@@ -6,12 +6,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.context.annotation.Primary;
 
 
 
 @Entity
 @Primary
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "forms")
 public class Form extends Element {
     private static final int MAX_JSON_LENGTH = 100000;
