@@ -5,9 +5,11 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.request.ConfigSetAdminRequest;
 import org.apache.solr.client.solrj.response.ConfigSetAdminResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Component
 public class SolrConfigClient extends SolrClient {
 
     public SolrConfigClient(@Value("${solr.server.url}") String serverUrl,
