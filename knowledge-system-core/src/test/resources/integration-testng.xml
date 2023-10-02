@@ -1,13 +1,17 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite thread-count="1" verbose="1" name="SMS">
+<suite thread-count="1" verbose="1" name="Knowledge System Integration">
+    <listeners>
+        <listener class-name="com.biit.ks.core.TestListener"></listener>
+    </listeners>
+
     <test name="Solr" enabled="true" preserve-order="true">
         <groups>
             <run>
-<!--                <include name=""/>-->
+                <include name="solrClients"/>
             </run>
         </groups>
         <classes>
-<!--            <class name=""/>-->
+            <class name="com.biit.ks.core.solr.SolrClientTests"/>
         </classes>
     </test>
 </suite>

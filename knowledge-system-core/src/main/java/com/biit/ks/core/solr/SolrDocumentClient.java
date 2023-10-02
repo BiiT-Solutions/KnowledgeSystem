@@ -10,12 +10,14 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.MapSolrParams;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@Component
 public class SolrDocumentClient extends SolrClient {
 
     public SolrDocumentClient(@Value("${solr.server.url}") String serverUrl,
