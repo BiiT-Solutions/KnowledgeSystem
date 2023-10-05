@@ -34,6 +34,12 @@
             <groupId>com.biit</groupId>
             <artifactId>rest-server-dto</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.chrislusf</groupId>
+            <artifactId>seaweedfs-client</artifactId>
+            <version>${seaweedfs-client.version}</version>
+        </dependency>
+
 
         <!--Testing-->
         <dependency>
@@ -60,16 +66,6 @@
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.ws.rs</groupId>
-            <artifactId>jakarta.ws.rs-api</artifactId>
-            <version>2.1.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.hk2.external</groupId>
-            <artifactId>jakarta.inject</artifactId>
-            <version>2.6.1</version>
         </dependency>
     </dependencies>
 
