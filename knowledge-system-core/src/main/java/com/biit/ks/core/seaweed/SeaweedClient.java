@@ -2,6 +2,7 @@ package com.biit.ks.core.seaweed;
 
 import com.biit.ks.logger.SeaweedLogger;
 import com.biit.ks.logger.SolrLogger;
+import io.grpc.StatusRuntimeException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import seaweedfs.client.FilerClient;
@@ -22,7 +23,7 @@ public class SeaweedClient {
     private static final int DEFAULT_SEAWEED_PORT = 8888;
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
-    private final FilerClient filerClient;
+    private FilerClient filerClient;
 
     public SeaweedClient(@Value("${seaweed.server.url}") String serverUrl,
                          @Value("${seaweed.server.port}") String serverPort) {
@@ -40,7 +41,12 @@ public class SeaweedClient {
         } else {
             convertedPort = DEFAULT_SEAWEED_PORT;
         }
-        filerClient = new FilerClient(serverUrl, convertedPort);
+        try {
+            filerClient = new FilerClient(serverUrl, convertedPort);
+        } catch (StatusRuntimeException e) {
+            SeaweedLogger.warning(this.getClass(), "Connection to Seaweed failed!");
+            filerClient = null;
+        }
     }
 
     public void getFile(String fullPath, File destination) throws IOException {

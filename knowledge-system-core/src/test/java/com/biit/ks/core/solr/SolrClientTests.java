@@ -27,8 +27,8 @@ public class SolrClientTests extends AbstractTestNGSpringContextTests {
     private SolrDocumentClient solrDocumentClient;
 
     @BeforeClass
-    public static void coreGeneration() throws IOException, SolrServerException, URISyntaxException {
-
+    public void coreGeneration() throws IOException, SolrServerException {
+        solrCoreClient.createCore("core", null, null, null);
     }
 
 

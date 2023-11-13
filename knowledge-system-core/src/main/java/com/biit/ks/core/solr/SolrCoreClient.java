@@ -18,6 +18,16 @@ public class SolrCoreClient extends SolrClient {
         super(serverUrl, shards, replicas);
     }
 
+    /**
+     * Create a core where the indexed files will be stored.
+     *
+     * @param coreName    The name of the core.
+     * @param instanceDir The directory to host the core. Must exist already and must have copied the content from 'solr/configsets/basic_configs'.
+     * @param configFile  The file where the configuration of the core resides. The "solrconfig.xml"
+     * @param schemaFile  The schema definition. The "schema.xml" file.
+     * @throws SolrServerException
+     * @throws IOException
+     */
     public void createCore(String coreName, String instanceDir, String configFile, String schemaFile) throws SolrServerException, IOException {
         final CoreAdminResponse response = CoreAdminRequest.createCore(coreName, instanceDir, getSolrClient(), configFile, schemaFile);
         SolrLogger.debug(this.getClass(), "Obtained response for 'createCore': {}", response);

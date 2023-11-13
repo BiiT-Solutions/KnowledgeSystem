@@ -61,7 +61,7 @@ public class SeaweedClientTests extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(entry.getAttributes().getFileSize(), resourceSize);
     }
 
-    @Test(dependsOnMethods = {"downloadFile", "listFiles", "getEntry"})
+    @Test(dependsOnMethods = {"downloadFile", "listFiles", "getEntry"}, alwaysRun = true)
     public void deleteFile() {
         seaweedClient.removeFile(SEAWEED_PATH + File.separator + RESOURCE);
 

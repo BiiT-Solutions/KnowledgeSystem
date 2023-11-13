@@ -7,7 +7,7 @@ import com.biit.ks.core.models.FormDTO;
 import com.biit.ks.core.providers.FormProvider;
 import com.biit.ks.persistence.entities.Form;
 import com.biit.ks.persistence.repositories.FormRepository;
-import com.biit.server.rest.BasicServices;
+import com.biit.server.rest.ElementServices;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/forms")
-public class FormServices extends BasicServices<Form, FormDTO, FormRepository,
+public class FormServices extends ElementServices<Form, Long, FormDTO, FormRepository,
         FormProvider, FormConverterRequest, FormConverter, FormController> {
 
     @Autowired

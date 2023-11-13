@@ -7,12 +7,12 @@ import com.biit.ks.core.models.FormDTO;
 import com.biit.ks.core.providers.FormProvider;
 import com.biit.ks.persistence.entities.Form;
 import com.biit.ks.persistence.repositories.FormRepository;
-import com.biit.server.controller.BasicElementController;
+import com.biit.server.controller.ElementController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 @Controller
-public class FormController extends BasicElementController<Form, FormDTO, FormRepository,
+public class FormController extends ElementController<Form, Long, FormDTO, FormRepository,
         FormProvider, FormConverterRequest, FormConverter> {
 
     @Autowired
