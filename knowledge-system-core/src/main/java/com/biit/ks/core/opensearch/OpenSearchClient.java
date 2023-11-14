@@ -3,13 +3,18 @@ package com.biit.ks.core.opensearch;
 import com.biit.ks.core.opensearch.exceptions.OpenSearchConnectionException;
 import com.biit.ks.logger.OpenSearchLogger;
 import com.biit.ks.logger.SolrLogger;
+import jakarta.annotation.PreDestroy;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.opensearch.client.RestClient;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
+import org.opensearch.client.opensearch._types.FieldValue;
+import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.DeleteResponse;
+import org.opensearch.client.opensearch.core.GetRequest;
+import org.opensearch.client.opensearch.core.GetResponse;
 import org.opensearch.client.opensearch.core.IndexRequest;
 import org.opensearch.client.opensearch.core.IndexResponse;
 import org.opensearch.client.opensearch.core.SearchRequest;
@@ -26,12 +31,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class OpenSearchClient {
 
     private static final int DEFAULT_OPENSEARCH_PORT = 9200;
     private static final String DEFAULT_EXPAND_REPLICAS = "0-all";
+
+    private final RestClient restClient;
 
     private final org.opensearch.client.opensearch.OpenSearchClient client;
 
@@ -60,12 +69,23 @@ public class OpenSearchClient {
         credentialsProvider.setCredentials(new AuthScope(host), new UsernamePasswordCredentials(user, password));
 
         //Initialize the client with SSL and TLS enabled
-        final RestClient restClient = RestClient.builder(host).
+        restClient = RestClient.builder(host).
                 setHttpClientConfigCallback(httpClientBuilder ->
                         httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)).build();
 
         final OpenSearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
         client = new org.opensearch.client.opensearch.OpenSearchClient(transport);
+    }
+
+    @PreDestroy
+    public void close() {
+        try {
+            OpenSearchLogger.info(this.getClass(), "Closing the client....");
+            restClient.close();
+            OpenSearchLogger.info(this.getClass(), "Client closed successfully!");
+        } catch (IOException e) {
+            OpenSearchLogger.errorMessage(this.getClass(), e);
+        }
     }
 
     public PutIndicesSettingsResponse createIndex(String indexName) {
@@ -100,9 +120,19 @@ public class OpenSearchClient {
         }
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> indexDataClass, String indexName) {
+    public <I> GetResponse<I> getData(Class<I> dataClass, String indexName, String id) {
         try {
-            final SearchResponse<I> searchResponse = client.search(s -> s.index(indexName), indexDataClass);
+            //final GetRequest getRequest = new GetRequest(indexName, id);
+            final GetRequest getRequest = new GetRequest.Builder().index(indexName).id(id).build();
+            return client.get(getRequest, dataClass);
+        } catch (IOException e) {
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        }
+    }
+
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, String indexName) {
+        try {
+            final SearchResponse<I> searchResponse = client.search(s -> s.index(indexName), dataClass);
             for (int i = 0; i < searchResponse.hits().hits().size(); i++) {
                 OpenSearchLogger.debug(this.getClass(), searchResponse.hits().hits().get(i).source() + "");
             }
@@ -112,9 +142,9 @@ public class OpenSearchClient {
         }
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> indexDataClass, SearchRequest request) {
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, SearchRequest request) {
         try {
-            final SearchResponse<I> searchResponse = client.search(request, indexDataClass);
+            final SearchResponse<I> searchResponse = client.search(request, dataClass);
             for (int i = 0; i < searchResponse.hits().hits().size(); i++) {
                 OpenSearchLogger.debug(this.getClass(), searchResponse.hits().hits().get(i).source() + "");
             }
@@ -122,6 +152,54 @@ public class OpenSearchClient {
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         }
+    }
+
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, Query query) {
+        try {
+            final SearchResponse<I> searchResponse = client.search(s -> {
+                s.query(query);
+                return s;
+            }, dataClass);
+
+            final List<I> output = new ArrayList<>();
+            for (int i = 0; i < searchResponse.hits().hits().size(); i++) {
+                output.add(searchResponse.hits().hits().get(i).source());
+            }
+            return searchResponse;
+        } catch (IOException e) {
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        }
+    }
+
+    public <I> List<I> convertResponse(SearchResponse<I> searchResponse) {
+        final List<I> output = new ArrayList<>();
+        for (int i = 0; i < searchResponse.hits().hits().size(); i++) {
+            output.add(searchResponse.hits().hits().get(i).source());
+        }
+        return output;
+    }
+
+    /**
+     * Searches a document in Opensearch using the query builder.
+     *
+     * @param indexName The index to search in.
+     * @param field     The field to search in.
+     * @param query     The query string.
+     * @param size      The maximum number of search hits to return.
+     * @return The search response containing the search hits.
+     * @throws IOException If an error occurs while performing the search.
+     */
+//    public <I> SearchResponse<I> searchData(Class<I> dataClass, String indexName, String field, String query, int size) throws IOException {
+//        // Create a search request
+//        final SearchRequest searchRequest = new SearchRequest.Builder().index(indexName).build();
+//        searchRequest.source().query(new SearchSourceBuilder().QueryBuilders.match().field(field).query(FieldValue.of(query)).build()).size(size);
+//
+//        // Execute the search request
+//        return client.search(searchRequest, dataClass);
+//    }
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, String indexName, String field, String query, int size) throws IOException {
+        return client.search(s -> s.index(indexName).query(q -> q
+                .match(t -> t.field(field).query(FieldValue.of(query)))).size(size), dataClass);
     }
 
     public DeleteResponse deleteData(String indexName, String id) {
