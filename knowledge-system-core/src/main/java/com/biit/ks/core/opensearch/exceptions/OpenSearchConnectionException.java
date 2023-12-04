@@ -1,7 +1,6 @@
 package com.biit.ks.core.opensearch.exceptions;
 
 
-import com.biit.ks.core.exceptions.NotFoundException;
 import com.biit.logger.ExceptionType;
 import com.biit.server.logger.LoggedException;
 

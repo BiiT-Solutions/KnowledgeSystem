@@ -23,6 +23,8 @@ public class SeaweedClient {
     private static final int DEFAULT_SEAWEED_PORT = 8888;
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
+    private static final int DIRECTORY_PERMISSIONS = 0755;
+
     private FilerClient filerClient;
 
     public SeaweedClient(@Value("${seaweed.server.url}") String serverUrl,
@@ -83,7 +85,7 @@ public class SeaweedClient {
      * @param fullPath Path to the folder.
      */
     public void createFolder(String fullPath) {
-        filerClient.mkdirs(fullPath, 0755);
+        filerClient.mkdirs(fullPath, DIRECTORY_PERMISSIONS);
     }
 
     /***
