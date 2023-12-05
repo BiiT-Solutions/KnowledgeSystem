@@ -189,14 +189,6 @@ public class OpenSearchClient {
      * @return The search response containing the search hits.
      * @throws IOException If an error occurs while performing the search.
      */
-//    public <I> SearchResponse<I> searchData(Class<I> dataClass, String indexName, String field, String query, int size) throws IOException {
-//        // Create a search request
-//        final SearchRequest searchRequest = new SearchRequest.Builder().index(indexName).build();
-//        searchRequest.source().query(new SearchSourceBuilder().QueryBuilders.match().field(field).query(FieldValue.of(query)).build()).size(size);
-//
-//        // Execute the search request
-//        return client.search(searchRequest, dataClass);
-//    }
     public <I> SearchResponse<I> searchData(Class<I> dataClass, String indexName, String field, String query, int size) throws IOException {
         return client.search(s -> s.index(indexName).query(q -> q
                 .match(t -> t.field(field).query(FieldValue.of(query)))).size(size), dataClass);

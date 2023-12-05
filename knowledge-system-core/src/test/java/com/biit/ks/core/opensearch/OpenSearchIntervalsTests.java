@@ -1,6 +1,6 @@
-package com.biit.ks.core.seaweed.opensearch;
+package com.biit.ks.core.opensearch;
 
-import com.biit.ks.core.opensearch.OpenSearchClient;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.Result;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootTest
-@Test(groups = {"opensearchClient"})
-public class OpenSearchComplexSearchTests extends AbstractTestNGSpringContextTests {
+@Test(groups = {"opensearchIntervals"})
+public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
 
     private static final String INDEX = "sample-index";
     private static final String DATA1_ID = "1";
@@ -53,17 +53,17 @@ public class OpenSearchComplexSearchTests extends AbstractTestNGSpringContextTes
 
     @Test(dependsOnMethods = "createIndex")
     public void indexData() throws InterruptedException {
-        openSearchClient.indexData(new Data(DATA1_NAME, DATA1_DESCRIPTION, "male"), INDEX, DATA1_ID);
-        openSearchClient.indexData(new Data(DATA2_NAME, DATA2_DESCRIPTION, "female"), INDEX, DATA2_ID);
-        openSearchClient.indexData(new Data(DATA3_NAME, DATA3_DESCRIPTION, "male"), INDEX, DATA3_ID);
+        openSearchClient.indexData(new Data(DATA1_NAME, DATA1_DESCRIPTION, "red"), INDEX, DATA1_ID);
+        openSearchClient.indexData(new Data(DATA2_NAME, DATA2_DESCRIPTION, "blue"), INDEX, DATA2_ID);
+        openSearchClient.indexData(new Data(DATA3_NAME, DATA3_DESCRIPTION, "red"), INDEX, DATA3_ID);
         //Wait until the server index it! The default refresh interval is one second.
         Thread.sleep(1000);
     }
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataWithShould() {
-        MatchQuery shouldMatchQuery1 = new MatchQuery.Builder().field("gender").query(FieldValue.of("male")).build();
-        MatchQuery shouldMatchQuery2 = new MatchQuery.Builder().field("gender").query(FieldValue.of("female")).build();
+        MatchQuery shouldMatchQuery1 = new MatchQuery.Builder().field("gender").query(FieldValue.of("red")).build();
+        MatchQuery shouldMatchQuery2 = new MatchQuery.Builder().field("gender").query(FieldValue.of("blue")).build();
 
         List<Query> shouldQueries = new ArrayList<>();
         shouldQueries.add(shouldMatchQuery1._toQuery());
@@ -83,8 +83,8 @@ public class OpenSearchComplexSearchTests extends AbstractTestNGSpringContextTes
         List<Query> mustQueries = new ArrayList<>();
         mustQueries.add(matchQuery._toQuery());
 
-        MatchQuery shouldMatchQuery1 = new MatchQuery.Builder().field("gender").query(FieldValue.of("male")).build();
-        MatchQuery shouldMatchQuery2 = new MatchQuery.Builder().field("gender").query(FieldValue.of("female")).build();
+        MatchQuery shouldMatchQuery1 = new MatchQuery.Builder().field("gender").query(FieldValue.of("red")).build();
+        MatchQuery shouldMatchQuery2 = new MatchQuery.Builder().field("gender").query(FieldValue.of("blue")).build();
 
         List<Query> shouldQueries = new ArrayList<>();
         shouldQueries.add(shouldMatchQuery1._toQuery());
@@ -94,6 +94,55 @@ public class OpenSearchComplexSearchTests extends AbstractTestNGSpringContextTes
 
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, boolQuery._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 1);
+    }
+
+    @Test(dependsOnMethods = "indexData")
+    public void searchDataWithIntervalsAndGapSimpler() {
+        //Max gaps 0 --> terms must be next to each other.
+        IntervalsQuery query = new IntervalsQuery.Builder().field("description").match(new IntervalsMatch.Builder().useField("description").query("The Data").maxGaps(1).ordered(true)
+                .build()).build();
+
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
+        Assert.assertEquals(response.hits().hits().size(), 3);
+    }
+
+    @Test(dependsOnMethods = "indexData")
+    public void searchDataWithIntervalsAndGap() {
+        //Max gaps 0 --> terms must be next to each other.
+        Intervals intervals = new Intervals.Builder().match(new IntervalsMatch.Builder().useField("description").query("The Data").maxGaps(1).ordered(true)
+                .build()).build();
+
+        IntervalsAllOf allQueries = IntervalsQueryBuilders.allOf().intervals(intervals).build();
+        IntervalsQuery query = new IntervalsQuery.Builder().field("description").allOf(allQueries).build();
+
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
+        Assert.assertEquals(response.hits().hits().size(), 3);
+    }
+
+    @Test(dependsOnMethods = "indexData")
+    public void searchDataWithIntervalsNotOrdered() {
+        //Max gaps 0 --> terms must be next to each other.
+        Intervals intervals = new Intervals.Builder().match(new IntervalsMatch.Builder().useField("description").query("Data The").maxGaps(0).ordered(false)
+                .build()).build();
+
+        IntervalsAllOf allQueries = IntervalsQueryBuilders.allOf().intervals(intervals).build();
+        IntervalsQuery query = new IntervalsQuery.Builder().field("description").allOf(allQueries).build();
+
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
+        Assert.assertEquals(response.hits().hits().size(), 1);
+    }
+
+    @Test(dependsOnMethods = "indexData")
+    public void searchDataWithIntervalsAndGapNotOrdered() {
+        //Max gaps 0 --> terms must be next to each other.
+        Intervals intervals = new Intervals.Builder().match(new IntervalsMatch.Builder().useField("description").query("Data The").maxGaps(1).ordered(false)
+                .build()).build();
+
+        IntervalsAllOf allQueries = IntervalsQueryBuilders.allOf().intervals(intervals).build();
+        IntervalsQuery query = new IntervalsQuery.Builder().field("description").allOf(allQueries).build();
+
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
+        Assert.assertEquals(response.hits().hits().size(), 3);
     }
 
     @Test(dependsOnMethods = "indexData")
@@ -110,46 +159,7 @@ public class OpenSearchComplexSearchTests extends AbstractTestNGSpringContextTes
     }
 
 
-//    @Test(dependsOnMethods = "indexData")
-//    public void searchDataMixedIntervals() {
-//        MatchQuery shouldMatchQuery1 = new MatchQuery.Builder().field("gender").query(FieldValue.of("male")).build();
-//        MatchQuery shouldMatchQuery2 = new MatchQuery.Builder().field("gender").query(FieldValue.of("female")).build();
-//
-//        List<Query> shouldQueries = new ArrayList<>();
-//        shouldQueries.add(shouldMatchQuery1._toQuery());
-//        shouldQueries.add(shouldMatchQuery2._toQuery());
-//
-//        final List<Intervals> intervalsQueries = new ArrayList<>();
-//        //Max gaps 0 --> terms must be next to each other.
-//        intervalsQueries.add(new Intervals.Builder().match(new IntervalsMatch.Builder().useField("description").query("The Data").maxGaps(0).ordered(true)
-//                .build()).build());
-//        //intervalsQueries.add(new Intervals.Builder().match(new IntervalsFuzzy.Builder().useField("gendr").fuzziness("AUTO").build()).build());
-//
-//        //IntervalsAllOf intervalsAllOfQuery = IntervalsQueryBuilders.allOf().ordered(true).intervals(intervalsQueries).build();
-//
-////        BoolQuery boolQuery = new BoolQuery.Builder().should(shouldQueries).minimumShouldMatch("1").build();
-////        IntervalsMatch intervalsMatch = new IntervalsMatch.Builder().query(boolQuery._toQuery());
-////
-////        //IntervalsMatch intervalsMatch = new IntervalsMatch.Builder().query(shouldMatchQuery1._toQuery().match()._toQuery()).build();
-////
-////
-////        final List<Intervals> intervalsQueries = new ArrayList<>();
-////        intervalsQueries.add(new Intervals.Builder().match());
-////        intervalsQueries.add(shouldMatchQuery1._toQuery());
-////
-////        IntervalsAnyOf intervalsAnyOf = new IntervalsAnyOf.Builder().intervals(intervalsQueries).build();
-////        //Intervals intervals = new Intervals.Builder().anyOf(intervalsAnyOf).build();
-////
-////
-////        //Intervals intervalsQuery = new Intervals.Builder().allOf(new IntervalsAnyOf.Builder().intervals(intervalsQueries).build()).build();
-////        IntervalsQuery intervalsQuery = new IntervalsQuery.Builder().allOf(intervals).build();
-//
-//        final SearchResponse<OpenSearchClientTests.Data> response = openSearchClient.searchData(Data.class, intervalsAllOfQuery._toQuery());
-//        Assert.assertEquals(response.hits().hits().size(), 1);
-//    }
-
-
-    @Test(dependsOnMethods = {})
+    @Test(priority = 100)
     public void deleteData() {
         final DeleteResponse response = openSearchClient.deleteData(INDEX, DATA1_ID);
         Assert.assertEquals(response.id(), DATA1_ID);
@@ -162,19 +172,20 @@ public class OpenSearchComplexSearchTests extends AbstractTestNGSpringContextTes
     }
 
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     static class Data {
         private String name;
         private String description;
 
-        private String gender;
+        private String color;
 
         public Data() {
         }
 
-        public Data(String name, String description, String gender) {
+        public Data(String name, String description, String color) {
             this.name = name;
             this.description = description;
-            this.gender = gender;
+            this.color = color;
         }
 
         public String getName() {
@@ -193,12 +204,12 @@ public class OpenSearchComplexSearchTests extends AbstractTestNGSpringContextTes
             this.description = description;
         }
 
-        public String getGender() {
-            return gender;
+        public String getColor() {
+            return color;
         }
 
-        public void setGender(String gender) {
-            this.gender = gender;
+        public void setColor(String color) {
+            this.color = color;
         }
     }
 

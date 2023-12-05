@@ -8,11 +8,14 @@
     <test name="Knowledge System" enabled="true" preserve-order="true">
         <groups>
             <run>
-<!--                <include name=""/>-->
+                <exclude name="opensearchClient"/>
+                <exclude name="opensearchIntervals"/>
             </run>
         </groups>
         <classes>
-<!--            <class name=""/>-->
+            <class name="com.biit.ks.core.opensearch.OpenSearchClientTests"/>
+            <class name="com.biit.ks.core.opensearch.OpenSearchIntervalsTests"/>
+            <class name="com.biit.ks.core.opensearch.OpenSearchMixedSearchTests"/>
         </classes>
     </test>
 </suite>

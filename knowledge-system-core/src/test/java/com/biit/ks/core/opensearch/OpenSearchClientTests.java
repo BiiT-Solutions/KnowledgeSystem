@@ -1,4 +1,4 @@
-package com.biit.ks.core.seaweed.opensearch;
+package com.biit.ks.core.opensearch;
 
 import com.biit.ks.core.opensearch.OpenSearchClient;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
