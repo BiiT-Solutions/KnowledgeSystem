@@ -4,11 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.Result;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
-import org.opensearch.client.opensearch._types.query_dsl.Intervals;
-import org.opensearch.client.opensearch._types.query_dsl.IntervalsAllOf;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsMatch;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsQuery;
-import org.opensearch.client.opensearch._types.query_dsl.IntervalsQueryBuilders;
 import org.opensearch.client.opensearch._types.query_dsl.MatchQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.DeleteResponse;
@@ -62,8 +59,8 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataWithShould() {
-        MatchQuery shouldMatchQuery1 = new MatchQuery.Builder().field("gender").query(FieldValue.of("red")).build();
-        MatchQuery shouldMatchQuery2 = new MatchQuery.Builder().field("gender").query(FieldValue.of("blue")).build();
+        MatchQuery shouldMatchQuery1 = new MatchQuery.Builder().field("color").query(FieldValue.of("red")).build();
+        MatchQuery shouldMatchQuery2 = new MatchQuery.Builder().field("color").query(FieldValue.of("blue")).build();
 
         List<Query> shouldQueries = new ArrayList<>();
         shouldQueries.add(shouldMatchQuery1._toQuery());
@@ -83,8 +80,8 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
         List<Query> mustQueries = new ArrayList<>();
         mustQueries.add(matchQuery._toQuery());
 
-        MatchQuery shouldMatchQuery1 = new MatchQuery.Builder().field("gender").query(FieldValue.of("red")).build();
-        MatchQuery shouldMatchQuery2 = new MatchQuery.Builder().field("gender").query(FieldValue.of("blue")).build();
+        MatchQuery shouldMatchQuery1 = new MatchQuery.Builder().field("color").query(FieldValue.of("red")).build();
+        MatchQuery shouldMatchQuery2 = new MatchQuery.Builder().field("color").query(FieldValue.of("blue")).build();
 
         List<Query> shouldQueries = new ArrayList<>();
         shouldQueries.add(shouldMatchQuery1._toQuery());
@@ -99,7 +96,7 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
     @Test(dependsOnMethods = "indexData")
     public void searchDataWithIntervalsAndGapSimpler() {
         //Max gaps 0 --> terms must be next to each other.
-        IntervalsQuery query = new IntervalsQuery.Builder().field("description").match(new IntervalsMatch.Builder().useField("description").query("The Data").maxGaps(1).ordered(true)
+        IntervalsQuery query = new IntervalsQuery.Builder().field("description").match(new IntervalsMatch.Builder().query("The Data").maxGaps(1).ordered(true)
                 .build()).build();
 
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
@@ -108,12 +105,8 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataWithIntervalsAndGap() {
-        //Max gaps 0 --> terms must be next to each other.
-        Intervals intervals = new Intervals.Builder().match(new IntervalsMatch.Builder().useField("description").query("The Data").maxGaps(1).ordered(true)
+        IntervalsQuery query = new IntervalsQuery.Builder().field("description").match(new IntervalsMatch.Builder().query("The Data").maxGaps(1).ordered(true)
                 .build()).build();
-
-        IntervalsAllOf allQueries = IntervalsQueryBuilders.allOf().intervals(intervals).build();
-        IntervalsQuery query = new IntervalsQuery.Builder().field("description").allOf(allQueries).build();
 
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 3);
@@ -122,11 +115,8 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
     @Test(dependsOnMethods = "indexData")
     public void searchDataWithIntervalsNotOrdered() {
         //Max gaps 0 --> terms must be next to each other.
-        Intervals intervals = new Intervals.Builder().match(new IntervalsMatch.Builder().useField("description").query("Data The").maxGaps(0).ordered(false)
+        IntervalsQuery query = new IntervalsQuery.Builder().field("description").match(new IntervalsMatch.Builder().query("Data The").maxGaps(0).ordered(false)
                 .build()).build();
-
-        IntervalsAllOf allQueries = IntervalsQueryBuilders.allOf().intervals(intervals).build();
-        IntervalsQuery query = new IntervalsQuery.Builder().field("description").allOf(allQueries).build();
 
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 1);
@@ -134,12 +124,8 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataWithIntervalsAndGapNotOrdered() {
-        //Max gaps 0 --> terms must be next to each other.
-        Intervals intervals = new Intervals.Builder().match(new IntervalsMatch.Builder().useField("description").query("Data The").maxGaps(1).ordered(false)
+        IntervalsQuery query = new IntervalsQuery.Builder().field("description").match(new IntervalsMatch.Builder().query("Data The").maxGaps(1).ordered(false)
                 .build()).build();
-
-        IntervalsAllOf allQueries = IntervalsQueryBuilders.allOf().intervals(intervals).build();
-        IntervalsQuery query = new IntervalsQuery.Builder().field("description").allOf(allQueries).build();
 
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 3);
@@ -148,11 +134,8 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
     @Test(dependsOnMethods = "indexData")
     public void searchDataWithIntervals() {
         //Max gaps 0 --> terms must be next to each other.
-        Intervals intervals = new Intervals.Builder().match(new IntervalsMatch.Builder().useField("description").query("The Data").maxGaps(0).ordered(true)
+        IntervalsQuery query = new IntervalsQuery.Builder().field("description").match(new IntervalsMatch.Builder().query("The Data").maxGaps(0).ordered(true)
                 .build()).build();
-
-        IntervalsAllOf allQueries = IntervalsQueryBuilders.allOf().intervals(intervals).build();
-        IntervalsQuery query = new IntervalsQuery.Builder().field("description").allOf(allQueries).build();
 
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 1);
