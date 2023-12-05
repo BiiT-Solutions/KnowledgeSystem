@@ -130,6 +130,18 @@ public class OpenSearchClient {
         }
     }
 
+    public <I> SearchResponse<I> searchData(Class<I> indexDataClass, String indexName) {
+        try {
+            final SearchResponse<I> searchResponse = client.search(s -> s.index(indexName), indexDataClass);
+            for (int i = 0; i < searchResponse.hits().hits().size(); i++) {
+                OpenSearchLogger.debug(this.getClass(), searchResponse.hits().hits().get(i).source() + "");
+            }
+            return searchResponse;
+        } catch (IOException e) {
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        }
+    }
+
     public <I> SearchResponse<I> searchData(Class<I> dataClass, SearchRequest request) {
         try {
             final SearchResponse<I> searchResponse = client.search(request, dataClass);

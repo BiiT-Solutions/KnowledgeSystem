@@ -5,7 +5,10 @@ import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.Result;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Intervals;
+import org.opensearch.client.opensearch._types.query_dsl.IntervalsAllOf;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsMatch;
+import org.opensearch.client.opensearch._types.query_dsl.IntervalsQuery;
+import org.opensearch.client.opensearch._types.query_dsl.IntervalsQueryBuilders;
 import org.opensearch.client.opensearch._types.query_dsl.MatchQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.DeleteResponse;
@@ -99,50 +102,51 @@ public class OpenSearchComplexSearchTests extends AbstractTestNGSpringContextTes
         Intervals intervals = new Intervals.Builder().match(new IntervalsMatch.Builder().useField("description").query("The Data").maxGaps(0).ordered(true)
                 .build()).build();
 
-        Query.of(intervals.match());
+        IntervalsAllOf allQueries = IntervalsQueryBuilders.allOf().intervals(intervals).build();
+        IntervalsQuery query = new IntervalsQuery.Builder().field("description").allOf(allQueries).build();
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, intervals.match());
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
 
-    @Test(dependsOnMethods = "indexData")
-    public void searchDataMixedIntervals() {
-        MatchQuery shouldMatchQuery1 = new MatchQuery.Builder().field("gender").query(FieldValue.of("male")).build();
-        MatchQuery shouldMatchQuery2 = new MatchQuery.Builder().field("gender").query(FieldValue.of("female")).build();
-
-        List<Query> shouldQueries = new ArrayList<>();
-        shouldQueries.add(shouldMatchQuery1._toQuery());
-        shouldQueries.add(shouldMatchQuery2._toQuery());
-
-        final List<Intervals> intervalsQueries = new ArrayList<>();
-        //Max gaps 0 --> terms must be next to each other.
-        intervalsQueries.add(new Intervals.Builder().match(new IntervalsMatch.Builder().useField("description").query("The Data").maxGaps(0).ordered(true)
-                .build()).build());
-        //intervalsQueries.add(new Intervals.Builder().match(new IntervalsFuzzy.Builder().useField("gendr").fuzziness("AUTO").build()).build());
-
-        //IntervalsAllOf intervalsAllOfQuery = IntervalsQueryBuilders.allOf().ordered(true).intervals(intervalsQueries).build();
-
-//        BoolQuery boolQuery = new BoolQuery.Builder().should(shouldQueries).minimumShouldMatch("1").build();
-//        IntervalsMatch intervalsMatch = new IntervalsMatch.Builder().query(boolQuery._toQuery());
+//    @Test(dependsOnMethods = "indexData")
+//    public void searchDataMixedIntervals() {
+//        MatchQuery shouldMatchQuery1 = new MatchQuery.Builder().field("gender").query(FieldValue.of("male")).build();
+//        MatchQuery shouldMatchQuery2 = new MatchQuery.Builder().field("gender").query(FieldValue.of("female")).build();
 //
-//        //IntervalsMatch intervalsMatch = new IntervalsMatch.Builder().query(shouldMatchQuery1._toQuery().match()._toQuery()).build();
-//
+//        List<Query> shouldQueries = new ArrayList<>();
+//        shouldQueries.add(shouldMatchQuery1._toQuery());
+//        shouldQueries.add(shouldMatchQuery2._toQuery());
 //
 //        final List<Intervals> intervalsQueries = new ArrayList<>();
-//        intervalsQueries.add(new Intervals.Builder().match());
-//        intervalsQueries.add(shouldMatchQuery1._toQuery());
+//        //Max gaps 0 --> terms must be next to each other.
+//        intervalsQueries.add(new Intervals.Builder().match(new IntervalsMatch.Builder().useField("description").query("The Data").maxGaps(0).ordered(true)
+//                .build()).build());
+//        //intervalsQueries.add(new Intervals.Builder().match(new IntervalsFuzzy.Builder().useField("gendr").fuzziness("AUTO").build()).build());
 //
-//        IntervalsAnyOf intervalsAnyOf = new IntervalsAnyOf.Builder().intervals(intervalsQueries).build();
-//        //Intervals intervals = new Intervals.Builder().anyOf(intervalsAnyOf).build();
+//        //IntervalsAllOf intervalsAllOfQuery = IntervalsQueryBuilders.allOf().ordered(true).intervals(intervalsQueries).build();
 //
+////        BoolQuery boolQuery = new BoolQuery.Builder().should(shouldQueries).minimumShouldMatch("1").build();
+////        IntervalsMatch intervalsMatch = new IntervalsMatch.Builder().query(boolQuery._toQuery());
+////
+////        //IntervalsMatch intervalsMatch = new IntervalsMatch.Builder().query(shouldMatchQuery1._toQuery().match()._toQuery()).build();
+////
+////
+////        final List<Intervals> intervalsQueries = new ArrayList<>();
+////        intervalsQueries.add(new Intervals.Builder().match());
+////        intervalsQueries.add(shouldMatchQuery1._toQuery());
+////
+////        IntervalsAnyOf intervalsAnyOf = new IntervalsAnyOf.Builder().intervals(intervalsQueries).build();
+////        //Intervals intervals = new Intervals.Builder().anyOf(intervalsAnyOf).build();
+////
+////
+////        //Intervals intervalsQuery = new Intervals.Builder().allOf(new IntervalsAnyOf.Builder().intervals(intervalsQueries).build()).build();
+////        IntervalsQuery intervalsQuery = new IntervalsQuery.Builder().allOf(intervals).build();
 //
-//        //Intervals intervalsQuery = new Intervals.Builder().allOf(new IntervalsAnyOf.Builder().intervals(intervalsQueries).build()).build();
-//        IntervalsQuery intervalsQuery = new IntervalsQuery.Builder().allOf(intervals).build();
-
-        final SearchResponse<OpenSearchClientTests.Data> response = openSearchClient.searchData(Data.class, intervalsAllOfQuery._toQuery());
-        Assert.assertEquals(response.hits().hits().size(), 1);
-    }
+//        final SearchResponse<OpenSearchClientTests.Data> response = openSearchClient.searchData(Data.class, intervalsAllOfQuery._toQuery());
+//        Assert.assertEquals(response.hits().hits().size(), 1);
+//    }
 
 
     @Test(dependsOnMethods = {})

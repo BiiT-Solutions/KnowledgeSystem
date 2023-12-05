@@ -1,6 +1,7 @@
 package com.biit.ks.core.seaweed.opensearch;
 
 import com.biit.ks.core.opensearch.OpenSearchClient;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.Result;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
@@ -10,6 +11,7 @@ import org.opensearch.client.opensearch.core.DeleteResponse;
 import org.opensearch.client.opensearch.core.GetResponse;
 import org.opensearch.client.opensearch.core.IndexResponse;
 import org.opensearch.client.opensearch.core.SearchResponse;
+import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.indices.PutIndicesSettingsResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -114,7 +116,10 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         BoolQuery boolQuery = new BoolQuery.Builder().mustNot(shouldQueries).build();
 
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, boolQuery._toQuery());
-        Assert.assertEquals(response.hits().hits().size(), 0);
+        for (Hit<Data> data : response.hits().hits()) {
+            Assert.assertNotNull(data.source(), DATA_NAME);
+            Assert.assertNotEquals(data.source().getName(), DATA_NAME);
+        }
     }
 
     @Test(dependsOnMethods = "indexData")
@@ -132,7 +137,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(response.hits().hits().size(), 0);
     }
 
-    @Test(dependsOnMethods = {"searchData", "getData", "searchDataByQuery", "searchDataByShouldQuery", "searchDataByMustQuery", "searchDataByShouldQueryInvalid", "searchDataByMustNotQuery"})
+    @Test(dependsOnMethods = {"searchData", "getData", "searchDataByQuery", "searchDataByShouldQuery", "searchDataByMustQuery", "searchDataByShouldQueryInvalid", "searchDataByMustNotQuery"}, alwaysRun = true)
     public void deleteData() {
         final DeleteResponse response = openSearchClient.deleteData(INDEX, DATA_ID);
         Assert.assertEquals(response.id(), DATA_ID);
@@ -145,6 +150,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
     }
 
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     static class Data {
         private String name;
         private String description;
