@@ -1,6 +1,5 @@
 package com.biit.ks.core.opensearch;
 
-import com.biit.ks.core.opensearch.OpenSearchClient;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.Result;
@@ -43,14 +42,13 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
     }
 
     @Test(dependsOnMethods = "createIndex")
-    public void indexData() throws InterruptedException {
+    public void indexData() {
         final Data data = new Data(DATA_NAME, DATA_DESCRIPTION);
         IndexResponse response = openSearchClient.indexData(data, INDEX, DATA_ID);
         Assert.assertEquals(response.index(), INDEX);
         Assert.assertEquals(response.id(), DATA_ID);
         Assert.assertEquals(response.result(), Result.Created);
-        //Wait until the server index it! The default refresh interval is one second.
-        Thread.sleep(1000);
+        openSearchClient.refreshIndex();
     }
 
     @Test(dependsOnMethods = "indexData")

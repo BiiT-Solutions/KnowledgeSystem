@@ -49,12 +49,11 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
     }
 
     @Test(dependsOnMethods = "createIndex")
-    public void indexData() throws InterruptedException {
+    public void indexData() {
         openSearchClient.indexData(new Data(DATA1_NAME, DATA1_DESCRIPTION, "red"), INDEX, DATA1_ID);
         openSearchClient.indexData(new Data(DATA2_NAME, DATA2_DESCRIPTION, "blue"), INDEX, DATA2_ID);
         openSearchClient.indexData(new Data(DATA3_NAME, DATA3_DESCRIPTION, "red"), INDEX, DATA3_ID);
-        //Wait until the server index it! The default refresh interval is one second.
-        Thread.sleep(1000);
+        openSearchClient.refreshIndex();
     }
 
     @Test(dependsOnMethods = "indexData")

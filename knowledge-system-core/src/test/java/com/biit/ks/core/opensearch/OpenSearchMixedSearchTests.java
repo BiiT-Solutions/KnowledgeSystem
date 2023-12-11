@@ -8,7 +8,6 @@ import org.opensearch.client.opensearch._types.query_dsl.IntervalsPrefix;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsQuery;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsQueryBuilders;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsWildcard;
-import org.opensearch.client.opensearch._types.query_dsl.IntervalsAllOf;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.indices.PutIndicesSettingsResponse;
@@ -19,7 +18,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,32 +29,32 @@ public class OpenSearchMixedSearchTests extends AbstractTestNGSpringContextTests
     private static final String DATA1_ID = "1";
     private static final String DATA1_NAME = "firstData";
     private static final String DATA1_DESCRIPTION = "The Data";
-    private static final String DATA1_COLOR = Color.BLACK.toString();
+    private static final String DATA1_COLOR = "black";
 
     private static final String DATA2_ID = "2";
     private static final String DATA2_NAME = "secondData";
     private static final String DATA2_DESCRIPTION = "The Second Data";
 
-    private static final String DATA2_COLOR = Color.WHITE.toString();
+    private static final String DATA2_COLOR = "white";
 
     private static final String DATA3_ID = "3";
     private static final String DATA3_NAME = "thirdData";
     private static final String DATA3_DESCRIPTION = "The Third Data";
 
-    private static final String DATA3_COLOR = Color.BLACK.toString();
+    private static final String DATA3_COLOR = "black";
 
 
     private static final String DATA4_ID = "4";
     private static final String DATA4_NAME = "fourthData";
     private static final String DATA4_DESCRIPTION = "This is another Data";
 
-    private static final String DATA4_COLOR = Color.WHITE.toString();
+    private static final String DATA4_COLOR = "white";
 
     private static final String DATA5_ID = "5";
     private static final String DATA5_NAME = "fifthDatum";
     private static final String DATA5_DESCRIPTION = "The final and last Data";
 
-    private static final String DATA5_COLOR = Color.BLACK.toString();
+    private static final String DATA5_COLOR = "black";
 
     @Autowired
     private OpenSearchClient openSearchClient;
@@ -69,14 +67,13 @@ public class OpenSearchMixedSearchTests extends AbstractTestNGSpringContextTests
     }
 
     @Test(dependsOnMethods = "createIndex")
-    public void indexData() throws InterruptedException {
+    public void indexData() {
         openSearchClient.indexData(new Data(DATA1_NAME, DATA1_DESCRIPTION, DATA1_COLOR), INDEX, DATA1_ID);
         openSearchClient.indexData(new Data(DATA2_NAME, DATA2_DESCRIPTION, DATA2_COLOR), INDEX, DATA2_ID);
         openSearchClient.indexData(new Data(DATA3_NAME, DATA3_DESCRIPTION, DATA3_COLOR), INDEX, DATA3_ID);
         openSearchClient.indexData(new Data(DATA4_NAME, DATA4_DESCRIPTION, DATA4_COLOR), INDEX, DATA4_ID);
         openSearchClient.indexData(new Data(DATA5_NAME, DATA5_DESCRIPTION, DATA5_COLOR), INDEX, DATA5_ID);
-        //Wait until the server index it! The default refresh interval is one second.
-        Thread.sleep(1000);
+        openSearchClient.refreshIndex();
     }
 
     @Test(dependsOnMethods = "indexData")
@@ -127,7 +124,6 @@ public class OpenSearchMixedSearchTests extends AbstractTestNGSpringContextTests
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 5);
     }
-
 
 
     @AfterClass

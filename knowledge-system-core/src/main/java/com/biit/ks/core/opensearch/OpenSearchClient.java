@@ -1,6 +1,7 @@
 package com.biit.ks.core.opensearch;
 
 import com.biit.ks.core.opensearch.exceptions.OpenSearchConnectionException;
+import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.logger.OpenSearchLogger;
 import com.biit.ks.logger.SolrLogger;
 import jakarta.annotation.PreDestroy;
@@ -85,6 +86,15 @@ public class OpenSearchClient {
             OpenSearchLogger.info(this.getClass(), "Client closed successfully!");
         } catch (IOException e) {
             OpenSearchLogger.errorMessage(this.getClass(), e);
+        }
+    }
+
+    public void refreshIndex() {
+        try {
+            client.indices().refresh();
+        } catch (IOException e) {
+            KnowledgeSystemLogger.severe(this.getClass(), "Failed to refresh index!");
+            KnowledgeSystemLogger.errorMessage(this.getClass(), e);
         }
     }
 
