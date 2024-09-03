@@ -2,7 +2,9 @@ package com.biit.ks.core.models;
 
 import com.biit.server.controllers.models.ElementDTO;
 
-public class FormRulesDTO extends ElementDTO {
+public class FormRulesDTO extends ElementDTO<Long> {
+
+    private Long id;
 
     private String name;
 
@@ -15,7 +17,17 @@ public class FormRulesDTO extends ElementDTO {
     private String metadata;
 
     public FormRulesDTO() {
+        super();
+    }
 
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void setName(String name) {

@@ -5,6 +5,9 @@ import com.biit.server.persistence.entities.Element;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -16,9 +19,13 @@ import org.springframework.context.annotation.Primary;
 @Primary
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "form_rules")
-public class FormRules extends Element {
+public class FormRules extends Element<Long> {
 
     private static final int MAX_JSON_LENGTH = 100000;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "name")
     private String name;
@@ -35,6 +42,15 @@ public class FormRules extends Element {
     @Column(name = "metadata", length = MAX_JSON_LENGTH)
     @Convert(converter = StringCryptoConverter.class)
     private String metadata;
+
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getName() {
         return this.name;

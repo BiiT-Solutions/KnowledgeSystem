@@ -1,31 +1,30 @@
 package com.biit.ks.core.exceptions;
 
-
 import com.biit.logger.ExceptionType;
 import com.biit.server.logger.LoggedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class NotFoundException extends LoggedException {
+public class FileAlreadyExistsException extends LoggedException {
 
-    public NotFoundException(Class<?> clazz, String message, ExceptionType type) {
+    public FileAlreadyExistsException(Class<?> clazz, String message, ExceptionType type) {
         super(clazz, message, type, HttpStatus.NOT_FOUND);
     }
 
-    public NotFoundException(Class<?> clazz, String message) {
+    public FileAlreadyExistsException(Class<?> clazz, String message) {
         super(clazz, message, ExceptionType.SEVERE, HttpStatus.NOT_FOUND);
     }
 
-    public NotFoundException(Class<?> clazz) {
-        this(clazz, "Object not found");
+    public FileAlreadyExistsException(Class<?> clazz) {
+        this(clazz, "File already exists");
     }
 
-    public NotFoundException(Class<?> clazz, String message, Throwable e) {
+    public FileAlreadyExistsException(Class<?> clazz, String message, Throwable e) {
         super(clazz, message, e);
     }
 
-    public NotFoundException(Class<?> clazz, Throwable e) {
+    public FileAlreadyExistsException(Class<?> clazz, Throwable e) {
         super(clazz, e);
     }
 }

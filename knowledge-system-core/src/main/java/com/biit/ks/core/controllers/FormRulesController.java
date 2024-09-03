@@ -6,12 +6,12 @@ import com.biit.ks.core.models.FormRulesDTO;
 import com.biit.ks.core.providers.FormRulesProvider;
 import com.biit.ks.persistence.entities.FormRules;
 import com.biit.ks.persistence.repositories.FormRulesRepository;
-import com.biit.server.controller.BasicElementController;
+import com.biit.server.controller.ElementController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 @Controller
-public class FormRulesController extends BasicElementController<FormRules, FormRulesDTO, FormRulesRepository,
+public class FormRulesController extends ElementController<FormRules, Long, FormRulesDTO, FormRulesRepository,
         FormRulesProvider, FormRulesConverterRequest, FormRulesConverter> {
 
     @Autowired

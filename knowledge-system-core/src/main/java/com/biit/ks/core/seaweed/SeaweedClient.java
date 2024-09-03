@@ -2,8 +2,11 @@ package com.biit.ks.core.seaweed;
 
 import com.biit.ks.logger.SeaweedLogger;
 import com.biit.ks.logger.SolrLogger;
+import io.grpc.StatusRuntimeException;
+import org.apache.tomcat.util.http.fileupload.util.Streams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 import seaweedfs.client.FilerClient;
 import seaweedfs.client.FilerProto;
 import seaweedfs.client.SeaweedInputStream;
@@ -22,7 +25,9 @@ public class SeaweedClient {
     private static final int DEFAULT_SEAWEED_PORT = 8888;
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
-    private final FilerClient filerClient;
+    private static final int DIRECTORY_PERMISSIONS = 0755;
+
+    private FilerClient filerClient;
 
     public SeaweedClient(@Value("${seaweed.server.url}") String serverUrl,
                          @Value("${seaweed.server.port}") String serverPort) {
@@ -40,12 +45,23 @@ public class SeaweedClient {
         } else {
             convertedPort = DEFAULT_SEAWEED_PORT;
         }
-        filerClient = new FilerClient(serverUrl, convertedPort);
+        try {
+            filerClient = new FilerClient(serverUrl, convertedPort);
+        } catch (StatusRuntimeException e) {
+            SeaweedLogger.warning(this.getClass(), "Connection to Seaweed failed!");
+            filerClient = null;
+        }
     }
 
     public void getFile(String fullPath, File destination) throws IOException {
         try (SeaweedInputStream seaweedInputStream = new SeaweedInputStream(filerClient, fullPath)) {
             copyInputStreamToFile(seaweedInputStream, destination);
+        }
+    }
+
+    public SeaweedInputStream getFile(String fullPath) throws IOException {
+        try (SeaweedInputStream seaweedInputStream = new SeaweedInputStream(filerClient, fullPath)) {
+            return seaweedInputStream;
         }
     }
 
@@ -58,6 +74,14 @@ public class SeaweedClient {
             }
         }
 
+    }
+
+    public void addFile(String seaweedPath, MultipartFile file) throws IOException {
+        if (file != null) {
+            try (SeaweedOutputStream seaweedOutputStream = new SeaweedOutputStream(filerClient, seaweedPath)) {
+                Streams.copy(file.getInputStream(), seaweedOutputStream, true);
+            }
+        }
     }
 
     public void addFile(String fullPath, File file) throws IOException {
@@ -77,7 +101,7 @@ public class SeaweedClient {
      * @param fullPath Path to the folder.
      */
     public void createFolder(String fullPath) {
-        filerClient.mkdirs(fullPath, 0755);
+        filerClient.mkdirs(fullPath, DIRECTORY_PERMISSIONS);
     }
 
     /***

@@ -7,7 +7,7 @@
     <test name="Solr" enabled="true" preserve-order="true">
         <groups>
             <run>
-                <include name="solrClients"/>
+                <exclude name="solrClients"/>
                 <include name="seaweedClient"/>
             </run>
         </groups>

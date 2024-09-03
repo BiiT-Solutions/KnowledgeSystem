@@ -1,17 +1,29 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite thread-count="1" verbose="1" name="Knowledge System">
+
     <listeners>
-        <listener class-name="com.biit.ks.core.TestListener"></listener>
+        <listener class-name="com.biit.ks.core.TestListener"/>
     </listeners>
 
     <test name="Knowledge System" enabled="true" preserve-order="true">
         <groups>
             <run>
-<!--                <include name=""/>-->
+                <exclude name="opensearchClient"/>
+                <exclude name="opensearchIntervals"/>
+                <exclude name="opensearchFuzzy"/>
+                <exclude name="opensearchRange"/>
+                <exclude name="seaweedClient"/>
+                <exclude name="solrClients"/>
             </run>
         </groups>
         <classes>
-<!--            <class name=""/>-->
+            <class name="com.biit.ks.core.opensearch.OpenSearchClientTests"/>
+            <class name="com.biit.ks.core.opensearch.OpenSearchIntervalsTests"/>
+            <class name="com.biit.ks.core.opensearch.OpenSearchMixedSearchTests"/>
+            <class name="com.biit.ks.core.opensearch.OpenSearchFuzzySearchTests"/>
+            <class name="com.biit.ks.core.opensearch.OpenSearchRangeSearchTests"/>
+            <class name="com.biit.ks.core.seaweed.SeaweedClientTests"/>
+            <class name="com.biit.ks.core.solr.SolrClientTests"/>
         </classes>
     </test>
 </suite>
