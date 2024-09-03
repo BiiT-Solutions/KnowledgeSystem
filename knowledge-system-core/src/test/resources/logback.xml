@@ -34,15 +34,15 @@
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="DAILY"/>
     </logger>
-    <logger name="com.biit.solr.logger.SolrLogger" additivity="false" level="DEBUG">
+    <logger name="com.biit.ks.logger.SolrLogger" additivity="false" level="DEBUG">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="DAILY"/>
     </logger>
-    <logger name="com.biit.solr.logger.OpenSearch" additivity="false" level="DEBUG">
+    <logger name="com.biit.ks.logger.OpenSearch" additivity="false" level="DEBUG">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="DAILY"/>
     </logger>
-    <logger name="com.biit.solr.logger.SeaweedLogger" additivity="false" level="DEBUG">
+    <logger name="com.biit.ks.logger.SeaweedLogger" additivity="false" level="DEBUG">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="DAILY"/>
     </logger>
