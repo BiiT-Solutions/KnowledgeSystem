@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.Result;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
+import org.opensearch.client.opensearch._types.query_dsl.ExistsQuery;
 import org.opensearch.client.opensearch._types.query_dsl.MatchQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.DeleteResponse;
@@ -64,6 +65,19 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
+
+    @Test(dependsOnMethods = "indexData")
+    public void searchDataByFieldExists() {
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, new ExistsQuery.Builder().field("description").build()._toQuery());
+        Assert.assertEquals(response.hits().hits().size(), 1);
+    }
+
+    @Test(dependsOnMethods = "indexData")
+    public void searchDataByFieldNotExists() {
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, new ExistsQuery.Builder().field("descriptions").build()._toQuery());
+        Assert.assertEquals(response.hits().hits().size(), 0);
+    }
+
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByQuery() {
