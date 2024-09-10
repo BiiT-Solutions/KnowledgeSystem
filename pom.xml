@@ -21,8 +21,8 @@
     </modules>
 
     <scm>
-        <connection>scm:git:git.biit-solutions.com:Java/Knowledge System.git</connection>
-        <developerConnection>scm:git:git.biit-solutions.com:Java/Knowledge System.git</developerConnection>
+        <connection>scm:git:git.biit-solutions.com:Java/KnowledgeSystem.git</connection>
+        <developerConnection>scm:git:git.biit-solutions.com:Java/KnowledgeSystem.git</developerConnection>
         <tag>Knowledge System</tag>
     </scm>
 
