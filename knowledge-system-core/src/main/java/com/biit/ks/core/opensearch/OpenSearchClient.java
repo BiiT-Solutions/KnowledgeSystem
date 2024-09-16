@@ -1,6 +1,11 @@
 package com.biit.ks.core.opensearch;
 
 import com.biit.ks.core.opensearch.exceptions.OpenSearchConnectionException;
+import com.biit.ks.core.opensearch.search.FuzzinessDefinition;
+import com.biit.ks.core.opensearch.search.MustHaveParameters;
+import com.biit.ks.core.opensearch.search.MustNotHaveParameters;
+import com.biit.ks.core.opensearch.search.SearchParameters;
+import com.biit.ks.core.opensearch.search.ShouldHaveParameters;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.logger.OpenSearchLogger;
 import com.biit.ks.logger.SolrLogger;
@@ -31,7 +36,6 @@ import org.opensearch.client.opensearch.indices.PutIndicesSettingsResponse;
 import org.opensearch.client.transport.OpenSearchTransport;
 import org.opensearch.client.transport.rest_client.RestClientTransport;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -216,31 +220,31 @@ public class OpenSearchClient {
         }
     }
 
-    public <I> SearchResponse<I> searchDataShould(Class<I> dataClass, List<Pair<String, String>> shouldHaveValues, int minimumShouldMatch) {
-        return searchDataShould(dataClass, shouldHaveValues, minimumShouldMatch, null);
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, ShouldHaveParameters shouldHaveValues) {
+        return searchData(dataClass, shouldHaveValues, null);
     }
 
-    public <I> SearchResponse<I> searchDataShould(Class<I> dataClass, List<Pair<String, String>> shouldHaveValues, int minimumShouldMatch,
-                                                  FuzzinessDefinition fuzzinessDefinition) {
-        return searchData(dataClass, null, null, shouldHaveValues, minimumShouldMatch, fuzzinessDefinition);
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, ShouldHaveParameters shouldHaveValues,
+                                            FuzzinessDefinition fuzzinessDefinition) {
+        return searchData(dataClass, null, null, shouldHaveValues, fuzzinessDefinition);
     }
 
-    public <I> SearchResponse<I> searchDataMust(Class<I> dataClass, List<Pair<String, String>> mustHaveValues) {
-        return searchDataMust(dataClass, mustHaveValues, null);
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustHaveParameters mustHaveValues) {
+        return searchData(dataClass, mustHaveValues, null);
     }
 
-    public <I> SearchResponse<I> searchDataMust(Class<I> dataClass, List<Pair<String, String>> mustHaveValues,
-                                                FuzzinessDefinition fuzzinessDefinition) {
-        return searchData(dataClass, mustHaveValues, null, null, 0, fuzzinessDefinition);
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustHaveParameters mustHaveValues,
+                                            FuzzinessDefinition fuzzinessDefinition) {
+        return searchData(dataClass, mustHaveValues, null, null, fuzzinessDefinition);
     }
 
-    public <I> SearchResponse<I> searchDataMustNot(Class<I> dataClass, List<Pair<String, String>> mustNotHaveValues) {
-        return searchDataMustNot(dataClass, mustNotHaveValues, null);
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustNotHaveParameters mustNotHaveValues) {
+        return searchData(dataClass, mustNotHaveValues, null);
     }
 
-    public <I> SearchResponse<I> searchDataMustNot(Class<I> dataClass, List<Pair<String, String>> mustNotHaveValues,
-                                                   FuzzinessDefinition fuzzinessDefinition) {
-        return searchData(dataClass, null, mustNotHaveValues, null, 0, fuzzinessDefinition);
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustNotHaveParameters mustNotHaveValues,
+                                            FuzzinessDefinition fuzzinessDefinition) {
+        return searchData(dataClass, null, mustNotHaveValues, null, fuzzinessDefinition);
     }
 
 
@@ -250,28 +254,31 @@ public class OpenSearchClient {
      * @param mustHaveValues  pair of parameters-values that must be present.
      * @param mustNotHaveValues pair of parameters-values that are not allowed on the result.
      * @param shouldHaveValues possible pair of parameters-values that can be present on the data.
-     * @param minimumShouldMatch number of items in 'should' that must be present.
      * @param fuzzinessDefinition if you want similar but not exact matches.
      * @return SearchReponse.
      * @param <I>
      */
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, List<Pair<String, String>> mustHaveValues, List<Pair<String, String>> mustNotHaveValues,
-                                            List<Pair<String, String>> shouldHaveValues, int minimumShouldMatch, FuzzinessDefinition fuzzinessDefinition) {
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustHaveParameters mustHaveValues, MustNotHaveParameters mustNotHaveValues,
+                                            ShouldHaveParameters shouldHaveValues, FuzzinessDefinition fuzzinessDefinition) {
 
         final List<Query> mustHaveQueries = createQuery(mustHaveValues, fuzzinessDefinition);
         final List<Query> mustNotHaveQueries = createQuery(mustNotHaveValues, fuzzinessDefinition);
         final List<Query> shouldHaveQueries = createQuery(shouldHaveValues, fuzzinessDefinition);
 
-        final BoolQuery boolQuery = new BoolQuery.Builder().must(mustHaveQueries).mustNot(mustNotHaveQueries).should(shouldHaveQueries)
-                .minimumShouldMatch(String.valueOf(minimumShouldMatch)).build();
-        return searchData(dataClass, boolQuery._toQuery());
+        final BoolQuery.Builder builder = new BoolQuery.Builder().must(mustHaveQueries).mustNot(mustNotHaveQueries).should(shouldHaveQueries);
+
+        if (shouldHaveValues != null && shouldHaveValues.getMinimumShouldMatch() != null) {
+            builder.minimumShouldMatch(String.valueOf(shouldHaveValues.getMinimumShouldMatch()));
+        }
+
+        return searchData(dataClass, builder.build()._toQuery());
     }
 
 
-    private List<Query> createQuery(List<Pair<String, String>> searchValue, FuzzinessDefinition fuzzinessDefinition) {
+    private List<Query> createQuery(SearchParameters searchParameters, FuzzinessDefinition fuzzinessDefinition) {
         final List<Query> searchQuery = new ArrayList<>();
-        if (searchValue != null) {
-            searchValue.forEach(stringStringPair -> {
+        if (searchParameters != null) {
+            searchParameters.getSearch().forEach(stringStringPair -> {
                 final MatchQuery.Builder builder = new MatchQuery.Builder().field(stringStringPair.getFirst())
                         .query(FieldValue.of(stringStringPair.getSecond()));
                 if (fuzzinessDefinition != null) {

@@ -1,5 +1,8 @@
 package com.biit.ks.core.opensearch;
 
+import com.biit.ks.core.opensearch.search.MustHaveParameters;
+import com.biit.ks.core.opensearch.search.MustNotHaveParameters;
+import com.biit.ks.core.opensearch.search.ShouldHaveParameters;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.Result;
@@ -13,14 +16,10 @@ import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.indices.PutIndicesSettingsResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.util.Pair;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @SpringBootTest
 @Test(groups = {"opensearchClient"})
@@ -93,33 +92,35 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByShouldQuery() {
-        final List<Pair<String, String>> shouldParameters = new ArrayList<>();
-        shouldParameters.add(Pair.of("name", DATA_NAME));
-        shouldParameters.add(Pair.of("name", "wrong"));
+        final ShouldHaveParameters shouldParameters = new ShouldHaveParameters();
+        shouldParameters.add("name", DATA_NAME);
+        shouldParameters.add("name", "wrong");
+        shouldParameters.setMinimumShouldMatch(1);
 
-        final SearchResponse<Data> response = openSearchClient.searchDataShould(Data.class, shouldParameters, 1);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, shouldParameters);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByShouldQueryInvalid() {
-        final List<Pair<String, String>> shouldParameters = new ArrayList<>();
-        shouldParameters.add(Pair.of("name", DATA_NAME));
-        shouldParameters.add(Pair.of("name", "wrong"));
-        shouldParameters.add(Pair.of("name", "wrong2"));
+        final ShouldHaveParameters shouldParameters = new ShouldHaveParameters();
+        shouldParameters.add("name", DATA_NAME);
+        shouldParameters.add("name", "wrong");
+        shouldParameters.add("name", "wrong2");
+        shouldParameters.setMinimumShouldMatch(2);
 
-        final SearchResponse<Data> response = openSearchClient.searchDataShould(Data.class, shouldParameters, 2);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, shouldParameters);
         Assert.assertEquals(response.hits().hits().size(), 0);
     }
 
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByMustNotQuery() {
-        final List<Pair<String, String>> mustNotHaveParameters = new ArrayList<>();
-        mustNotHaveParameters.add(Pair.of("name", DATA_NAME));
+        final MustNotHaveParameters mustNotHaveParameters = new MustNotHaveParameters();
+        mustNotHaveParameters.add("name", DATA_NAME);
 
-        final SearchResponse<Data> response = openSearchClient.searchDataMustNot(Data.class, mustNotHaveParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustNotHaveParameters);
         for (Hit<Data> data : response.hits().hits()) {
             Assert.assertNotNull(data.source(), DATA_NAME);
             Assert.assertNotEquals(data.source().getName(), DATA_NAME);
@@ -129,11 +130,11 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByMustQuery() {
-        final List<Pair<String, String>> mustHaveParameters = new ArrayList<>();
-        mustHaveParameters.add(Pair.of("name", DATA_NAME));
-        mustHaveParameters.add(Pair.of("name", "wrong"));
+        final MustHaveParameters mustHaveParameters = new MustHaveParameters();
+        mustHaveParameters.add("name", DATA_NAME);
+        mustHaveParameters.add("name", "wrong");
 
-        final SearchResponse<Data> response = openSearchClient.searchDataMust(Data.class, mustHaveParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
         Assert.assertEquals(response.hits().hits().size(), 0);
     }
 

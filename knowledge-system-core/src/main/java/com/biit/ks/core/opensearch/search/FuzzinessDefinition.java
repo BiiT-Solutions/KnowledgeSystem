@@ -1,4 +1,4 @@
-package com.biit.ks.core.opensearch;
+package com.biit.ks.core.opensearch.search;
 
 /**
  * Enable fuzziness search.
