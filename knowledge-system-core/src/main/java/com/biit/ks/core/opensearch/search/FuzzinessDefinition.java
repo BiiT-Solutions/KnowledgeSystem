@@ -16,7 +16,7 @@ public class FuzzinessDefinition {
         this(fuzziness, maxExpansions, null);
     }
 
-    FuzzinessDefinition(Fuzziness fuzziness, Integer maxExpansions, Integer prefixLength) {
+    public FuzzinessDefinition(Fuzziness fuzziness, Integer maxExpansions, Integer prefixLength) {
         this.fuzziness = fuzziness;
         this.maxExpansions = maxExpansions;
         this.prefixLength = prefixLength;
