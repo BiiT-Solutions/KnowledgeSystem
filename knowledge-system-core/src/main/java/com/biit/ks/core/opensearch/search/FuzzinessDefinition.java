@@ -8,7 +8,7 @@ public class FuzzinessDefinition {
     private final Integer maxExpansions;
     private final Integer prefixLength;
 
-    FuzzinessDefinition(Fuzziness fuzziness) {
+    public FuzzinessDefinition(Fuzziness fuzziness) {
         this(fuzziness, null, null);
     }
 
