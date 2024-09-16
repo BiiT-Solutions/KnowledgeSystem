@@ -12,6 +12,8 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.opensearch.client.RestClient;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch._types.FieldValue;
+import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
+import org.opensearch.client.opensearch._types.query_dsl.MatchQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.DeleteResponse;
 import org.opensearch.client.opensearch.core.GetRequest;
@@ -29,6 +31,7 @@ import org.opensearch.client.opensearch.indices.PutIndicesSettingsResponse;
 import org.opensearch.client.transport.OpenSearchTransport;
 import org.opensearch.client.transport.rest_client.RestClientTransport;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -181,6 +184,7 @@ public class OpenSearchClient {
         }
     }
 
+
     public <I> List<I> convertResponse(SearchResponse<I> searchResponse) {
         final List<I> output = new ArrayList<>();
         for (int i = 0; i < searchResponse.hits().hits().size(); i++) {
@@ -210,6 +214,50 @@ public class OpenSearchClient {
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         }
+    }
+
+
+    public <I> SearchResponse<I> searchDataShould(Class<I> dataClass, List<Pair<String, String>> shouldHaveValues, int minimumShouldMatch) {
+        return searchData(dataClass, null, null, shouldHaveValues, minimumShouldMatch);
+    }
+
+
+    public <I> SearchResponse<I> searchDataMust(Class<I> dataClass, List<Pair<String, String>> mustHaveValues) {
+        return searchData(dataClass, mustHaveValues, null, null, 0);
+    }
+
+    public <I> SearchResponse<I> searchDataMustNot(Class<I> dataClass, List<Pair<String, String>> mustNotHaveValues) {
+        return searchData(dataClass, null, mustNotHaveValues, null, 0);
+    }
+
+
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, List<Pair<String, String>> mustHaveValues, List<Pair<String, String>> mustNotHaveValues,
+                                            List<Pair<String, String>> shouldHaveValues, int minimumShouldHave) {
+        final List<Query> mustHaveQueries = new ArrayList<>();
+        final List<Query> mustNotHaveQueries = new ArrayList<>();
+        final List<Query> shouldHaveQueries = new ArrayList<>();
+
+        if (mustHaveValues != null) {
+            mustHaveValues.forEach(stringStringPair ->
+                    mustHaveQueries.add(new MatchQuery.Builder().field(stringStringPair.getFirst())
+                            .query(FieldValue.of(stringStringPair.getSecond())).build()._toQuery()));
+        }
+
+        if (mustNotHaveValues != null) {
+            mustNotHaveValues.forEach(stringStringPair ->
+                    mustNotHaveQueries.add(new MatchQuery.Builder().field(stringStringPair.getFirst())
+                            .query(FieldValue.of(stringStringPair.getSecond())).build()._toQuery()));
+        }
+
+        if (shouldHaveValues != null) {
+            shouldHaveValues.forEach(stringStringPair ->
+                    shouldHaveQueries.add(new MatchQuery.Builder().field(stringStringPair.getFirst())
+                            .query(FieldValue.of(stringStringPair.getSecond())).build()._toQuery()));
+        }
+
+        final BoolQuery boolQuery = new BoolQuery.Builder().must(mustHaveQueries).mustNot(mustNotHaveQueries).should(shouldHaveQueries)
+                .minimumShouldMatch(String.valueOf(minimumShouldHave)).build();
+        return searchData(dataClass, boolQuery._toQuery());
     }
 
 }
