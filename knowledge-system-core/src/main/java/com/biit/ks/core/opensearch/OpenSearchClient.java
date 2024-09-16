@@ -216,48 +216,77 @@ public class OpenSearchClient {
         }
     }
 
-
     public <I> SearchResponse<I> searchDataShould(Class<I> dataClass, List<Pair<String, String>> shouldHaveValues, int minimumShouldMatch) {
-        return searchData(dataClass, null, null, shouldHaveValues, minimumShouldMatch);
+        return searchDataShould(dataClass, shouldHaveValues, minimumShouldMatch, null);
     }
 
+    public <I> SearchResponse<I> searchDataShould(Class<I> dataClass, List<Pair<String, String>> shouldHaveValues, int minimumShouldMatch,
+                                                  FuzzinessDefinition fuzzinessDefinition) {
+        return searchData(dataClass, null, null, shouldHaveValues, minimumShouldMatch, fuzzinessDefinition);
+    }
 
     public <I> SearchResponse<I> searchDataMust(Class<I> dataClass, List<Pair<String, String>> mustHaveValues) {
-        return searchData(dataClass, mustHaveValues, null, null, 0);
+        return searchDataMust(dataClass, mustHaveValues, null);
+    }
+
+    public <I> SearchResponse<I> searchDataMust(Class<I> dataClass, List<Pair<String, String>> mustHaveValues,
+                                                FuzzinessDefinition fuzzinessDefinition) {
+        return searchData(dataClass, mustHaveValues, null, null, 0, fuzzinessDefinition);
     }
 
     public <I> SearchResponse<I> searchDataMustNot(Class<I> dataClass, List<Pair<String, String>> mustNotHaveValues) {
-        return searchData(dataClass, null, mustNotHaveValues, null, 0);
+        return searchDataMustNot(dataClass, mustNotHaveValues, null);
+    }
+
+    public <I> SearchResponse<I> searchDataMustNot(Class<I> dataClass, List<Pair<String, String>> mustNotHaveValues,
+                                                   FuzzinessDefinition fuzzinessDefinition) {
+        return searchData(dataClass, null, mustNotHaveValues, null, 0, fuzzinessDefinition);
     }
 
 
+    /***
+     *
+     * @param dataClass type of element to search.
+     * @param mustHaveValues  pair of parameters-values that must be present.
+     * @param mustNotHaveValues pair of parameters-values that are not allowed on the result.
+     * @param shouldHaveValues possible pair of parameters-values that can be present on the data.
+     * @param minimumShouldMatch number of items in 'should' that must be present.
+     * @param fuzzinessDefinition if you want similar but not exact matches.
+     * @return SearchReponse.
+     * @param <I>
+     */
     public <I> SearchResponse<I> searchData(Class<I> dataClass, List<Pair<String, String>> mustHaveValues, List<Pair<String, String>> mustNotHaveValues,
-                                            List<Pair<String, String>> shouldHaveValues, int minimumShouldHave) {
-        final List<Query> mustHaveQueries = new ArrayList<>();
-        final List<Query> mustNotHaveQueries = new ArrayList<>();
-        final List<Query> shouldHaveQueries = new ArrayList<>();
+                                            List<Pair<String, String>> shouldHaveValues, int minimumShouldMatch, FuzzinessDefinition fuzzinessDefinition) {
 
-        if (mustHaveValues != null) {
-            mustHaveValues.forEach(stringStringPair ->
-                    mustHaveQueries.add(new MatchQuery.Builder().field(stringStringPair.getFirst())
-                            .query(FieldValue.of(stringStringPair.getSecond())).build()._toQuery()));
-        }
-
-        if (mustNotHaveValues != null) {
-            mustNotHaveValues.forEach(stringStringPair ->
-                    mustNotHaveQueries.add(new MatchQuery.Builder().field(stringStringPair.getFirst())
-                            .query(FieldValue.of(stringStringPair.getSecond())).build()._toQuery()));
-        }
-
-        if (shouldHaveValues != null) {
-            shouldHaveValues.forEach(stringStringPair ->
-                    shouldHaveQueries.add(new MatchQuery.Builder().field(stringStringPair.getFirst())
-                            .query(FieldValue.of(stringStringPair.getSecond())).build()._toQuery()));
-        }
+        final List<Query> mustHaveQueries = createQuery(mustHaveValues, fuzzinessDefinition);
+        final List<Query> mustNotHaveQueries = createQuery(mustNotHaveValues, fuzzinessDefinition);
+        final List<Query> shouldHaveQueries = createQuery(shouldHaveValues, fuzzinessDefinition);
 
         final BoolQuery boolQuery = new BoolQuery.Builder().must(mustHaveQueries).mustNot(mustNotHaveQueries).should(shouldHaveQueries)
-                .minimumShouldMatch(String.valueOf(minimumShouldHave)).build();
+                .minimumShouldMatch(String.valueOf(minimumShouldMatch)).build();
         return searchData(dataClass, boolQuery._toQuery());
+    }
+
+
+    private List<Query> createQuery(List<Pair<String, String>> searchValue, FuzzinessDefinition fuzzinessDefinition) {
+        final List<Query> searchQuery = new ArrayList<>();
+        if (searchValue != null) {
+            searchValue.forEach(stringStringPair -> {
+                final MatchQuery.Builder builder = new MatchQuery.Builder().field(stringStringPair.getFirst())
+                        .query(FieldValue.of(stringStringPair.getSecond()));
+                if (fuzzinessDefinition != null) {
+                    builder.fuzziness(fuzzinessDefinition.getFuzziness().tag());
+                    if (fuzzinessDefinition.getMaxExpansions() != null) {
+                        builder.maxExpansions(fuzzinessDefinition.getMaxExpansions());
+                    }
+                    if (fuzzinessDefinition.getPrefixLength() != null) {
+                        builder.prefixLength(fuzzinessDefinition.getPrefixLength());
+                    }
+                }
+                searchQuery.add(builder.build()._toQuery());
+            });
+        }
+        return searchQuery;
     }
 
 }

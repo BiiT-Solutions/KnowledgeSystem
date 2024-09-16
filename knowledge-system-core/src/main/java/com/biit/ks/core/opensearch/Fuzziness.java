@@ -9,7 +9,9 @@ public enum Fuzziness {
     ONE,
 
     TWO,
+
     X_FIELD_NAME,
+
     ZERO;
 
     public String tag() {

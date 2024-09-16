@@ -41,6 +41,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         Assert.assertTrue(response.acknowledged());
     }
 
+
     @Test(dependsOnMethods = "createIndex")
     public void indexData() {
         final Data data = new Data(DATA_NAME, DATA_DESCRIPTION);
@@ -51,6 +52,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         openSearchClient.refreshIndex();
     }
 
+
     @Test(dependsOnMethods = "indexData")
     public void getData() {
         final GetResponse<Data> response = openSearchClient.getData(Data.class, INDEX, DATA_ID);
@@ -59,17 +61,20 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(response.source().getDescription(), DATA_DESCRIPTION);
     }
 
+
     @Test(dependsOnMethods = "indexData")
     public void searchData() {
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
+
     @Test(dependsOnMethods = "indexData")
     public void searchDataByFieldExists() {
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, new ExistsQuery.Builder().field("description").build()._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
+
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByFieldNotExists() {
@@ -85,6 +90,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
+
     @Test(dependsOnMethods = "indexData")
     public void searchDataByShouldQuery() {
         final List<Pair<String, String>> shouldParameters = new ArrayList<>();
@@ -94,6 +100,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         final SearchResponse<Data> response = openSearchClient.searchDataShould(Data.class, shouldParameters, 1);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
+
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByShouldQueryInvalid() {
@@ -106,6 +113,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(response.hits().hits().size(), 0);
     }
 
+
     @Test(dependsOnMethods = "indexData")
     public void searchDataByMustNotQuery() {
         final List<Pair<String, String>> mustNotHaveParameters = new ArrayList<>();
@@ -117,6 +125,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
             Assert.assertNotEquals(data.source().getName(), DATA_NAME);
         }
     }
+
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByMustQuery() {
