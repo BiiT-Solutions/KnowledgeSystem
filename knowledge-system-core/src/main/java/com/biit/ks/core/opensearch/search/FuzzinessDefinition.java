@@ -12,7 +12,7 @@ public class FuzzinessDefinition {
         this(fuzziness, null, null);
     }
 
-    FuzzinessDefinition(Fuzziness fuzziness, Integer maxExpansions) {
+    public FuzzinessDefinition(Fuzziness fuzziness, Integer maxExpansions) {
         this(fuzziness, maxExpansions, null);
     }
 
