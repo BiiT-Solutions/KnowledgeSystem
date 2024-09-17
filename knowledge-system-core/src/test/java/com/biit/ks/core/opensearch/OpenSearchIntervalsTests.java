@@ -1,15 +1,10 @@
 package com.biit.ks.core.opensearch;
 
 import com.biit.ks.core.opensearch.search.IntervalsSearch;
-import com.biit.ks.core.opensearch.search.MustHaveParameters;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.Result;
-import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsMatch;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsQuery;
-import org.opensearch.client.opensearch._types.query_dsl.MatchQuery;
-import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.DeleteResponse;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.indices.PutIndicesSettingsResponse;
@@ -20,9 +15,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @SpringBootTest
 @Test(groups = {"opensearchIntervals"})
@@ -60,12 +52,22 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
     }
 
     @Test
+    public void searchDataWithPrefixOnWords() {
+        final IntervalsSearch intervalsSearch = new IntervalsSearch();
+        intervalsSearch.addPrefix("description", "Th");
+
+        final SearchResponse<OpenSearchIntervalsTests.Data> response = openSearchClient.searchData(OpenSearchIntervalsTests.Data.class, intervalsSearch);
+        Assert.assertEquals(response.hits().hits().size(), 3);
+    }
+
+
+    @Test
     public void searchDataWithIntervalsAndGap() {
         //Max gaps 0 → terms must be next to each other.
-        final IntervalsSearch mustHaveParameters = new IntervalsSearch();
-        mustHaveParameters.addMatch("description", "The Data", 1, true);
+        final IntervalsSearch intervalsSearch = new IntervalsSearch();
+        intervalsSearch.addMatch("description", "The Data", 1, true);
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, intervalsSearch);
         Assert.assertEquals(response.hits().hits().size(), 3);
     }
 
@@ -81,31 +83,31 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
     @Test
     public void searchDataWithIntervalsNoGapNotOrdered() {
         //Max gaps 0 → terms must be next to each other.
-        final IntervalsSearch mustHaveParameters = new IntervalsSearch();
-        mustHaveParameters.addMatch("description", "The Data", 0, false);
+        final IntervalsSearch intervalsSearch = new IntervalsSearch();
+        intervalsSearch.addMatch("description", "The Data", 0, false);
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, intervalsSearch);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
     @Test
     public void searchDataWithIntervalsAndGapNotOrdered() {
-        final IntervalsSearch mustHaveParameters = new IntervalsSearch();
-        mustHaveParameters.addMatch("description", "Data The", 1, false);
+        final IntervalsSearch intervalsSearch = new IntervalsSearch();
+        intervalsSearch.addMatch("description", "Data The", 1, false);
 
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, intervalsSearch);
         Assert.assertEquals(response.hits().hits().size(), 3);
     }
 
     @Test
     public void searchDataWithIntervals() {
         //Max gaps 0 → terms must be next to each other.
-        final IntervalsSearch mustHaveParameters = new IntervalsSearch();
-        mustHaveParameters.addMatch("description", "Data The", 0, false);
+        final IntervalsSearch intervalsSearch = new IntervalsSearch();
+        intervalsSearch.addMatch("description", "Data The", 0, false);
 
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, intervalsSearch);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 

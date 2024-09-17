@@ -7,6 +7,7 @@ import com.biit.ks.core.opensearch.search.MustNotHaveParameters;
 import com.biit.ks.core.opensearch.search.SearchFilter;
 import com.biit.ks.core.opensearch.search.SearchParameters;
 import com.biit.ks.core.opensearch.search.ShouldHaveParameters;
+import com.biit.ks.core.opensearch.search.intervals.IntervalsSearchOperator;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.logger.OpenSearchLogger;
 import com.biit.ks.logger.SolrLogger;
@@ -23,9 +24,11 @@ import org.opensearch.client.json.JsonData;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
+import org.opensearch.client.opensearch._types.query_dsl.Intervals;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsMatch;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsPrefix;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsQuery;
+import org.opensearch.client.opensearch._types.query_dsl.IntervalsQueryBuilders;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsWildcard;
 import org.opensearch.client.opensearch._types.query_dsl.MatchQuery;
 import org.opensearch.client.opensearch._types.query_dsl.MultiMatchQuery;
@@ -352,23 +355,18 @@ public class OpenSearchClient {
     }
 
     private List<Query> createQuery(IntervalsSearch intervalsSearch) {
-        final List<Query> intervalsQuery = new ArrayList<>();
+        final List<Intervals> intervals = new ArrayList<>();
         if (intervalsSearch != null) {
             //Prefix search.
             intervalsSearch.getPrefixes().forEach(prefix -> {
                 if (prefix.getField() != null) {
-                    final IntervalsQuery.Builder intervalsBuilder = new IntervalsQuery.Builder();
-                    intervalsBuilder.field(prefix.getField());
-                    intervalsBuilder.prefix(new IntervalsPrefix.Builder().useField(prefix.getField()).prefix(prefix.getPrefix()).build());
-                    intervalsQuery.add(intervalsBuilder.build()._toQuery());
+                    intervals.add(new IntervalsPrefix.Builder().useField(prefix.getField()).prefix(prefix.getPrefix()).build()._toIntervals());
                 }
             });
 
             //Match search.
             intervalsSearch.getMatches().forEach(match -> {
                 if (match.getField() != null) {
-                    final IntervalsQuery.Builder intervalsBuilder = new IntervalsQuery.Builder();
-                    intervalsBuilder.field(match.getField());
                     final IntervalsMatch.Builder intervalsMatchBuilder = new IntervalsMatch.Builder().useField(match.getField()).query(match.getQuery());
                     if (match.getMaxGap() != null) {
                         intervalsMatchBuilder.maxGaps(match.getMaxGap());
@@ -376,24 +374,29 @@ public class OpenSearchClient {
                     if (match.getOrdered() != null) {
                         intervalsMatchBuilder.ordered(match.getOrdered());
                     }
-                    intervalsBuilder.match(intervalsMatchBuilder.build());
-                    intervalsQuery.add(intervalsBuilder.build()._toQuery());
+                    intervals.add(intervalsMatchBuilder.build()._toIntervals());
                 }
             });
 
             //Wildcard search.
             intervalsSearch.getWildcards().forEach(wildcards -> {
                 if (wildcards.getField() != null) {
-                    final IntervalsQuery.Builder intervalsBuilder = new IntervalsQuery.Builder();
-                    intervalsBuilder.field(wildcards.getField());
                     final IntervalsWildcard.Builder intervalsWildcardBuilder = new IntervalsWildcard.Builder()
                             .useField(wildcards.getField()).pattern(wildcards.getPattern());
-                    intervalsBuilder.wildcard(intervalsWildcardBuilder.build());
-                    intervalsQuery.add(intervalsBuilder.build()._toQuery());
+                    intervals.add(intervalsWildcardBuilder.build()._toIntervals());
                 }
             });
+            if (intervalsSearch.getIntervalsSearchOperator() == IntervalsSearchOperator.ANY_OF) {
+                //Why I need a field here, and can be any of the fields used?
+                return List.of(new IntervalsQuery.Builder().field(intervalsSearch.getAnyField()).anyOf(IntervalsQueryBuilders.anyOf()
+                        .intervals(intervals).build()).build()._toQuery());
+            } else {
+                //Why I need a field here, and can be any of the fields used?
+                return List.of(new IntervalsQuery.Builder().field(intervalsSearch.getAnyField()).allOf(IntervalsQueryBuilders.allOf()
+                        .intervals(intervals).build()).build()._toQuery());
+            }
         }
-        return intervalsQuery;
+        return new ArrayList<>();
     }
 
 }
