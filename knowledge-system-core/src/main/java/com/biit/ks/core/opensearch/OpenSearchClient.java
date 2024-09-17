@@ -373,6 +373,9 @@ public class OpenSearchClient {
                     if (match.getMaxGap() != null) {
                         intervalsMatchBuilder.maxGaps(match.getMaxGap());
                     }
+                    if (match.getOrdered() != null) {
+                        intervalsMatchBuilder.ordered(match.getOrdered());
+                    }
                     intervalsBuilder.match(intervalsMatchBuilder.build());
                     intervalsQuery.add(intervalsBuilder.build()._toQuery());
                 }

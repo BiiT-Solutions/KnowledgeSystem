@@ -1,5 +1,7 @@
 package com.biit.ks.core.opensearch;
 
+import com.biit.ks.core.opensearch.search.IntervalsSearch;
+import com.biit.ks.core.opensearch.search.MustHaveParameters;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.Result;
@@ -16,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -42,13 +45,13 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
     private OpenSearchClient openSearchClient;
 
 
-    @Test
+    @BeforeClass
     public void createIndex() {
         final PutIndicesSettingsResponse response = openSearchClient.createIndex(INDEX);
         Assert.assertTrue(response.acknowledged());
     }
 
-    @Test(dependsOnMethods = "createIndex")
+    @BeforeClass(dependsOnMethods = "createIndex")
     public void indexData() {
         openSearchClient.indexData(new Data(DATA1_NAME, DATA1_DESCRIPTION, "red"), INDEX, DATA1_ID);
         openSearchClient.indexData(new Data(DATA2_NAME, DATA2_DESCRIPTION, "blue"), INDEX, DATA2_ID);
@@ -56,54 +59,18 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
         openSearchClient.refreshIndex();
     }
 
-    @Test(dependsOnMethods = "indexData")
-    public void searchDataWithShould() {
-        MatchQuery shouldMatchQuery1 = new MatchQuery.Builder().field("color").query(FieldValue.of("red")).build();
-        MatchQuery shouldMatchQuery2 = new MatchQuery.Builder().field("color").query(FieldValue.of("blue")).build();
-
-        List<Query> shouldQueries = new ArrayList<>();
-        shouldQueries.add(shouldMatchQuery1._toQuery());
-        shouldQueries.add(shouldMatchQuery2._toQuery());
-
-        BoolQuery boolQuery = new BoolQuery.Builder().should(shouldQueries).minimumShouldMatch("1").build();
-
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, boolQuery._toQuery());
-        Assert.assertEquals(response.hits().hits().size(), 3);
-    }
-
-    @Test(dependsOnMethods = "indexData")
-    public void searchDataWithMustAndShould() {
-        MatchQuery matchQuery = new MatchQuery.Builder().field("name").query(FieldValue.of(DATA1_NAME)).build();
-
-        // create a list of queries
-        List<Query> mustQueries = new ArrayList<>();
-        mustQueries.add(matchQuery._toQuery());
-
-        MatchQuery shouldMatchQuery1 = new MatchQuery.Builder().field("color").query(FieldValue.of("red")).build();
-        MatchQuery shouldMatchQuery2 = new MatchQuery.Builder().field("color").query(FieldValue.of("blue")).build();
-
-        List<Query> shouldQueries = new ArrayList<>();
-        shouldQueries.add(shouldMatchQuery1._toQuery());
-        shouldQueries.add(shouldMatchQuery2._toQuery());
-
-        BoolQuery boolQuery = new BoolQuery.Builder().must(mustQueries).should(shouldQueries).minimumShouldMatch("1").build();
-
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, boolQuery._toQuery());
-        Assert.assertEquals(response.hits().hits().size(), 1);
-    }
-
-    @Test(dependsOnMethods = "indexData")
-    public void searchDataWithIntervalsAndGapSimpler() {
-        //Max gaps 0 --> terms must be next to each other.
-        IntervalsQuery query = new IntervalsQuery.Builder().field("description").match(new IntervalsMatch.Builder().query("The Data").maxGaps(1).ordered(true)
-                .build()).build();
-
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
-        Assert.assertEquals(response.hits().hits().size(), 3);
-    }
-
-    @Test(dependsOnMethods = "indexData")
+    @Test
     public void searchDataWithIntervalsAndGap() {
+        //Max gaps 0 → terms must be next to each other.
+        final IntervalsSearch mustHaveParameters = new IntervalsSearch();
+        mustHaveParameters.addMatch("description", "The Data", 1, true);
+
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
+        Assert.assertEquals(response.hits().hits().size(), 3);
+    }
+
+    @Test
+    public void searchDataWithIntervalsAndGapOriginal() {
         IntervalsQuery query = new IntervalsQuery.Builder().field("description").match(new IntervalsMatch.Builder().query("The Data").maxGaps(1).ordered(true)
                 .build()).build();
 
@@ -111,32 +78,34 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(response.hits().hits().size(), 3);
     }
 
-    @Test(dependsOnMethods = "indexData")
-    public void searchDataWithIntervalsNotOrdered() {
-        //Max gaps 0 --> terms must be next to each other.
-        IntervalsQuery query = new IntervalsQuery.Builder().field("description").match(new IntervalsMatch.Builder().query("Data The").maxGaps(0).ordered(false)
-                .build()).build();
+    @Test
+    public void searchDataWithIntervalsNoGapNotOrdered() {
+        //Max gaps 0 → terms must be next to each other.
+        final IntervalsSearch mustHaveParameters = new IntervalsSearch();
+        mustHaveParameters.addMatch("description", "The Data", 0, false);
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
-    @Test(dependsOnMethods = "indexData")
+    @Test
     public void searchDataWithIntervalsAndGapNotOrdered() {
-        IntervalsQuery query = new IntervalsQuery.Builder().field("description").match(new IntervalsMatch.Builder().query("Data The").maxGaps(1).ordered(false)
-                .build()).build();
+        final IntervalsSearch mustHaveParameters = new IntervalsSearch();
+        mustHaveParameters.addMatch("description", "Data The", 1, false);
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
+
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
         Assert.assertEquals(response.hits().hits().size(), 3);
     }
 
-    @Test(dependsOnMethods = "indexData")
+    @Test
     public void searchDataWithIntervals() {
-        //Max gaps 0 --> terms must be next to each other.
-        IntervalsQuery query = new IntervalsQuery.Builder().field("description").match(new IntervalsMatch.Builder().query("The Data").maxGaps(0).ordered(true)
-                .build()).build();
+        //Max gaps 0 → terms must be next to each other.
+        final IntervalsSearch mustHaveParameters = new IntervalsSearch();
+        mustHaveParameters.addMatch("description", "Data The", 0, false);
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
+
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 

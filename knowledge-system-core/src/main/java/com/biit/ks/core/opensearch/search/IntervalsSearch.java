@@ -46,6 +46,10 @@ public class IntervalsSearch {
         addMatch(new IntervalMatch(field, query, maxGap));
     }
 
+    public void addMatch(String field, String query, Integer maxGap, Boolean ordered) {
+        addMatch(new IntervalMatch(field, query, maxGap, ordered));
+    }
+
     public List<IntervalWildcards> getWildcards() {
         return wildcards;
     }
