@@ -10,6 +10,7 @@ public abstract class SearchParameters {
     //For searching on multiples fields.
     private final List<Pair<List<String>, String>> multiSearch;
     private final List<Range> ranges;
+    private FuzzinessDefinition fuzzinessDefinition;
 
     public SearchParameters() {
         this.search = new ArrayList<>();
@@ -47,5 +48,13 @@ public abstract class SearchParameters {
 
     public void addRange(String parameter, Object from, Object to) {
         ranges.add(new Range(parameter, from, to));
+    }
+
+    public FuzzinessDefinition getFuzzinessDefinition() {
+        return fuzzinessDefinition;
+    }
+
+    public void setFuzzinessDefinition(FuzzinessDefinition fuzzinessDefinition) {
+        this.fuzzinessDefinition = fuzzinessDefinition;
     }
 }

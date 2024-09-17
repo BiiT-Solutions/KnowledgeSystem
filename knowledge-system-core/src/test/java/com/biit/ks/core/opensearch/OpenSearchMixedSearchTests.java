@@ -76,6 +76,7 @@ public class OpenSearchMixedSearchTests extends AbstractTestNGSpringContextTests
         openSearchClient.refreshIndex();
     }
 
+
     @Test(dependsOnMethods = "indexData")
     public void searchDataWithPrefixOnWords() {
         IntervalsQuery query = new IntervalsQuery.Builder().field("description").prefix(new IntervalsPrefix.Builder().useField("description").prefix("Th").build()).build();
@@ -83,6 +84,7 @@ public class OpenSearchMixedSearchTests extends AbstractTestNGSpringContextTests
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 5);
     }
+
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataWithIntervalsAndWildCard() {

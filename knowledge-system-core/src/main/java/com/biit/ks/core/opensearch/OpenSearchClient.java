@@ -1,7 +1,7 @@
 package com.biit.ks.core.opensearch;
 
 import com.biit.ks.core.opensearch.exceptions.OpenSearchConnectionException;
-import com.biit.ks.core.opensearch.search.FuzzinessDefinition;
+import com.biit.ks.core.opensearch.search.IntervalsSearch;
 import com.biit.ks.core.opensearch.search.MustHaveParameters;
 import com.biit.ks.core.opensearch.search.MustNotHaveParameters;
 import com.biit.ks.core.opensearch.search.SearchFilter;
@@ -23,6 +23,10 @@ import org.opensearch.client.json.JsonData;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
+import org.opensearch.client.opensearch._types.query_dsl.IntervalsMatch;
+import org.opensearch.client.opensearch._types.query_dsl.IntervalsPrefix;
+import org.opensearch.client.opensearch._types.query_dsl.IntervalsQuery;
+import org.opensearch.client.opensearch._types.query_dsl.IntervalsWildcard;
 import org.opensearch.client.opensearch._types.query_dsl.MatchQuery;
 import org.opensearch.client.opensearch._types.query_dsl.MultiMatchQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
@@ -233,45 +237,33 @@ public class OpenSearchClient {
     }
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, ShouldHaveParameters shouldHaveValues) {
-        return searchData(dataClass, shouldHaveValues, null);
+        return searchData(dataClass, null, null, shouldHaveValues, null, null);
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, ShouldHaveParameters shouldHaveValues,
-                                            FuzzinessDefinition fuzzinessDefinition) {
-        return searchData(dataClass, null, null, shouldHaveValues, fuzzinessDefinition, null);
-    }
-
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, ShouldHaveParameters shouldHaveValues,
-                                            FuzzinessDefinition fuzzinessDefinition, SearchFilter filters) {
-        return searchData(dataClass, null, null, shouldHaveValues, fuzzinessDefinition, filters);
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, ShouldHaveParameters shouldHaveValues, SearchFilter filters, IntervalsSearch intervalsSearch) {
+        return searchData(dataClass, null, null, shouldHaveValues, filters, intervalsSearch);
     }
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, MustHaveParameters mustHaveValues) {
-        return searchData(dataClass, mustHaveValues, null);
+        return searchData(dataClass, mustHaveValues, null, null);
     }
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, MustHaveParameters mustHaveValues,
-                                            FuzzinessDefinition fuzzinessDefinition) {
-        return searchData(dataClass, mustHaveValues, null, null, fuzzinessDefinition, null);
-    }
-
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustHaveParameters mustHaveValues,
-                                            FuzzinessDefinition fuzzinessDefinition, SearchFilter filters) {
-        return searchData(dataClass, mustHaveValues, null, null, fuzzinessDefinition, filters);
+                                            SearchFilter filters, IntervalsSearch intervalsSearch) {
+        return searchData(dataClass, mustHaveValues, null, null, filters, intervalsSearch);
     }
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, MustNotHaveParameters mustNotHaveValues) {
-        return searchData(dataClass, mustNotHaveValues, null);
+        return searchData(dataClass, null, mustNotHaveValues, null, null, null);
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustNotHaveParameters mustNotHaveValues,
-                                            FuzzinessDefinition fuzzinessDefinition) {
-        return searchData(dataClass, null, mustNotHaveValues, null, fuzzinessDefinition, null);
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustNotHaveParameters mustNotHaveValues, SearchFilter filters,
+                                            IntervalsSearch intervalsSearch) {
+        return searchData(dataClass, null, mustNotHaveValues, null, filters, intervalsSearch);
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustNotHaveParameters mustNotHaveValues,
-                                            FuzzinessDefinition fuzzinessDefinition, SearchFilter filters) {
-        return searchData(dataClass, null, mustNotHaveValues, null, fuzzinessDefinition, filters);
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, IntervalsSearch intervalsSearch) {
+        return searchData(dataClass, null, null, null, null, intervalsSearch);
     }
 
 
@@ -281,20 +273,22 @@ public class OpenSearchClient {
      * @param mustHaveValues  pair of parameters-values that must be present.
      * @param mustNotHaveValues pair of parameters-values that are not allowed on the result.
      * @param shouldHaveValues possible pair of parameters-values that can be present on the data.
-     * @param fuzzinessDefinition if you want similar but not exact matches.
      * @param filters any final filter to restrict the obtained results.
      * @return SearchResponse.
      * @param <I>
      */
     public <I> SearchResponse<I> searchData(Class<I> dataClass, MustHaveParameters mustHaveValues, MustNotHaveParameters mustNotHaveValues,
-                                            ShouldHaveParameters shouldHaveValues, FuzzinessDefinition fuzzinessDefinition, SearchFilter filters) {
+                                            ShouldHaveParameters shouldHaveValues, SearchFilter filters,
+                                            IntervalsSearch intervals) {
 
-        final List<Query> mustHaveQueries = createQuery(mustHaveValues, fuzzinessDefinition);
-        final List<Query> mustNotHaveQueries = createQuery(mustNotHaveValues, fuzzinessDefinition);
-        final List<Query> shouldHaveQueries = createQuery(shouldHaveValues, fuzzinessDefinition);
-        final List<Query> filter = createQuery(filters, fuzzinessDefinition);
+        final List<Query> mustHaveQueries = createQuery(mustHaveValues);
+        final List<Query> mustNotHaveQueries = createQuery(mustNotHaveValues);
+        final List<Query> shouldHaveQueries = createQuery(shouldHaveValues);
+        final List<Query> filter = createQuery(filters);
+        final List<Query> intervalsSearch = createQuery(intervals);
 
-        final BoolQuery.Builder builder = new BoolQuery.Builder().must(mustHaveQueries).mustNot(mustNotHaveQueries).should(shouldHaveQueries).filter(filter);
+        final BoolQuery.Builder builder = new BoolQuery.Builder().must(mustHaveQueries).mustNot(mustNotHaveQueries).should(shouldHaveQueries).filter(filter)
+                .must(intervalsSearch);
 
         if (shouldHaveValues != null && shouldHaveValues.getMinimumShouldMatch() != null) {
             builder.minimumShouldMatch(String.valueOf(shouldHaveValues.getMinimumShouldMatch()));
@@ -304,19 +298,19 @@ public class OpenSearchClient {
     }
 
 
-    private List<Query> createQuery(SearchParameters searchParameters, FuzzinessDefinition fuzzinessDefinition) {
+    private List<Query> createQuery(SearchParameters searchParameters) {
         final List<Query> searchQuery = new ArrayList<>();
         if (searchParameters != null) {
             searchParameters.getSearch().forEach(stringPair -> {
                 final MatchQuery.Builder builder = new MatchQuery.Builder().field(stringPair.getFirst())
                         .query(FieldValue.of(stringPair.getSecond()));
-                if (fuzzinessDefinition != null) {
-                    builder.fuzziness(fuzzinessDefinition.getFuzziness().tag());
-                    if (fuzzinessDefinition.getMaxExpansions() != null) {
-                        builder.maxExpansions(fuzzinessDefinition.getMaxExpansions());
+                if (searchParameters.getFuzzinessDefinition() != null) {
+                    builder.fuzziness(searchParameters.getFuzzinessDefinition().getFuzziness().tag());
+                    if (searchParameters.getFuzzinessDefinition().getMaxExpansions() != null) {
+                        builder.maxExpansions(searchParameters.getFuzzinessDefinition().getMaxExpansions());
                     }
-                    if (fuzzinessDefinition.getPrefixLength() != null) {
-                        builder.prefixLength(fuzzinessDefinition.getPrefixLength());
+                    if (searchParameters.getFuzzinessDefinition().getPrefixLength() != null) {
+                        builder.prefixLength(searchParameters.getFuzzinessDefinition().getPrefixLength());
                     }
                 }
                 searchQuery.add(builder.build()._toQuery());
@@ -324,13 +318,13 @@ public class OpenSearchClient {
             searchParameters.getMultiSearch().forEach(listStringPair -> {
                 final MultiMatchQuery.Builder builder = new MultiMatchQuery.Builder().fields(listStringPair.getFirst())
                         .query(listStringPair.getSecond());
-                if (fuzzinessDefinition != null) {
-                    builder.fuzziness(fuzzinessDefinition.getFuzziness().tag());
-                    if (fuzzinessDefinition.getMaxExpansions() != null) {
-                        builder.maxExpansions(fuzzinessDefinition.getMaxExpansions());
+                if (searchParameters.getFuzzinessDefinition() != null) {
+                    builder.fuzziness(searchParameters.getFuzzinessDefinition().getFuzziness().tag());
+                    if (searchParameters.getFuzzinessDefinition().getMaxExpansions() != null) {
+                        builder.maxExpansions(searchParameters.getFuzzinessDefinition().getMaxExpansions());
                     }
-                    if (fuzzinessDefinition.getPrefixLength() != null) {
-                        builder.prefixLength(fuzzinessDefinition.getPrefixLength());
+                    if (searchParameters.getFuzzinessDefinition().getPrefixLength() != null) {
+                        builder.prefixLength(searchParameters.getFuzzinessDefinition().getPrefixLength());
                     }
                 }
                 searchQuery.add(builder.build()._toQuery());
@@ -355,6 +349,48 @@ public class OpenSearchClient {
             });
         }
         return searchQuery;
+    }
+
+    private List<Query> createQuery(IntervalsSearch intervalsSearch) {
+        final List<Query> intervalsQuery = new ArrayList<>();
+        if (intervalsSearch != null) {
+            //Prefix search.
+            intervalsSearch.getPrefixes().forEach(prefix -> {
+                if (prefix.getField() != null) {
+                    final IntervalsQuery.Builder intervalsBuilder = new IntervalsQuery.Builder();
+                    intervalsBuilder.field(prefix.getField());
+                    intervalsBuilder.prefix(new IntervalsPrefix.Builder().useField(prefix.getField()).prefix(prefix.getPrefix()).build());
+                    intervalsQuery.add(intervalsBuilder.build()._toQuery());
+                }
+            });
+
+            //Match search.
+            intervalsSearch.getMatches().forEach(match -> {
+                if (match.getField() != null) {
+                    final IntervalsQuery.Builder intervalsBuilder = new IntervalsQuery.Builder();
+                    intervalsBuilder.field(match.getField());
+                    final IntervalsMatch.Builder intervalsMatchBuilder = new IntervalsMatch.Builder().useField(match.getField()).query(match.getQuery());
+                    if (match.getMaxGap() != null) {
+                        intervalsMatchBuilder.maxGaps(match.getMaxGap());
+                    }
+                    intervalsBuilder.match(intervalsMatchBuilder.build());
+                    intervalsQuery.add(intervalsBuilder.build()._toQuery());
+                }
+            });
+
+            //Wildcard search.
+            intervalsSearch.getWildcards().forEach(wildcards -> {
+                if (wildcards.getField() != null) {
+                    final IntervalsQuery.Builder intervalsBuilder = new IntervalsQuery.Builder();
+                    intervalsBuilder.field(wildcards.getField());
+                    final IntervalsWildcard.Builder intervalsWildcardBuilder = new IntervalsWildcard.Builder()
+                            .useField(wildcards.getField()).pattern(wildcards.getPattern());
+                    intervalsBuilder.wildcard(intervalsWildcardBuilder.build());
+                    intervalsQuery.add(intervalsBuilder.build()._toQuery());
+                }
+            });
+        }
+        return intervalsQuery;
     }
 
 }
