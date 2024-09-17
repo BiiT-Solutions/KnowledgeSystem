@@ -148,7 +148,7 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(response.result(), Result.Deleted);
     }
 
-    @AfterClass
+    @AfterClass(alwaysRun = true)
     public void cleanUp() {
         openSearchClient.deleteIndex(INDEX);
     }

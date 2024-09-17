@@ -4,22 +4,29 @@ import com.biit.ks.core.opensearch.exceptions.OpenSearchConnectionException;
 import com.biit.ks.core.opensearch.search.FuzzinessDefinition;
 import com.biit.ks.core.opensearch.search.MustHaveParameters;
 import com.biit.ks.core.opensearch.search.MustNotHaveParameters;
+import com.biit.ks.core.opensearch.search.SearchFilter;
 import com.biit.ks.core.opensearch.search.SearchParameters;
 import com.biit.ks.core.opensearch.search.ShouldHaveParameters;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.logger.OpenSearchLogger;
 import com.biit.ks.logger.SolrLogger;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.annotation.PreDestroy;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.opensearch.client.RestClient;
+import org.opensearch.client.json.JsonData;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
 import org.opensearch.client.opensearch._types.query_dsl.MatchQuery;
+import org.opensearch.client.opensearch._types.query_dsl.MultiMatchQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
+import org.opensearch.client.opensearch._types.query_dsl.RangeQuery;
 import org.opensearch.client.opensearch.core.DeleteResponse;
 import org.opensearch.client.opensearch.core.GetRequest;
 import org.opensearch.client.opensearch.core.GetResponse;
@@ -81,7 +88,12 @@ public class OpenSearchClient {
                 setHttpClientConfigCallback(httpClientBuilder ->
                         httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)).build();
 
-        final OpenSearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
+        //For LocalDateTime usage
+        final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        final JacksonJsonpMapper jsonpMapper = new JacksonJsonpMapper(objectMapper);
+
+        final OpenSearchTransport transport = new RestClientTransport(restClient, jsonpMapper);
         client = new org.opensearch.client.opensearch.OpenSearchClient(transport);
     }
 
@@ -226,7 +238,12 @@ public class OpenSearchClient {
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, ShouldHaveParameters shouldHaveValues,
                                             FuzzinessDefinition fuzzinessDefinition) {
-        return searchData(dataClass, null, null, shouldHaveValues, fuzzinessDefinition);
+        return searchData(dataClass, null, null, shouldHaveValues, fuzzinessDefinition, null);
+    }
+
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, ShouldHaveParameters shouldHaveValues,
+                                            FuzzinessDefinition fuzzinessDefinition, SearchFilter filters) {
+        return searchData(dataClass, null, null, shouldHaveValues, fuzzinessDefinition, filters);
     }
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, MustHaveParameters mustHaveValues) {
@@ -235,7 +252,12 @@ public class OpenSearchClient {
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, MustHaveParameters mustHaveValues,
                                             FuzzinessDefinition fuzzinessDefinition) {
-        return searchData(dataClass, mustHaveValues, null, null, fuzzinessDefinition);
+        return searchData(dataClass, mustHaveValues, null, null, fuzzinessDefinition, null);
+    }
+
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustHaveParameters mustHaveValues,
+                                            FuzzinessDefinition fuzzinessDefinition, SearchFilter filters) {
+        return searchData(dataClass, mustHaveValues, null, null, fuzzinessDefinition, filters);
     }
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, MustNotHaveParameters mustNotHaveValues) {
@@ -244,7 +266,12 @@ public class OpenSearchClient {
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, MustNotHaveParameters mustNotHaveValues,
                                             FuzzinessDefinition fuzzinessDefinition) {
-        return searchData(dataClass, null, mustNotHaveValues, null, fuzzinessDefinition);
+        return searchData(dataClass, null, mustNotHaveValues, null, fuzzinessDefinition, null);
+    }
+
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustNotHaveParameters mustNotHaveValues,
+                                            FuzzinessDefinition fuzzinessDefinition, SearchFilter filters) {
+        return searchData(dataClass, null, mustNotHaveValues, null, fuzzinessDefinition, filters);
     }
 
 
@@ -255,17 +282,19 @@ public class OpenSearchClient {
      * @param mustNotHaveValues pair of parameters-values that are not allowed on the result.
      * @param shouldHaveValues possible pair of parameters-values that can be present on the data.
      * @param fuzzinessDefinition if you want similar but not exact matches.
-     * @return SearchReponse.
+     * @param filters any final filter to restrict the obtained results.
+     * @return SearchResponse.
      * @param <I>
      */
     public <I> SearchResponse<I> searchData(Class<I> dataClass, MustHaveParameters mustHaveValues, MustNotHaveParameters mustNotHaveValues,
-                                            ShouldHaveParameters shouldHaveValues, FuzzinessDefinition fuzzinessDefinition) {
+                                            ShouldHaveParameters shouldHaveValues, FuzzinessDefinition fuzzinessDefinition, SearchFilter filters) {
 
         final List<Query> mustHaveQueries = createQuery(mustHaveValues, fuzzinessDefinition);
         final List<Query> mustNotHaveQueries = createQuery(mustNotHaveValues, fuzzinessDefinition);
         final List<Query> shouldHaveQueries = createQuery(shouldHaveValues, fuzzinessDefinition);
+        final List<Query> filter = createQuery(filters, fuzzinessDefinition);
 
-        final BoolQuery.Builder builder = new BoolQuery.Builder().must(mustHaveQueries).mustNot(mustNotHaveQueries).should(shouldHaveQueries);
+        final BoolQuery.Builder builder = new BoolQuery.Builder().must(mustHaveQueries).mustNot(mustNotHaveQueries).should(shouldHaveQueries).filter(filter);
 
         if (shouldHaveValues != null && shouldHaveValues.getMinimumShouldMatch() != null) {
             builder.minimumShouldMatch(String.valueOf(shouldHaveValues.getMinimumShouldMatch()));
@@ -278,9 +307,9 @@ public class OpenSearchClient {
     private List<Query> createQuery(SearchParameters searchParameters, FuzzinessDefinition fuzzinessDefinition) {
         final List<Query> searchQuery = new ArrayList<>();
         if (searchParameters != null) {
-            searchParameters.getSearch().forEach(stringStringPair -> {
-                final MatchQuery.Builder builder = new MatchQuery.Builder().field(stringStringPair.getFirst())
-                        .query(FieldValue.of(stringStringPair.getSecond()));
+            searchParameters.getSearch().forEach(stringPair -> {
+                final MatchQuery.Builder builder = new MatchQuery.Builder().field(stringPair.getFirst())
+                        .query(FieldValue.of(stringPair.getSecond()));
                 if (fuzzinessDefinition != null) {
                     builder.fuzziness(fuzzinessDefinition.getFuzziness().tag());
                     if (fuzzinessDefinition.getMaxExpansions() != null) {
@@ -290,6 +319,38 @@ public class OpenSearchClient {
                         builder.prefixLength(fuzzinessDefinition.getPrefixLength());
                     }
                 }
+                searchQuery.add(builder.build()._toQuery());
+            });
+            searchParameters.getMultiSearch().forEach(listStringPair -> {
+                final MultiMatchQuery.Builder builder = new MultiMatchQuery.Builder().fields(listStringPair.getFirst())
+                        .query(listStringPair.getSecond());
+                if (fuzzinessDefinition != null) {
+                    builder.fuzziness(fuzzinessDefinition.getFuzziness().tag());
+                    if (fuzzinessDefinition.getMaxExpansions() != null) {
+                        builder.maxExpansions(fuzzinessDefinition.getMaxExpansions());
+                    }
+                    if (fuzzinessDefinition.getPrefixLength() != null) {
+                        builder.prefixLength(fuzzinessDefinition.getPrefixLength());
+                    }
+                }
+                searchQuery.add(builder.build()._toQuery());
+            });
+            searchParameters.getRanges().forEach(range -> {
+                final RangeQuery.Builder builder = new RangeQuery.Builder().field(range.getParameter());
+
+                if (range.getLt() != null) {
+                    builder.lt(JsonData.of(range.getLt()));
+                }
+                if (range.getLte() != null) {
+                    builder.lte(JsonData.of(range.getLte()));
+                }
+                if (range.getGt() != null) {
+                    builder.gt(JsonData.of(range.getGt()));
+                }
+                if (range.getGte() != null) {
+                    builder.gte(JsonData.of(range.getGte()));
+                }
+
                 searchQuery.add(builder.build()._toQuery());
             });
         }

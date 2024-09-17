@@ -167,12 +167,12 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
         shouldParameters.add(Pair.of("color", "bluey"));
 
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class,
-                mustParameters, null, shouldParameters, new FuzzinessDefinition(Fuzziness.AUTO));
+                mustParameters, null, shouldParameters, new FuzzinessDefinition(Fuzziness.AUTO), null);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
 
-    @AfterClass
+    @AfterClass(alwaysRun = true)
     public void cleanUp() {
         openSearchClient.deleteIndex(INDEX);
     }

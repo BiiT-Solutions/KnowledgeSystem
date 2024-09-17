@@ -21,6 +21,9 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 @SpringBootTest
 @Test(groups = {"opensearchClient"})
 public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
@@ -138,6 +141,18 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(response.hits().hits().size(), 0);
     }
 
+
+    @Test(dependsOnMethods = "indexData")
+    public void searchDataByMultipleMustQuery() {
+        final MustHaveParameters mustHaveParameters = new MustHaveParameters();
+        mustHaveParameters.addMultiSearch(List.of("name"), DATA_NAME);
+        mustHaveParameters.addMultiSearch(List.of("name"), "wrong");
+
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
+        Assert.assertEquals(response.hits().hits().size(), 0);
+    }
+
+
     @Test(dependsOnMethods = {"searchData", "getData", "searchDataByQuery", "searchDataByShouldQuery", "searchDataByMustQuery", "searchDataByShouldQueryInvalid", "searchDataByMustNotQuery"}, alwaysRun = true)
     public void deleteData() {
         final DeleteResponse response = openSearchClient.deleteData(INDEX, DATA_ID);
@@ -145,7 +160,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(response.result(), Result.Deleted);
     }
 
-    @AfterClass
+    @AfterClass(alwaysRun = true)
     public void cleanUp() {
         openSearchClient.deleteIndex(INDEX);
     }
