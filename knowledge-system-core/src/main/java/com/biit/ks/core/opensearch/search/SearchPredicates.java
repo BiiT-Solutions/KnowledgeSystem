@@ -5,14 +5,14 @@ import org.springframework.data.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class SearchParameters {
+public abstract class SearchPredicates {
     private final List<Pair<String, String>> search;
     //For searching on multiples fields.
     private final List<Pair<List<String>, String>> multiSearch;
     private final List<Range> ranges;
     private FuzzinessDefinition fuzzinessDefinition;
 
-    public SearchParameters() {
+    public SearchPredicates() {
         this.search = new ArrayList<>();
         this.multiSearch = new ArrayList<>();
         this.ranges = new ArrayList<>();

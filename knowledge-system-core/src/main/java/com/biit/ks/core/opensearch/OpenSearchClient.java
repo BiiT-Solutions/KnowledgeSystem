@@ -2,11 +2,7 @@ package com.biit.ks.core.opensearch;
 
 import com.biit.ks.core.opensearch.exceptions.OpenSearchConnectionException;
 import com.biit.ks.core.opensearch.search.IntervalsSearch;
-import com.biit.ks.core.opensearch.search.MustHaveParameters;
-import com.biit.ks.core.opensearch.search.MustNotHaveParameters;
-import com.biit.ks.core.opensearch.search.SearchFilter;
-import com.biit.ks.core.opensearch.search.SearchParameters;
-import com.biit.ks.core.opensearch.search.ShouldHaveParameters;
+import com.biit.ks.core.opensearch.search.SearchPredicates;
 import com.biit.ks.core.opensearch.search.intervals.IntervalsSearchOperator;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.logger.OpenSearchLogger;
@@ -54,11 +50,13 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Component
 public class OpenSearchClient {
 
+    private static final int MAX_SEARCH_RESULTS = 1000;
     private static final int DEFAULT_OPENSEARCH_PORT = 9200;
     private static final String DEFAULT_EXPAND_REPLICAS = "0-all";
 
@@ -191,9 +189,15 @@ public class OpenSearchClient {
     }
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, Query query) {
+        return searchData(dataClass, query, null, null);
+    }
+
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, Query query, Integer from, Integer size) {
         try {
             final SearchResponse<I> searchResponse = client.search(s -> {
                 s.query(query);
+                s.from(from != null ? from : 0);
+                s.size(size != null ? size : MAX_SEARCH_RESULTS);
                 return s;
             }, dataClass);
 
@@ -239,117 +243,86 @@ public class OpenSearchClient {
         }
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, ShouldHaveParameters shouldHaveValues) {
-        return searchData(dataClass, null, null, shouldHaveValues, null, null);
-    }
-
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, ShouldHaveParameters shouldHaveValues, SearchFilter filters, IntervalsSearch intervalsSearch) {
-        return searchData(dataClass, null, null, shouldHaveValues, filters, intervalsSearch);
-    }
-
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustHaveParameters mustHaveValues) {
-        return searchData(dataClass, mustHaveValues, null, null);
-    }
-
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustHaveParameters mustHaveValues,
-                                            SearchFilter filters, IntervalsSearch intervalsSearch) {
-        return searchData(dataClass, mustHaveValues, null, null, filters, intervalsSearch);
-    }
-
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustNotHaveParameters mustNotHaveValues) {
-        return searchData(dataClass, null, mustNotHaveValues, null, null, null);
-    }
-
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustNotHaveParameters mustNotHaveValues, SearchFilter filters,
-                                            IntervalsSearch intervalsSearch) {
-        return searchData(dataClass, null, mustNotHaveValues, null, filters, intervalsSearch);
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, SearchPredicates shouldHaveValues) {
+        return searchData(new SearchQuery<>(dataClass, shouldHaveValues));
     }
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, IntervalsSearch intervalsSearch) {
-        return searchData(dataClass, null, null, null, null, intervalsSearch);
+        return searchData(new SearchQuery<>(dataClass, intervalsSearch));
     }
 
 
-    /***
-     *
-     * @param dataClass type of element to search.
-     * @param mustHaveValues  pair of parameters-values that must be present.
-     * @param mustNotHaveValues pair of parameters-values that are not allowed on the result.
-     * @param shouldHaveValues possible pair of parameters-values that can be present on the data.
-     * @param filters any final filter to restrict the obtained results.
-     * @return SearchResponse.
-     * @param <I>
-     */
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, MustHaveParameters mustHaveValues, MustNotHaveParameters mustNotHaveValues,
-                                            ShouldHaveParameters shouldHaveValues, SearchFilter filters,
-                                            IntervalsSearch intervals) {
+    public <I> SearchResponse<I> searchData(SearchQuery<I> searchQuery) {
 
-        final List<Query> mustHaveQueries = createQuery(mustHaveValues);
-        final List<Query> mustNotHaveQueries = createQuery(mustNotHaveValues);
-        final List<Query> shouldHaveQueries = createQuery(shouldHaveValues);
-        final List<Query> filter = createQuery(filters);
-        final List<Query> intervalsSearch = createQuery(intervals);
+        final List<Query> mustHaveQueries = createQuery(searchQuery.getMustHaveValues());
+        final List<Query> mustNotHaveQueries = createQuery(searchQuery.getMustNotHaveValues());
+        final List<Query> shouldHaveQueries = createQuery(searchQuery.getShouldHaveValues());
+        final List<Query> filter = createQuery(searchQuery.getFilters());
+        final List<Query> intervalsSearch = createQuery(searchQuery.getIntervals());
 
         final BoolQuery.Builder builder = new BoolQuery.Builder().must(mustHaveQueries).mustNot(mustNotHaveQueries).should(shouldHaveQueries).filter(filter)
                 .must(intervalsSearch);
 
-        if (shouldHaveValues != null && shouldHaveValues.getMinimumShouldMatch() != null) {
-            builder.minimumShouldMatch(String.valueOf(shouldHaveValues.getMinimumShouldMatch()));
+        if (searchQuery.getShouldHaveValues() != null && searchQuery.getMinimumShouldMatch() != null) {
+            builder.minimumShouldMatch(String.valueOf(searchQuery.getMinimumShouldMatch()));
         }
 
-        return searchData(dataClass, builder.build()._toQuery());
+
+        return searchData(searchQuery.getDataClass(), builder.build()._toQuery());
     }
 
 
-    private List<Query> createQuery(SearchParameters searchParameters) {
+    private <E extends SearchPredicates> List<Query> createQuery(Collection<E> searchParameters) {
         final List<Query> searchQuery = new ArrayList<>();
-        if (searchParameters != null) {
-            searchParameters.getSearch().forEach(stringPair -> {
-                final MatchQuery.Builder builder = new MatchQuery.Builder().field(stringPair.getFirst())
-                        .query(FieldValue.of(stringPair.getSecond()));
-                if (searchParameters.getFuzzinessDefinition() != null) {
-                    builder.fuzziness(searchParameters.getFuzzinessDefinition().getFuzziness().tag());
-                    if (searchParameters.getFuzzinessDefinition().getMaxExpansions() != null) {
-                        builder.maxExpansions(searchParameters.getFuzzinessDefinition().getMaxExpansions());
+        if (searchParameters != null && !searchParameters.isEmpty()) {
+            for (SearchPredicates searchParameter : searchParameters) {
+                searchParameter.getSearch().forEach(stringPair -> {
+                    final MatchQuery.Builder builder = new MatchQuery.Builder().field(stringPair.getFirst())
+                            .query(FieldValue.of(stringPair.getSecond()));
+                    if (searchParameter.getFuzzinessDefinition() != null) {
+                        builder.fuzziness(searchParameter.getFuzzinessDefinition().getFuzziness().tag());
+                        if (searchParameter.getFuzzinessDefinition().getMaxExpansions() != null) {
+                            builder.maxExpansions(searchParameter.getFuzzinessDefinition().getMaxExpansions());
+                        }
+                        if (searchParameter.getFuzzinessDefinition().getPrefixLength() != null) {
+                            builder.prefixLength(searchParameter.getFuzzinessDefinition().getPrefixLength());
+                        }
                     }
-                    if (searchParameters.getFuzzinessDefinition().getPrefixLength() != null) {
-                        builder.prefixLength(searchParameters.getFuzzinessDefinition().getPrefixLength());
+                    searchQuery.add(builder.build()._toQuery());
+                });
+                searchParameter.getMultiSearch().forEach(listStringPair -> {
+                    final MultiMatchQuery.Builder builder = new MultiMatchQuery.Builder().fields(listStringPair.getFirst())
+                            .query(listStringPair.getSecond());
+                    if (searchParameter.getFuzzinessDefinition() != null) {
+                        builder.fuzziness(searchParameter.getFuzzinessDefinition().getFuzziness().tag());
+                        if (searchParameter.getFuzzinessDefinition().getMaxExpansions() != null) {
+                            builder.maxExpansions(searchParameter.getFuzzinessDefinition().getMaxExpansions());
+                        }
+                        if (searchParameter.getFuzzinessDefinition().getPrefixLength() != null) {
+                            builder.prefixLength(searchParameter.getFuzzinessDefinition().getPrefixLength());
+                        }
                     }
-                }
-                searchQuery.add(builder.build()._toQuery());
-            });
-            searchParameters.getMultiSearch().forEach(listStringPair -> {
-                final MultiMatchQuery.Builder builder = new MultiMatchQuery.Builder().fields(listStringPair.getFirst())
-                        .query(listStringPair.getSecond());
-                if (searchParameters.getFuzzinessDefinition() != null) {
-                    builder.fuzziness(searchParameters.getFuzzinessDefinition().getFuzziness().tag());
-                    if (searchParameters.getFuzzinessDefinition().getMaxExpansions() != null) {
-                        builder.maxExpansions(searchParameters.getFuzzinessDefinition().getMaxExpansions());
-                    }
-                    if (searchParameters.getFuzzinessDefinition().getPrefixLength() != null) {
-                        builder.prefixLength(searchParameters.getFuzzinessDefinition().getPrefixLength());
-                    }
-                }
-                searchQuery.add(builder.build()._toQuery());
-            });
-            searchParameters.getRanges().forEach(range -> {
-                final RangeQuery.Builder builder = new RangeQuery.Builder().field(range.getParameter());
+                    searchQuery.add(builder.build()._toQuery());
+                });
+                searchParameter.getRanges().forEach(range -> {
+                    final RangeQuery.Builder builder = new RangeQuery.Builder().field(range.getParameter());
 
-                if (range.getLt() != null) {
-                    builder.lt(JsonData.of(range.getLt()));
-                }
-                if (range.getLte() != null) {
-                    builder.lte(JsonData.of(range.getLte()));
-                }
-                if (range.getGt() != null) {
-                    builder.gt(JsonData.of(range.getGt()));
-                }
-                if (range.getGte() != null) {
-                    builder.gte(JsonData.of(range.getGte()));
-                }
+                    if (range.getLt() != null) {
+                        builder.lt(JsonData.of(range.getLt()));
+                    }
+                    if (range.getLte() != null) {
+                        builder.lte(JsonData.of(range.getLte()));
+                    }
+                    if (range.getGt() != null) {
+                        builder.gt(JsonData.of(range.getGt()));
+                    }
+                    if (range.getGte() != null) {
+                        builder.gte(JsonData.of(range.getGte()));
+                    }
 
-                searchQuery.add(builder.build()._toQuery());
-            });
+                    searchQuery.add(builder.build()._toQuery());
+                });
+            }
         }
         return searchQuery;
     }

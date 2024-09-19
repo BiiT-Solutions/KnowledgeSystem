@@ -39,6 +39,10 @@ public class FileEntry extends Element<UUID> {
     @Convert(converter = StringCryptoConverter.class)
     private String fileFormat;
 
+    private String openSearchID;
+
+    private String openSearchIndex;
+
     @Override
     public UUID getId() {
         return uuid;

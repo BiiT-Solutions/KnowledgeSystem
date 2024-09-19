@@ -1,8 +1,8 @@
 package com.biit.ks.core.opensearch;
 
-import com.biit.ks.core.opensearch.search.MustHaveParameters;
-import com.biit.ks.core.opensearch.search.MustNotHaveParameters;
-import com.biit.ks.core.opensearch.search.ShouldHaveParameters;
+import com.biit.ks.core.opensearch.search.MustHavePredicates;
+import com.biit.ks.core.opensearch.search.MustNotHavePredicates;
+import com.biit.ks.core.opensearch.search.ShouldHavePredicates;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.Result;
@@ -21,7 +21,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
-import java.util.Arrays;
 import java.util.List;
 
 @SpringBootTest
@@ -95,7 +94,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByShouldQuery() {
-        final ShouldHaveParameters shouldParameters = new ShouldHaveParameters();
+        final ShouldHavePredicates shouldParameters = new ShouldHavePredicates();
         shouldParameters.add("name", DATA_NAME);
         shouldParameters.add("name", "wrong");
         shouldParameters.setMinimumShouldMatch(1);
@@ -107,7 +106,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByShouldQueryInvalid() {
-        final ShouldHaveParameters shouldParameters = new ShouldHaveParameters();
+        final ShouldHavePredicates shouldParameters = new ShouldHavePredicates();
         shouldParameters.add("name", DATA_NAME);
         shouldParameters.add("name", "wrong");
         shouldParameters.add("name", "wrong2");
@@ -120,7 +119,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByMustNotQuery() {
-        final MustNotHaveParameters mustNotHaveParameters = new MustNotHaveParameters();
+        final MustNotHavePredicates mustNotHaveParameters = new MustNotHavePredicates();
         mustNotHaveParameters.add("name", DATA_NAME);
 
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustNotHaveParameters);
@@ -133,7 +132,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByMustQuery() {
-        final MustHaveParameters mustHaveParameters = new MustHaveParameters();
+        final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.add("name", DATA_NAME);
         mustHaveParameters.add("name", "wrong");
 
@@ -144,7 +143,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByMultipleMustQuery() {
-        final MustHaveParameters mustHaveParameters = new MustHaveParameters();
+        final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.addMultiSearch(List.of("name"), DATA_NAME);
         mustHaveParameters.addMultiSearch(List.of("name"), "wrong");
 

@@ -1,6 +1,6 @@
 package com.biit.ks.core.opensearch.search;
 
-public class ShouldHaveParameters extends SearchParameters {
+public class ShouldHavePredicates extends SearchPredicates {
 
     private Integer minimumShouldMatch;
 

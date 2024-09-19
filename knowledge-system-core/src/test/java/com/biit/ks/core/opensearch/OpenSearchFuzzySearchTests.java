@@ -2,9 +2,8 @@ package com.biit.ks.core.opensearch;
 
 import com.biit.ks.core.opensearch.search.Fuzziness;
 import com.biit.ks.core.opensearch.search.FuzzinessDefinition;
-import com.biit.ks.core.opensearch.search.IntervalsSearch;
-import com.biit.ks.core.opensearch.search.MustHaveParameters;
-import com.biit.ks.core.opensearch.search.ShouldHaveParameters;
+import com.biit.ks.core.opensearch.search.MustHavePredicates;
+import com.biit.ks.core.opensearch.search.ShouldHavePredicates;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
@@ -18,8 +17,6 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
-
-import java.time.LocalDateTime;
 
 @SpringBootTest
 @Test(groups = {"opensearchFuzzy"})
@@ -97,7 +94,7 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataWithFuzzy() {
-        final MustHaveParameters mustParameters = new MustHaveParameters();
+        final MustHavePredicates mustParameters = new MustHavePredicates();
         mustParameters.add(Pair.of("description", "This Paca"));
         mustParameters.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
 
@@ -109,7 +106,7 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
     @Test(dependsOnMethods = "indexData")
     public void searchDataWithFuzzy2() {
         //DATA1 only matching.
-        final MustHaveParameters mustParameters = new MustHaveParameters();
+        final MustHavePredicates mustParameters = new MustHavePredicates();
         mustParameters.add(Pair.of("color", "bluey"));
         mustParameters.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
 
@@ -121,7 +118,7 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
     @Test(dependsOnMethods = "indexData")
     public void searchDataWithMultipleFuzziness() {
         //DATA1 only matching.
-        final MustHaveParameters mustParameters = new MustHaveParameters();
+        final MustHavePredicates mustParameters = new MustHavePredicates();
         mustParameters.add(Pair.of("color", "bluey"));
         mustParameters.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO, 1));
 
@@ -133,7 +130,7 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
     @Test(dependsOnMethods = "indexData")
     public void searchDataWithMaxFuzzinessExpansions() {
         //DATA5 only matching.
-        final MustHaveParameters mustParameters = new MustHaveParameters();
+        final MustHavePredicates mustParameters = new MustHavePredicates();
         mustParameters.add(Pair.of("description", "worl"));
         mustParameters.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO, 1));
 
@@ -145,7 +142,7 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
     @Test(dependsOnMethods = "indexData", enabled = false)
     public void searchDataWithFuzzinessPrefixNotMatching() {
         //Prefix must be an exact match before fuzziness.
-        final MustHaveParameters mustParameters = new MustHaveParameters();
+        final MustHavePredicates mustParameters = new MustHavePredicates();
         mustParameters.add(Pair.of("description", "Worl"));
         mustParameters.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO, null, 1));
 
@@ -158,7 +155,7 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
     @Test(dependsOnMethods = "indexData", enabled = false)
     public void searchDataWithFuzzinessPrefixMatching() {
         //Prefix here, forces the "W" in capitals to match. DATA6 matches but DATA5 not.
-        final MustHaveParameters mustParameters = new MustHaveParameters();
+        final MustHavePredicates mustParameters = new MustHavePredicates();
         mustParameters.add(Pair.of("description", "Worl"));
         mustParameters.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
 
@@ -170,16 +167,16 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataWithMustAndShouldFuzzy() {
-        final MustHaveParameters mustParameters = new MustHaveParameters();
+        final MustHavePredicates mustParameters = new MustHavePredicates();
         mustParameters.add(Pair.of("name", DATA1_NAME));
 
-        final ShouldHaveParameters shouldParameters = new ShouldHaveParameters();
+        final ShouldHavePredicates shouldParameters = new ShouldHavePredicates();
         shouldParameters.add(Pair.of("color", "red"));
         shouldParameters.add(Pair.of("color", "bluey"));
         shouldParameters.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class,
-                mustParameters, null, shouldParameters, null, null);
+        final SearchResponse<Data> response = openSearchClient.searchData(new SearchQuery<>(Data.class,
+                mustParameters, shouldParameters));
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 

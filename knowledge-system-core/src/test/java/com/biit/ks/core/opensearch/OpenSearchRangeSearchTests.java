@@ -1,8 +1,6 @@
 package com.biit.ks.core.opensearch;
 
-import com.biit.ks.core.opensearch.search.MustHaveParameters;
-import com.biit.ks.core.opensearch.search.Range;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.biit.ks.core.opensearch.search.MustHavePredicates;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
@@ -18,7 +16,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @SpringBootTest
 @Test(groups = {"opensearchRange"})
@@ -79,7 +76,7 @@ public class OpenSearchRangeSearchTests extends AbstractTestNGSpringContextTests
     @Test
     public void searchDataByRange() {
         //DATE3 and DATA4
-        final MustHaveParameters mustHaveParameters = new MustHaveParameters();
+        final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.addRange("value", 2, 5);
 
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
@@ -89,7 +86,7 @@ public class OpenSearchRangeSearchTests extends AbstractTestNGSpringContextTests
     @Test
     public void searchDataDateByRange() {
         //DATE1, DATA2 and DATA4
-        final MustHaveParameters mustHaveParameters = new MustHaveParameters();
+        final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.addRange("dateTime", null, LocalDateTime.now());
 
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
@@ -111,7 +108,7 @@ public class OpenSearchRangeSearchTests extends AbstractTestNGSpringContextTests
     @Test
     public void searchDataValueByRange() {
         //DATE1, DATA2 and DATA3
-        final MustHaveParameters mustHaveParameters = new MustHaveParameters();
+        final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.addRange("value", null, 4);
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
         Assert.assertEquals(response.hits().hits().size(), 3);
