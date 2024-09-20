@@ -15,7 +15,7 @@ And for searching, you can rely on `SearchQuery<I>` class. Where `<I>` is the cl
 
 SearchQuery is composed by:
 
-## The class:
+## The class
 
 The element that is searched. Any other object that does not fits this class will be ignored.
 

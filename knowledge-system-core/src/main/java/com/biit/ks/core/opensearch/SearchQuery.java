@@ -55,6 +55,12 @@ public class SearchQuery<I> {
         this.intervals = intervals;
     }
 
+    public SearchQuery(Class<I> dataClass, Integer from, Integer size) {
+        this(dataClass);
+        setFrom(from);
+        setSize(size);
+    }
+
     public Class<I> getDataClass() {
         return dataClass;
     }

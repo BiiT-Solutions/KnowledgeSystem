@@ -8,12 +8,11 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
-@ConfigurationPropertiesScan({"com.biit.ks"})
-@EnableJpaRepositories({"com.biit.ks.persistence.repositories"})
-@EntityScan({"com.biit.ks.persistence.entities"})
-@ComponentScan({"com.biit.ks", "com.biit.usermanager.client", "com.biit.server.client"})
-public class Server {
+@ComponentScan({"com.biit.ks", "com.biit.server", "com.biit.usermanager.client", "com.biit.messagebird.client"})
+@ConfigurationPropertiesScan({"com.biit.ks.rest", "com.biit.server.security.userguard"})
+@EntityScan({"com.biit.ks.persistence.entities", "com.biit.server.security.userguard"})
+public class KnowledgeSystemServer {
     public static void main(String[] args) {
-        SpringApplication.run(Server.class, args);
+        SpringApplication.run(KnowledgeSystemServer.class, args);
     }
 }

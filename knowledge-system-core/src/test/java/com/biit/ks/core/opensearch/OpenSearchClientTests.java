@@ -19,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.List;
@@ -36,14 +37,14 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
     private OpenSearchClient openSearchClient;
 
 
-    @Test
+    @BeforeClass
     public void createIndex() {
         final PutIndicesSettingsResponse response = openSearchClient.createIndex(INDEX);
         Assert.assertTrue(response.acknowledged());
     }
 
 
-    @Test(dependsOnMethods = "createIndex")
+    @Test
     public void indexData() {
         final Data data = new Data(DATA_NAME, DATA_DESCRIPTION);
         IndexResponse response = openSearchClient.indexData(data, INDEX, DATA_ID);

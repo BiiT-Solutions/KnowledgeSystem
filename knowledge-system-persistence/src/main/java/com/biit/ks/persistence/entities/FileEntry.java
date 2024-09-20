@@ -39,9 +39,9 @@ public class FileEntry extends Element<UUID> {
     @Convert(converter = StringCryptoConverter.class)
     private String fileFormat;
 
-    private String openSearchID;
-
-    private String openSearchIndex;
+    @Column(name = "mime_type", nullable = false)
+    @Convert(converter = StringCryptoConverter.class)
+    private String mimeType;
 
     @Override
     public UUID getId() {
@@ -90,6 +90,14 @@ public class FileEntry extends Element<UUID> {
 
     public void setFileFormat(String fileFormat) {
         this.fileFormat = fileFormat;
+    }
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
     }
 
     @Override

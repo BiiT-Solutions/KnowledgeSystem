@@ -1,6 +1,7 @@
 package com.biit.ks.core.opensearch;
 
 import com.biit.ks.core.opensearch.exceptions.OpenSearchConnectionException;
+import com.biit.ks.core.opensearch.exceptions.OpenSearchIndexMissingException;
 import com.biit.ks.core.opensearch.search.IntervalsSearch;
 import com.biit.ks.core.opensearch.search.SearchPredicates;
 import com.biit.ks.core.opensearch.search.intervals.IntervalsSearchOperator;
@@ -19,6 +20,7 @@ import org.opensearch.client.RestClient;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch._types.FieldValue;
+import org.opensearch.client.opensearch._types.OpenSearchException;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Intervals;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsMatch;
@@ -30,6 +32,10 @@ import org.opensearch.client.opensearch._types.query_dsl.MatchQuery;
 import org.opensearch.client.opensearch._types.query_dsl.MultiMatchQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch._types.query_dsl.RangeQuery;
+import org.opensearch.client.opensearch.core.CountRequest;
+import org.opensearch.client.opensearch.core.CountResponse;
+import org.opensearch.client.opensearch.core.DeleteByQueryRequest;
+import org.opensearch.client.opensearch.core.DeleteByQueryResponse;
 import org.opensearch.client.opensearch.core.DeleteResponse;
 import org.opensearch.client.opensearch.core.GetRequest;
 import org.opensearch.client.opensearch.core.GetResponse;
@@ -142,7 +148,12 @@ public class OpenSearchClient {
             return client.indices().delete(deleteIndexRequest);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
+        } catch (OpenSearchException e) {
+            if (!e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchConnectionException(this.getClass(), e);
+            }
         }
+        return new DeleteIndexResponse.Builder().acknowledged(false).build();
     }
 
     public <I> IndexResponse indexData(I indexData, String indexName, String id) {
@@ -150,6 +161,11 @@ public class OpenSearchClient {
             final IndexRequest<I> indexRequest = new IndexRequest.Builder<I>().index(indexName).id(id).document(indexData).build();
             return client.index(indexRequest);
         } catch (IOException e) {
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        } catch (OpenSearchException e) {
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchIndexMissingException(this.getClass(), e);
+            }
             throw new OpenSearchConnectionException(this.getClass(), e);
         }
     }
@@ -160,6 +176,29 @@ public class OpenSearchClient {
             final GetRequest getRequest = new GetRequest.Builder().index(indexName).id(id).build();
             return client.get(getRequest, dataClass);
         } catch (IOException e) {
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        } catch (OpenSearchException e) {
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchIndexMissingException(this.getClass(), e);
+            }
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        }
+    }
+
+
+    public <I> I getElement(Class<I> indexDataClass, String indexName) {
+        try {
+            final SearchResponse<I> searchResponse = client.search(s -> s.index(indexName), indexDataClass);
+            if (!searchResponse.hits().hits().isEmpty()) {
+                return searchResponse.hits().hits().get(0).source();
+            }
+            return null;
+        } catch (IOException e) {
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        } catch (OpenSearchException e) {
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchIndexMissingException(this.getClass(), e);
+            }
             throw new OpenSearchConnectionException(this.getClass(), e);
         }
     }
@@ -172,6 +211,11 @@ public class OpenSearchClient {
             }
             return searchResponse;
         } catch (IOException e) {
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        } catch (OpenSearchException e) {
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchIndexMissingException(this.getClass(), e);
+            }
             throw new OpenSearchConnectionException(this.getClass(), e);
         }
     }
@@ -194,18 +238,28 @@ public class OpenSearchClient {
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, Query query, Integer from, Integer size) {
         try {
-            final SearchResponse<I> searchResponse = client.search(s -> {
+            return client.search(s -> {
                 s.query(query);
                 s.from(from != null ? from : 0);
                 s.size(size != null ? size : MAX_SEARCH_RESULTS);
                 return s;
             }, dataClass);
+        } catch (IOException e) {
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        }
+    }
 
-            final List<I> output = new ArrayList<>();
-            for (int i = 0; i < searchResponse.hits().hits().size(); i++) {
-                output.add(searchResponse.hits().hits().get(i).source());
-            }
-            return searchResponse;
+    public CountResponse countData(Query query) {
+        try {
+            return client.count(new CountRequest.Builder().query(query).build());
+        } catch (IOException e) {
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        }
+    }
+
+    public DeleteByQueryResponse deleteData(Query query) {
+        try {
+            return client.deleteByQuery(new DeleteByQueryRequest.Builder().query(query).build());
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         }
@@ -253,7 +307,18 @@ public class OpenSearchClient {
 
 
     public <I> SearchResponse<I> searchData(SearchQuery<I> searchQuery) {
+        return searchData(searchQuery.getDataClass(), createQuery(searchQuery), searchQuery.getFrom(), searchQuery.getSize());
+    }
 
+    public <I> CountResponse countData(SearchQuery<I> searchQuery) {
+        return countData(createQuery(searchQuery));
+    }
+
+    public <I> DeleteByQueryResponse deleteData(SearchQuery<I> searchQuery) {
+        return deleteData(createQuery(searchQuery));
+    }
+
+    private <I> Query createQuery(SearchQuery<I> searchQuery) {
         final List<Query> mustHaveQueries = createQuery(searchQuery.getMustHaveValues());
         final List<Query> mustNotHaveQueries = createQuery(searchQuery.getMustNotHaveValues());
         final List<Query> shouldHaveQueries = createQuery(searchQuery.getShouldHaveValues());
@@ -266,9 +331,7 @@ public class OpenSearchClient {
         if (searchQuery.getShouldHaveValues() != null && searchQuery.getMinimumShouldMatch() != null) {
             builder.minimumShouldMatch(String.valueOf(searchQuery.getMinimumShouldMatch()));
         }
-
-
-        return searchData(searchQuery.getDataClass(), builder.build()._toQuery());
+        return builder.build()._toQuery();
     }
 
 

@@ -17,13 +17,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -37,17 +38,19 @@ public class FileEntryServices {
     }
 
 
-    @PreAuthorize("hasAnyRole('ROLE_EDITOR', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority(@securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Uploads a file.", security = @SecurityRequirement(name = "bearerAuth"))
-    @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "")
     public FileEntryDTO upload(@RequestParam("file") MultipartFile file,
-                               @RequestBody FileEntryDTO fileEntryDTO,
+                               @RequestPart(required = false) FileEntryDTO fileEntryDTO,
+                               @RequestParam(name = "force", required = false) Optional<Boolean> forceRewrite,
                                Authentication authentication, HttpServletRequest request) {
-        return fileEntryController.upload(file, fileEntryDTO, authentication.getName());
+        return fileEntryController.upload(file, fileEntryDTO, forceRewrite.isPresent() && forceRewrite.get(),
+                authentication.getName());
     }
 
 
-    @PreAuthorize("hasAnyRole('ROLE_VIEWER', 'ROLE_EDITOR', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Downloads a file.", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping(value = "/download/{uuid}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<Resource> download(@PathVariable("uuid") UUID uuid,
@@ -65,7 +68,7 @@ public class FileEntryServices {
     }
 
 
-    @PreAuthorize("hasAnyRole('ROLE_VIEWER', 'ROLE_EDITOR', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Downloads a file.", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping(value = "/download/{filename:.+}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResponseBody
