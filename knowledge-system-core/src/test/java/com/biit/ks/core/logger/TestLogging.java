@@ -1,6 +1,6 @@
 package com.biit.ks.core.logger;
 
-import com.biit.ks.logger.BasicLogger;
+import com.biit.logger.BasicLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

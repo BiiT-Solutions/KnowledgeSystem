@@ -7,11 +7,11 @@
     <test name="Knowledge System" enabled="true" preserve-order="true">
         <groups>
             <run>
-                <!--                <include name=""/> -->
+                <include name="fileEntry"/>
             </run>
         </groups>
         <classes>
-            <!--            <class name="com.biit.ks.persistence."/> -->
+            <class name="com.biit.ks.rest.test.api.FileEntryServicesTests"/>
         </classes>
     </test>
 </suite>

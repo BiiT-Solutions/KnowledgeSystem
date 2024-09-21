@@ -2,6 +2,7 @@ package com.biit.ks.core.models;
 
 import com.biit.server.controllers.models.ElementDTO;
 
+import java.io.File;
 import java.util.UUID;
 
 public class FileEntryDTO extends ElementDTO<UUID> {
@@ -9,6 +10,7 @@ public class FileEntryDTO extends ElementDTO<UUID> {
     private String filePath;
     private String fileName;
     private String fileFormat;
+    private String mimeType;
 
     @Override
     public UUID getId() {
@@ -50,5 +52,28 @@ public class FileEntryDTO extends ElementDTO<UUID> {
 
     public void setFileFormat(String fileFormat) {
         this.fileFormat = fileFormat;
+    }
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    public String getCompleteFilePath() {
+        if (filePath != null) {
+            return filePath + File.separator + fileName;
+        }
+        return fileName;
+    }
+
+    @Override
+    public String toString() {
+        return "FileEntryDTO{"
+                + "filePath='" + filePath + '\''
+                + ", fileName='" + fileName + '\''
+                + '}';
     }
 }

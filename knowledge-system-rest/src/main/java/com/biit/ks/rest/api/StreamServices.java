@@ -8,11 +8,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 
-import static com.biit.ks.rest.Constants.HEADER.*;
+import static com.biit.ks.rest.Constants.HEADER.ACCEPT_RANGES;
+import static com.biit.ks.rest.Constants.HEADER.CONTENT_LENGTH;
+import static com.biit.ks.rest.Constants.HEADER.CONTENT_RANGE;
+import static com.biit.ks.rest.Constants.HEADER.CONTENT_TYPE;
 import static com.biit.ks.rest.Constants.UNITS.BYTES;
 
 @RestController
@@ -38,7 +46,7 @@ public class StreamServices {
     path = StringUtils.removeStart(path, "/stream");
     final String[] ranges = range == null ? new String[0] : range.split("-");
     // Skip the first 6 characters "bytes="
-    final long skip = range == null? 0 : Long.parseLong(ranges[0].substring(BYTES.length() + 1));
+    final long skip = range == null ? 0 : Long.parseLong(ranges[0].substring(BYTES.length() + 1));
     int size = ranges.length > 1 ? Integer.parseInt(ranges[1]) : maxSize;
     if (size > maxSize) {
       size = maxSize;
@@ -54,5 +62,4 @@ public class StreamServices {
     response.setHeader(CONTENT_RANGE, BYTES + " " + skip + "-" + (skip + chunk.getData().length - 1) + "/" + chunk.getFileSize());
     return chunk.getData();
   }
-  
 }

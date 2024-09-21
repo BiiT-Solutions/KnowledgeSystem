@@ -1,12 +1,13 @@
 package com.biit.ks.core.opensearch;
 
+import com.biit.ks.core.opensearch.search.MustHavePredicates;
+import com.biit.ks.core.opensearch.search.MustNotHavePredicates;
+import com.biit.ks.core.opensearch.search.ShouldHavePredicates;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.Result;
-import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
 import org.opensearch.client.opensearch._types.query_dsl.ExistsQuery;
 import org.opensearch.client.opensearch._types.query_dsl.MatchQuery;
-import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.DeleteResponse;
 import org.opensearch.client.opensearch.core.GetResponse;
 import org.opensearch.client.opensearch.core.IndexResponse;
@@ -18,9 +19,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootTest
@@ -36,13 +37,14 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
     private OpenSearchClient openSearchClient;
 
 
-    @Test
+    @BeforeClass
     public void createIndex() {
         final PutIndicesSettingsResponse response = openSearchClient.createIndex(INDEX);
         Assert.assertTrue(response.acknowledged());
     }
 
-    @Test(dependsOnMethods = "createIndex")
+
+    @Test
     public void indexData() {
         final Data data = new Data(DATA_NAME, DATA_DESCRIPTION);
         IndexResponse response = openSearchClient.indexData(data, INDEX, DATA_ID);
@@ -52,6 +54,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         openSearchClient.refreshIndex();
     }
 
+
     @Test(dependsOnMethods = "indexData")
     public void getData() {
         final GetResponse<Data> response = openSearchClient.getData(Data.class, INDEX, DATA_ID);
@@ -60,17 +63,20 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(response.source().getDescription(), DATA_DESCRIPTION);
     }
 
+
     @Test(dependsOnMethods = "indexData")
     public void searchData() {
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
+
     @Test(dependsOnMethods = "indexData")
     public void searchDataByFieldExists() {
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, new ExistsQuery.Builder().field("description").build()._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
+
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByFieldNotExists() {
@@ -86,68 +92,66 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
+
     @Test(dependsOnMethods = "indexData")
     public void searchDataByShouldQuery() {
-        MatchQuery shouldQuery1 = new MatchQuery.Builder().field("name").query(FieldValue.of(DATA_NAME)).build();
-        MatchQuery shouldQuery2 = new MatchQuery.Builder().field("name").query(FieldValue.of("wrong")).build();
+        final ShouldHavePredicates shouldParameters = new ShouldHavePredicates();
+        shouldParameters.add("name", DATA_NAME);
+        shouldParameters.add("name", "wrong");
+        shouldParameters.setMinimumShouldMatch(1);
 
-        final List<Query> shouldQueries = new ArrayList<>();
-        shouldQueries.add(shouldQuery1._toQuery());
-        shouldQueries.add(shouldQuery2._toQuery());
-
-        BoolQuery boolQuery = new BoolQuery.Builder().should(shouldQueries).minimumShouldMatch("1").build();
-
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, boolQuery._toQuery());
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, shouldParameters);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
+
     @Test(dependsOnMethods = "indexData")
     public void searchDataByShouldQueryInvalid() {
-        MatchQuery shouldQuery1 = new MatchQuery.Builder().field("name").query(FieldValue.of(DATA_NAME)).build();
-        MatchQuery shouldQuery2 = new MatchQuery.Builder().field("name").query(FieldValue.of("wrong")).build();
-        MatchQuery shouldQuery3 = new MatchQuery.Builder().field("name").query(FieldValue.of("wrong2")).build();
+        final ShouldHavePredicates shouldParameters = new ShouldHavePredicates();
+        shouldParameters.add("name", DATA_NAME);
+        shouldParameters.add("name", "wrong");
+        shouldParameters.add("name", "wrong2");
+        shouldParameters.setMinimumShouldMatch(2);
 
-        final List<Query> shouldQueries = new ArrayList<>();
-        shouldQueries.add(shouldQuery1._toQuery());
-        shouldQueries.add(shouldQuery2._toQuery());
-        shouldQueries.add(shouldQuery3._toQuery());
-
-        BoolQuery boolQuery = new BoolQuery.Builder().should(shouldQueries).minimumShouldMatch("2").build();
-
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, boolQuery._toQuery());
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, shouldParameters);
         Assert.assertEquals(response.hits().hits().size(), 0);
     }
 
+
     @Test(dependsOnMethods = "indexData")
     public void searchDataByMustNotQuery() {
-        MatchQuery matchQuery = new MatchQuery.Builder().field("name").query(FieldValue.of(DATA_NAME)).build();
+        final MustNotHavePredicates mustNotHaveParameters = new MustNotHavePredicates();
+        mustNotHaveParameters.add("name", DATA_NAME);
 
-        final List<Query> shouldQueries = new ArrayList<>();
-        shouldQueries.add(matchQuery._toQuery());
-
-        BoolQuery boolQuery = new BoolQuery.Builder().mustNot(shouldQueries).build();
-
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, boolQuery._toQuery());
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustNotHaveParameters);
         for (Hit<Data> data : response.hits().hits()) {
             Assert.assertNotNull(data.source(), DATA_NAME);
             Assert.assertNotEquals(data.source().getName(), DATA_NAME);
         }
     }
 
+
     @Test(dependsOnMethods = "indexData")
     public void searchDataByMustQuery() {
-        MatchQuery matchQuery1 = new MatchQuery.Builder().field("name").query(FieldValue.of(DATA_NAME)).build();
-        MatchQuery matchQuery2 = new MatchQuery.Builder().field("name").query(FieldValue.of("wrong")).build();
+        final MustHavePredicates mustHaveParameters = new MustHavePredicates();
+        mustHaveParameters.add("name", DATA_NAME);
+        mustHaveParameters.add("name", "wrong");
 
-        final List<Query> mustQueries = new ArrayList<>();
-        mustQueries.add(matchQuery1._toQuery());
-        mustQueries.add(matchQuery2._toQuery());
-
-        BoolQuery boolQuery = new BoolQuery.Builder().must(mustQueries).build();
-
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, boolQuery._toQuery());
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
         Assert.assertEquals(response.hits().hits().size(), 0);
     }
+
+
+    @Test(dependsOnMethods = "indexData")
+    public void searchDataByMultipleMustQuery() {
+        final MustHavePredicates mustHaveParameters = new MustHavePredicates();
+        mustHaveParameters.addMultiSearch(List.of("name"), DATA_NAME);
+        mustHaveParameters.addMultiSearch(List.of("name"), "wrong");
+
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
+        Assert.assertEquals(response.hits().hits().size(), 0);
+    }
+
 
     @Test(dependsOnMethods = {"searchData", "getData", "searchDataByQuery", "searchDataByShouldQuery", "searchDataByMustQuery", "searchDataByShouldQueryInvalid", "searchDataByMustNotQuery"}, alwaysRun = true)
     public void deleteData() {
@@ -156,7 +160,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(response.result(), Result.Deleted);
     }
 
-    @AfterClass
+    @AfterClass(alwaysRun = true)
     public void cleanUp() {
         openSearchClient.deleteIndex(INDEX);
     }

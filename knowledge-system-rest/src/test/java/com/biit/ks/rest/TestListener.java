@@ -1,9 +1,9 @@
 package com.biit.ks.rest;
 
+import com.biit.ks.rest.logger.TestLogging;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
-import com.biit.ks.rest.logger.TestLogging;
 
 public class TestListener implements ITestListener {
 

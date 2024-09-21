@@ -14,7 +14,11 @@ import seaweedfs.client.FilerProto;
 import seaweedfs.client.SeaweedInputStream;
 import seaweedfs.client.SeaweedOutputStream;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;

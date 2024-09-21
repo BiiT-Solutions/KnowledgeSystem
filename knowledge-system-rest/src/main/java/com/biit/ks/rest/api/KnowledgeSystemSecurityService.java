@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service;
 @Service("securityService")
 public class KnowledgeSystemSecurityService extends SecurityService {
 
-    private static final String VIEWER = "KnowledgeSystem_VIEWER";
-    private static final String ADMIN = "KnowledgeSystem_ADMIN";
-    private static final String EDITOR = "KnowledgeSystem_EDITOR";
+    private static final String VIEWER = "KNOWLEDGESYSTEM_VIEWER";
+    private static final String ADMIN = "KNOWLEDGESYSTEM_ADMIN";
+    private static final String EDITOR = "KNOWLEDGESYSTEM_EDITOR";
 
     private String viewerPrivilege = null;
     private String adminPrivilege = null;
