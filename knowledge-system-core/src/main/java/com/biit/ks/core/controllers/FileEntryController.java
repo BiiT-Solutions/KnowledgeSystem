@@ -7,6 +7,7 @@ import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.models.Chunk;
 import com.biit.ks.core.exceptions.SeaweedClientException;
 import com.biit.ks.core.files.MediaTypeCalculator;
+import com.biit.ks.core.models.ChunkData;
 import com.biit.ks.core.models.FileEntryDTO;
 import com.biit.ks.core.opensearch.OpenSearchClient;
 import com.biit.ks.core.providers.FileEntryProvider;
@@ -48,12 +49,10 @@ public class FileEntryController extends ElementController<FileEntry, UUID, File
         this.openSearchClient = openSearchClient;
     }
 
-
     @Override
     protected FileEntryConverterRequest createConverterRequest(FileEntry entity) {
         return new FileEntryConverterRequest(entity);
     }
-
 
     public Resource downloadAsResource(UUID uuid) {
         final FileEntry fileEntry =
@@ -69,21 +68,21 @@ public class FileEntryController extends ElementController<FileEntry, UUID, File
         return downloadChunk(fileEntry, skip, size);
     }
 
-
     public Resource downloadAsResource(String filePath) {
         final FileEntry fileEntry = getProvider().findByFilePath(filePath)
                 .orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with path '" + filePath + "'."));
         return downloadAsResource(fileEntry);
     }
 
-    public Chunk downloadChunk(String filePath, long skip, int size) {
+    public ChunkData downloadChunk(String filePath, long skip, int size) {
+        final FileEntry fileEntry = getProvider().findByFilePath(filePath)
+            .orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with path '" + filePath + "'."));
         try {
-            return seaweedClient.getChunk(filePath, skip, size);
+            return new ChunkData(seaweedClient.getChunk(filePath, skip, size), fileEntry.getMimeType());
         } catch (IOException e) {
             throw new FileNotFoundException(this.getClass(), "No file '" + filePath + "'.", e);
         }
     }
-
 
     private Resource downloadAsResource(FileEntry fileEntry) {
         try {
@@ -101,7 +100,6 @@ public class FileEntryController extends ElementController<FileEntry, UUID, File
             throw new FileNotFoundException(this.getClass(), "No file '" + fileEntry + "'.", e);
         }
     }
-
 
     public FileEntryDTO upload(MultipartFile file, FileEntryDTO fileEntryDTO, Boolean forceRewrite, String createdBy) {
         try {

@@ -22,8 +22,8 @@ public class SeaweedStreamTest extends AbstractTestNGSpringContextTests {
   private static final String SEAWEED_PATH = "/dir/withData";
 
   private static final String RESOURCE_FOLDER = "documents";
-  private static final String RESOURCE = "1mb";
-  private static final String RESOURCE_EXTENSION = ".mp4";
+  private static final String RESOURCE = "irishJig";
+  private static final String RESOURCE_EXTENSION = ".mp3";
 
   @Autowired
   private SeaweedClient seaweedClient;

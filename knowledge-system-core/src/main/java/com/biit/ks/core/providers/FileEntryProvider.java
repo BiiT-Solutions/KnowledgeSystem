@@ -1,6 +1,7 @@
 package com.biit.ks.core.providers;
 
 
+import com.biit.ks.core.providers.pools.FileEntryByFilePathPool;
 import com.biit.ks.persistence.entities.FileEntry;
 import com.biit.ks.persistence.repositories.FileEntryRepository;
 import com.biit.server.providers.ElementProvider;
@@ -14,16 +15,24 @@ import java.util.UUID;
 @Service
 public class FileEntryProvider extends ElementProvider<FileEntry, UUID, FileEntryRepository> {
 
+  private final FileEntryByFilePathPool fileEntryByFilePathPool;
 
-    @Autowired
-    public FileEntryProvider(FileEntryRepository repository) {
-        super(repository);
-    }
+  @Autowired
+  public FileEntryProvider(FileEntryRepository repository, final FileEntryByFilePathPool fileEntryByFilePathPool) {
+    super(repository);
+    this.fileEntryByFilePathPool = fileEntryByFilePathPool;
+  }
 
-    public Optional<FileEntry> findByFilePath(String filePath) {
-        final File f = new File(filePath);
-        final String realFilePath = f.getParent();
-        final String fileName = f.getName();
-        return getRepository().findFileEntryByFilePathAndFileName(realFilePath, fileName);
+  public Optional<FileEntry> findByFilePath(String filePath) {
+    final FileEntry cached = fileEntryByFilePathPool.getElement(filePath);
+    if (cached != null) {
+      return Optional.of(cached);
     }
+    final File f = new File(filePath);
+    final String realFilePath = f.getParent();
+    final String fileName = f.getName();
+    final Optional<FileEntry> saved = getRepository().findFileEntryByFilePathAndFileName(realFilePath, fileName);
+    saved.ifPresent(fileEntry -> fileEntryByFilePathPool.addElement(fileEntry, filePath));
+    return saved;
+  }
 }
