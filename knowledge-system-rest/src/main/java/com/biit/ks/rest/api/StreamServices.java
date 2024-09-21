@@ -37,7 +37,7 @@ public class StreamServices {
 
 
   @Operation(summary = "Downloads a file.")
-  @GetMapping(value = "/**", produces = "audio/mpeg")
+  @GetMapping(value = "/**")
   @ResponseStatus(HttpStatus.PARTIAL_CONTENT)
   @ResponseBody
   public byte[] streamFileName(final HttpServletResponse response, final HttpServletRequest request,
