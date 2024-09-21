@@ -2,7 +2,6 @@ package com.biit.ks.rest.api;
 
 import com.biit.ks.core.controllers.FileEntryController;
 import com.biit.ks.core.exceptions.FileNotFoundException;
-import com.biit.ks.core.models.Chunk;
 import com.biit.ks.core.models.ChunkData;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;

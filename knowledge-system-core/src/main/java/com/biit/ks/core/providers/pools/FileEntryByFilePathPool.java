@@ -10,7 +10,7 @@ import static com.biit.ks.core.providers.pools.BasePool.DEFAULT_EXPIRATION_TIME;
 @Component
 public class FileEntryByFilePathPool extends BasePool<String, FileEntry> {
 
-  public final long expirationTime;
+  private final long expirationTime;
 
   public FileEntryByFilePathPool(@Value("${action-book.pool.expiration.time:600000}") final String expirationTime) {
     long calculatedExpirationTime;
