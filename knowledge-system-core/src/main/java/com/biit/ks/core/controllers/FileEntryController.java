@@ -65,9 +65,11 @@ public class FileEntryController extends ElementController<FileEntry, UUID, File
     }
 
     public Chunk downloadChunk(String filePath, long skip, int size) {
-        final FileEntry fileEntry = getProvider().findByFilePath(filePath)
-            .orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with path '" + filePath + "'."));
-        return downloadChunk(fileEntry, skip, size);
+        try {
+            return seaweedClient.getChunk(filePath, skip, size);
+        } catch (IOException e) {
+            throw new FileNotFoundException(this.getClass(), "No file '" + filePath + "'.", e);
+        }
     }
 
 

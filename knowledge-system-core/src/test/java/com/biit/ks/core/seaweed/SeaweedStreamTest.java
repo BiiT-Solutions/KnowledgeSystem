@@ -22,7 +22,7 @@ public class SeaweedStreamTest extends AbstractTestNGSpringContextTests {
   private static final String SEAWEED_PATH = "/dir/withData";
 
   private static final String RESOURCE_FOLDER = "documents";
-  private static final String RESOURCE = "bb2";
+  private static final String RESOURCE = "1mb";
   private static final String RESOURCE_EXTENSION = ".mp4";
 
   @Autowired
@@ -48,7 +48,7 @@ public class SeaweedStreamTest extends AbstractTestNGSpringContextTests {
   public void resumeStream() throws IOException {
     File result = File.createTempFile(RESOURCE, RESOURCE_EXTENSION);
     result.deleteOnExit();
-    seaweedClient.saveChunk(SEAWEED_PATH + File.separator + RESOURCE, 10*MB, (int) (5*KB), result);
+    seaweedClient.saveChunk(SEAWEED_PATH + File.separator + RESOURCE, 100*KB, (int) (5*KB), result);
     Assert.assertEquals(Files.size(result.toPath()), 5*KB);
   }
 

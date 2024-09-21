@@ -156,7 +156,6 @@ public class SeaweedClient {
     }
 
     public Chunk getChunk(String fullPath, long offset, int size) throws IOException {
-        fullPath = "/dir/withData/bb2";
         KnowledgeSystemLogger.debug(this.getClass(), "Getting chunk from '{}'.", fullPath);
       try (SeaweedInputStream seaweedInputStream = new SeaweedInputStream(filerClient, fullPath)) {
         KnowledgeSystemLogger.debug(this.getClass(), "Connected to '{}'.", fullPath);
