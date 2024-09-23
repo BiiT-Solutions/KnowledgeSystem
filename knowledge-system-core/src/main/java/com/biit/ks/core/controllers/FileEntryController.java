@@ -25,6 +25,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.multipart.MultipartFile;
 import seaweedfs.client.SeaweedInputStream;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -33,6 +34,7 @@ import java.util.UUID;
 @Controller
 public class FileEntryController extends SimpleController<FileEntry, FileEntryDTO, FileEntryProvider, FileEntryConverterRequest, FileEntryConverter> {
 
+    public static final String SEAWEED_PATH = "/uploads";
     private final SeaweedClient seaweedClient;
     private final IAuthenticatedUserProvider authenticatedUserProvider;
     private final FileEntryProvider fileEntryProvider;
@@ -68,6 +70,14 @@ public class FileEntryController extends SimpleController<FileEntry, FileEntryDT
     public Collection<FileEntryDTO> create(Collection<FileEntryDTO> fileEntryDTOS, String creatorName) {
         return List.of();
     }
+
+    public FileEntryDTO getMetadata(UUID uuid) {
+        final FileEntry fileEntry =
+                getProvider().get(uuid).orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'."));
+
+        return convert(fileEntry);
+    }
+
 
     public Resource downloadAsResource(UUID uuid) {
         final FileEntry fileEntry =
@@ -147,7 +157,7 @@ public class FileEntryController extends SimpleController<FileEntry, FileEntryDT
         final IAuthenticatedUser user = authenticatedUserProvider.findByUsername(createdBy).orElseThrow(() ->
                 new UserNotFoundException(this.getClass(), "No User with username '" + createdBy + "' found on the system."));
         fileEntry.setCreatedBy(user.getUID());
-        fileEntry.setFilePath("/uploads/" + user.getUID());
+        fileEntry.setFilePath(SEAWEED_PATH + File.separator + user.getUID());
     }
 
 

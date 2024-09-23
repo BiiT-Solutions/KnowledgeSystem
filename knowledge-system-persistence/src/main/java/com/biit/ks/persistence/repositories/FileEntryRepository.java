@@ -11,7 +11,7 @@ import java.util.UUID;
 @Repository
 public class FileEntryRepository {
 
-    private static final String OPENSEARCH_INDEX = "file-index";
+    public static final String OPENSEARCH_INDEX = "file-index";
 
     private final OpenSearchClient openSearchClient;
 
@@ -20,7 +20,7 @@ public class FileEntryRepository {
     }
 
     public FileEntry save(FileEntry fileEntry) {
-        openSearchClient.indexData(fileEntry, OPENSEARCH_INDEX, fileEntry.getUuid().toString());
+        openSearchClient.indexData(fileEntry, OPENSEARCH_INDEX, fileEntry.getUuid() != null ? fileEntry.getUuid().toString() : null);
         return fileEntry;
     }
 
