@@ -3,7 +3,6 @@ package com.biit.ks.core.seaweed;
 import com.biit.ks.core.models.Chunk;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.logger.SeaweedLogger;
-import com.biit.ks.logger.SolrLogger;
 import io.grpc.StatusRuntimeException;
 import org.apache.tomcat.util.http.fileupload.util.Streams;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +41,7 @@ public class SeaweedClient {
             try {
                 convertedPort = Integer.parseInt(serverPort);
             } catch (NumberFormatException e) {
-                SolrLogger.severe(this.getClass(), "Invalid port number '{}'", serverPort);
+                SeaweedLogger.severe(this.getClass(), "Invalid port number '{}'", serverPort);
                 convertedPort = DEFAULT_SEAWEED_PORT;
             }
         } else {

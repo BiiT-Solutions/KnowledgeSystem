@@ -34,10 +34,6 @@
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="DAILY"/>
     </logger>
-    <logger name="com.biit.ks.logger.SolrLogger" additivity="false" level="DEBUG">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="DAILY"/>
-    </logger>
     <logger name="com.biit.ks.logger.OpenSearch" additivity="false" level="DEBUG">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="DAILY"/>

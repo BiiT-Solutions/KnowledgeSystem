@@ -1,13 +1,12 @@
 package com.biit.ks.persistence.opensearch;
 
-import com.biit.ks.persistence.opensearch.search.intervals.IntervalsSearchOperator;
+import com.biit.ks.logger.KnowledgeSystemLogger;
+import com.biit.ks.logger.OpenSearchLogger;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchConnectionException;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchIndexMissingException;
 import com.biit.ks.persistence.opensearch.search.IntervalsSearch;
 import com.biit.ks.persistence.opensearch.search.SearchPredicates;
-import com.biit.ks.logger.KnowledgeSystemLogger;
-import com.biit.ks.logger.OpenSearchLogger;
-import com.biit.ks.logger.SolrLogger;
+import com.biit.ks.persistence.opensearch.search.intervals.IntervalsSearchOperator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -81,7 +80,7 @@ public class OpenSearchClient {
             try {
                 convertedPort = Integer.parseInt(serverPort);
             } catch (NumberFormatException e) {
-                SolrLogger.severe(this.getClass(), "Invalid port number '{}'", serverPort);
+                OpenSearchLogger.severe(this.getClass(), "Invalid port number '{}'", serverPort);
                 convertedPort = DEFAULT_OPENSEARCH_PORT;
             }
         } else {
