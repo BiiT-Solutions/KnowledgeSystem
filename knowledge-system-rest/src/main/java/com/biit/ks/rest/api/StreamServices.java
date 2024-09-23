@@ -37,13 +37,13 @@ public class StreamServices {
 
 
   @Operation(summary = "Downloads a file.")
-  @GetMapping(value = "/**")
+  @GetMapping(value = "/path/**")
   @ResponseStatus(HttpStatus.PARTIAL_CONTENT)
   @ResponseBody
   public byte[] streamFileName(final HttpServletResponse response, final HttpServletRequest request,
                            @RequestHeader(value = "Range", required = false) final String range) {
     String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
-    path = StringUtils.removeStart(path, "/stream");
+    path = StringUtils.removeStart(path, "/stream/path");
 
     final String[] ranges = range == null ? new String[0] : range.split("-");
     // Skip the first 6 characters "bytes="

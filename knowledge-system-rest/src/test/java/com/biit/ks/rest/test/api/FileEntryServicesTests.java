@@ -51,7 +51,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
     private final static String JWT_SALT = "4567";
 
     private final static String FILE = "BlackSquare.jpg";
-    private final static String VIDEO = "test_video.mp4";
+    private final static String VIDEO = "1mb.mp4";
 
     @Autowired
     private WebApplicationContext context;
@@ -183,6 +183,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "uploadVideo")
     public void downloadVideo() throws Exception {
+
 
     }
 
