@@ -1,5 +1,7 @@
 package com.biit.ks.core.seaweed;
 
+import com.biit.ks.core.models.Chunk;
+import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.logger.SeaweedLogger;
 import com.biit.ks.logger.SolrLogger;
 import io.grpc.StatusRuntimeException;
@@ -12,6 +14,7 @@ import seaweedfs.client.FilerProto;
 import seaweedfs.client.SeaweedInputStream;
 import seaweedfs.client.SeaweedOutputStream;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -145,4 +148,31 @@ public class SeaweedClient {
         final FilerProto.Entry.Builder entryBuilder = FilerProto.Entry.newBuilder(entry);
         return FilerProto.FuseAttributes.newBuilder(entry.getAttributes());
     }
+
+    public void saveChunk(String fullPath, long skip, int size, File destination) throws IOException {
+        try (SeaweedInputStream seaweedInputStream = new SeaweedInputStream(filerClient, fullPath)) {
+            seaweedInputStream.seek(skip);
+            final byte[] chunk = new byte[size];
+            //NOTICE: Using readNBytes(length) produces an exception in the SeaweedInputStream
+            seaweedInputStream.readNBytes(chunk, 0, size);
+            copyInputStreamToFile(new ByteArrayInputStream(chunk), destination);
+        }
+    }
+
+    public Chunk getChunk(String fullPath, long offset, int size) throws IOException {
+        KnowledgeSystemLogger.debug(this.getClass(), "Getting chunk from '{}'.", fullPath);
+      try (SeaweedInputStream seaweedInputStream = new SeaweedInputStream(filerClient, fullPath)) {
+        KnowledgeSystemLogger.debug(this.getClass(), "Connected to '{}'.", fullPath);
+        final long fileSize = seaweedInputStream.available();
+        seaweedInputStream.seek(offset);
+        final long remaining = seaweedInputStream.available();
+        KnowledgeSystemLogger.debug(this.getClass(), "Position set to '{}'.", offset);
+        final byte[] chunk = new byte[size];
+        KnowledgeSystemLogger.debug(this.getClass(), "Reading chunk of size '{}'.", size);
+        seaweedInputStream.readNBytes(chunk, 0, (int) Math.min(size, remaining));
+        KnowledgeSystemLogger.debug(this.getClass(), "Chunk read.");
+        return new Chunk(chunk, fileSize);
+      }
+    }
+
 }
