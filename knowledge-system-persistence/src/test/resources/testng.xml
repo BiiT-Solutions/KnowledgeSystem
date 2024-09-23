@@ -7,11 +7,18 @@
     <test name="Knowledge System" enabled="true" preserve-order="true">
         <groups>
             <run>
-                <include name="myEntityRepository"/>
+                <include name="opensearchClient"/>
+                <include name="opensearchIntervals"/>
+                <include name="opensearchFuzzy"/>
+                <include name="opensearchRange"/>
             </run>
         </groups>
         <classes>
-            <class name="com.biit.ks.persistence.repositories.MyEntityRepositoryTests"/>
+            <class name="com.biit.ks.persistence.opensearch.OpenSearchClientTests"/>
+            <class name="com.biit.ks.persistence.opensearch.OpenSearchIntervalsTests"/>
+            <class name="com.biit.ks.persistence.opensearch.OpenSearchMixedSearchTests"/>
+            <class name="com.biit.ks.persistence.opensearch.OpenSearchFuzzySearchTests"/>
+            <class name="com.biit.ks.persistence.opensearch.OpenSearchRangeSearchTests"/>
         </classes>
     </test>
 </suite>

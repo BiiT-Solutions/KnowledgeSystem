@@ -8,20 +8,11 @@
     <test name="Knowledge System" enabled="true" preserve-order="true">
         <groups>
             <run>
-                <exclude name="opensearchClient"/>
-                <exclude name="opensearchIntervals"/>
-                <exclude name="opensearchFuzzy"/>
-                <exclude name="opensearchRange"/>
                 <exclude name="seaweedClient"/>
                 <exclude name="solrClients"/>
             </run>
         </groups>
         <classes>
-            <class name="com.biit.ks.core.opensearch.OpenSearchClientTests"/>
-            <class name="com.biit.ks.core.opensearch.OpenSearchIntervalsTests"/>
-            <class name="com.biit.ks.core.opensearch.OpenSearchMixedSearchTests"/>
-            <class name="com.biit.ks.core.opensearch.OpenSearchFuzzySearchTests"/>
-            <class name="com.biit.ks.core.opensearch.OpenSearchRangeSearchTests"/>
             <class name="com.biit.ks.core.seaweed.SeaweedClientTests"/>
             <class name="com.biit.ks.core.solr.SolrClientTests"/>
         </classes>

@@ -3,7 +3,6 @@ package com.biit.ks.core.providers;
 
 import com.biit.ks.persistence.entities.Form;
 import com.biit.ks.persistence.repositories.FormRepository;
-import com.biit.server.providers.ElementProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,12 +13,18 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class FormProvider extends ElementProvider<Form, Long, FormRepository> {
+public class FormProvider {
+
+    private final FormRepository formRepository;
 
 
     @Autowired
-    public FormProvider(FormRepository repository) {
-        super(repository);
+    public FormProvider(FormRepository formRepository) {
+        this.formRepository = formRepository;
+    }
+
+    private FormRepository getRepository() {
+        return formRepository;
     }
 
     public Optional<Form> get(Long id) {
@@ -36,6 +41,10 @@ public class FormProvider extends ElementProvider<Form, Long, FormRepository> {
         } else {
             return getRepository().findByNameAndVersion(name, version);
         }
+    }
+
+    public Form save(Form reverse) {
+        return null;
     }
 
     public Form saveFormFromJson(String value, String email) {

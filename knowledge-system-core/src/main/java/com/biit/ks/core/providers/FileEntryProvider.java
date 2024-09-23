@@ -1,10 +1,8 @@
 package com.biit.ks.core.providers;
 
 
-import com.biit.ks.core.providers.pools.FileEntryByFilePathPool;
 import com.biit.ks.persistence.entities.FileEntry;
 import com.biit.ks.persistence.repositories.FileEntryRepository;
-import com.biit.server.providers.ElementProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,26 +11,31 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class FileEntryProvider extends ElementProvider<FileEntry, UUID, FileEntryRepository> {
+public class FileEntryProvider {
 
-  private final FileEntryByFilePathPool fileEntryByFilePathPool;
+    private final FileEntryRepository fileEntryRepository;
 
-  @Autowired
-  public FileEntryProvider(FileEntryRepository repository, final FileEntryByFilePathPool fileEntryByFilePathPool) {
-    super(repository);
-    this.fileEntryByFilePathPool = fileEntryByFilePathPool;
-  }
-
-  public Optional<FileEntry> findByFilePath(String filePath) {
-    final FileEntry cached = fileEntryByFilePathPool.getElement(filePath);
-    if (cached != null) {
-      return Optional.of(cached);
+    @Autowired
+    public FileEntryProvider(FileEntryRepository fileEntryRepository) {
+        this.fileEntryRepository = fileEntryRepository;
     }
-    final File f = new File(filePath);
-    final String realFilePath = f.getParent();
-    final String fileName = f.getName();
-    final Optional<FileEntry> saved = getRepository().findFileEntryByFilePathAndFileName(realFilePath, fileName);
-    saved.ifPresent(fileEntry -> fileEntryByFilePathPool.addElement(fileEntry, filePath));
-    return saved;
-  }
+
+    private FileEntryRepository getRepository() {
+        return fileEntryRepository;
+    }
+
+    public FileEntry save(FileEntry fileEntry) {
+        return getRepository().save(fileEntry);
+    }
+
+    public Optional<FileEntry> get(UUID uuid) {
+        return getRepository().get(uuid);
+    }
+
+    public Optional<FileEntry> findByFilePath(String filePath) {
+        final File f = new File(filePath);
+        final String realFilePath = f.getParent();
+        final String fileName = f.getName();
+        return getRepository().findFileEntryByFilePathAndFileName(realFilePath, fileName);
+    }
 }

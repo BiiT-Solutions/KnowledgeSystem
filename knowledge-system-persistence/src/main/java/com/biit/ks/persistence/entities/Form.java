@@ -1,46 +1,24 @@
 package com.biit.ks.persistence.entities;
 
-import com.biit.database.encryption.StringCryptoConverter;
-import com.biit.server.persistence.entities.Element;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.springframework.context.annotation.Primary;
-
-
-
-@Entity
-@Primary
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@Table(name = "forms")
 public class Form extends Element<Long> {
     private static final int MAX_JSON_LENGTH = 100000;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
 
-    @Column(name = "name")
-    @Convert(converter = StringCryptoConverter.class)
+
     private String name;
 
-    @Column(name = "version")
+
     private Integer version;
 
-    @Column(name = "organization_id")
+
     private String organizationId;
 
-    @Column(name = "value", length = MAX_JSON_LENGTH)
-    @Convert(converter = StringCryptoConverter.class)
+
     private String value;
 
-    @Column(name = "description")
+
     private String description;
 
 

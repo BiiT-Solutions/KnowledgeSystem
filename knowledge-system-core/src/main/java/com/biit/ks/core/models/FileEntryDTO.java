@@ -2,10 +2,13 @@ package com.biit.ks.core.models;
 
 import com.biit.server.controllers.models.ElementDTO;
 
-import java.io.File;
+import java.io.Serial;
 import java.util.UUID;
 
 public class FileEntryDTO extends ElementDTO<UUID> {
+    @Serial
+    private static final long serialVersionUID = 3144187148832541249L;
+
     private UUID uuid;
     private String filePath;
     private String fileName;
@@ -60,13 +63,6 @@ public class FileEntryDTO extends ElementDTO<UUID> {
 
     public void setMimeType(String mimeType) {
         this.mimeType = mimeType;
-    }
-
-    public String getCompleteFilePath() {
-        if (filePath != null) {
-            return filePath + File.separator + fileName;
-        }
-        return fileName;
     }
 
     @Override

@@ -2,16 +2,34 @@ package com.biit.ks.persistence.repositories;
 
 
 import com.biit.ks.persistence.entities.FileEntry;
-import com.biit.server.persistence.repositories.ElementRepository;
-import jakarta.transaction.Transactional;
+import com.biit.ks.persistence.opensearch.OpenSearchClient;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-@Transactional
-public interface FileEntryRepository extends ElementRepository<FileEntry, UUID> {
+public class FileEntryRepository {
 
-    Optional<FileEntry> findFileEntryByFilePathAndFileName(String filePath, String fileName);
+    private static final String OPENSEARCH_INDEX = "file-index";
+
+    private final OpenSearchClient openSearchClient;
+
+    public FileEntryRepository(OpenSearchClient openSearchClient) {
+        this.openSearchClient = openSearchClient;
+    }
+
+    public FileEntry save(FileEntry fileEntry) {
+        openSearchClient.indexData(fileEntry, OPENSEARCH_INDEX, fileEntry.getUuid().toString());
+        return fileEntry;
+    }
+
+
+    public Optional<FileEntry> findFileEntryByFilePathAndFileName(String realFilePath, String fileName) {
+        return Optional.empty();
+    }
+
+    public Optional<FileEntry> get(UUID uuid) {
+        return Optional.empty();
+    }
 }

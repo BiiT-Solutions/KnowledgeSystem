@@ -1,46 +1,25 @@
 package com.biit.ks.persistence.entities;
 
-import com.biit.database.encryption.StringCryptoConverter;
-import com.biit.server.persistence.entities.Element;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.springframework.context.annotation.Primary;
 
 import java.io.File;
 import java.util.UUID;
 
-@Entity
-@Primary
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@Table(name = "files", uniqueConstraints = {@UniqueConstraint(columnNames = {"file_path", "file_name"})})
+
 public class FileEntry extends Element<UUID> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+
     private UUID uuid;
 
-    @Column(name = "file_path")
-    @Convert(converter = StringCryptoConverter.class)
+
     private String filePath;
 
-    @Column(name = "file_name", nullable = false)
-    @Convert(converter = StringCryptoConverter.class)
+
     private String fileName;
 
-    @Column(name = "file_format", nullable = false)
-    @Convert(converter = StringCryptoConverter.class)
+
     private String fileFormat;
 
-    @Column(name = "mime_type", nullable = false)
-    @Convert(converter = StringCryptoConverter.class)
+
     private String mimeType;
 
     @Override
@@ -98,6 +77,13 @@ public class FileEntry extends Element<UUID> {
 
     public void setMimeType(String mimeType) {
         this.mimeType = mimeType;
+    }
+
+    public String getFullPath() {
+        if (filePath != null) {
+            return filePath + File.separator + fileName;
+        }
+        return fileName;
     }
 
     @Override

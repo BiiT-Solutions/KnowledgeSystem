@@ -3,7 +3,6 @@ package com.biit.ks.core.providers;
 
 import com.biit.ks.persistence.entities.FormRules;
 import com.biit.ks.persistence.repositories.FormRulesRepository;
-import com.biit.server.providers.ElementProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,15 +10,22 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class FormRulesProvider extends ElementProvider<FormRules, Long, FormRulesRepository> {
+public class FormRulesProvider {
 
-    private final FormProvider formProvider;
+    private final FormRulesRepository formRulesRepository;
 
 
     @Autowired
-    public FormRulesProvider(FormRulesRepository formRulesRepository, FormProvider formProvider) {
-        super(formRulesRepository);
-        this.formProvider = formProvider;
+    public FormRulesProvider(FormRulesRepository formRulesRepository) {
+        this.formRulesRepository = formRulesRepository;
+    }
+
+    private FormRulesRepository getRepository() {
+        return formRulesRepository;
+    }
+
+    public FormRules save(FormRules reverse) {
+        return null;
     }
 
     public FormRules addFormRules(String body, String organizationId) {

@@ -3,55 +3,70 @@ package com.biit.ks.core.controllers;
 import com.biit.ks.core.converters.FileEntryConverter;
 import com.biit.ks.core.converters.models.FileEntryConverterRequest;
 import com.biit.ks.core.exceptions.FileAlreadyExistsException;
+import com.biit.ks.core.exceptions.FileHandlingException;
 import com.biit.ks.core.exceptions.FileNotFoundException;
-import com.biit.ks.core.models.Chunk;
-import com.biit.ks.core.exceptions.SeaweedClientException;
 import com.biit.ks.core.files.MediaTypeCalculator;
+import com.biit.ks.core.models.Chunk;
 import com.biit.ks.core.models.ChunkData;
 import com.biit.ks.core.models.FileEntryDTO;
-import com.biit.ks.core.opensearch.OpenSearchClient;
 import com.biit.ks.core.providers.FileEntryProvider;
 import com.biit.ks.core.seaweed.SeaweedClient;
 import com.biit.ks.persistence.entities.FileEntry;
-import com.biit.ks.persistence.repositories.FileEntryRepository;
-import com.biit.server.controller.ElementController;
+import com.biit.ks.persistence.opensearch.exceptions.OpenSearchException;
+import com.biit.server.controller.SimpleController;
 import com.biit.server.exceptions.UserNotFoundException;
+import com.biit.server.logger.DtoControllerLogger;
 import com.biit.server.security.IAuthenticatedUser;
 import com.biit.server.security.IAuthenticatedUserProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.multipart.MultipartFile;
 import seaweedfs.client.SeaweedInputStream;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Controller
-public class FileEntryController extends ElementController<FileEntry, UUID, FileEntryDTO, FileEntryRepository,
-        FileEntryProvider, FileEntryConverterRequest, FileEntryConverter> {
-
-    private static final String OPENSEARCH_INDEX = "file-index";
+public class FileEntryController extends SimpleController<FileEntry, FileEntryDTO, FileEntryProvider, FileEntryConverterRequest, FileEntryConverter> {
 
     private final SeaweedClient seaweedClient;
     private final IAuthenticatedUserProvider authenticatedUserProvider;
-    private final OpenSearchClient openSearchClient;
+    private final FileEntryProvider fileEntryProvider;
 
 
     @Autowired
-    protected FileEntryController(FileEntryProvider provider, FileEntryConverter converter, SeaweedClient seaweedClient,
-                                  IAuthenticatedUserProvider authenticatedUserProvider, OpenSearchClient openSearchClient) {
+    protected FileEntryController(FileEntryProvider provider, SeaweedClient seaweedClient,
+                                  IAuthenticatedUserProvider authenticatedUserProvider, FileEntryProvider fileEntryProvider,
+                                  FileEntryConverter converter) {
         super(provider, converter);
         this.seaweedClient = seaweedClient;
         this.authenticatedUserProvider = authenticatedUserProvider;
-        this.openSearchClient = openSearchClient;
+        this.fileEntryProvider = fileEntryProvider;
     }
 
     @Override
-    protected FileEntryConverterRequest createConverterRequest(FileEntry entity) {
-        return new FileEntryConverterRequest(entity);
+    protected FileEntryConverterRequest createConverterRequest(FileEntry fileEntry) {
+        return new FileEntryConverterRequest(fileEntry);
+    }
+
+    @Override
+    public FileEntryDTO create(FileEntryDTO dto, String creatorName) {
+        if (dto.getCreatedBy() == null && creatorName != null) {
+            dto.setCreatedBy(creatorName);
+        }
+        validate(dto);
+        final FileEntryDTO dtoStored = convert(getProvider().save(getConverter().reverse(dto)));
+        DtoControllerLogger.info(this.getClass(), "Entity '{}' created by '{}'.", dtoStored, creatorName);
+        return dtoStored;
+    }
+
+    @Override
+    public Collection<FileEntryDTO> create(Collection<FileEntryDTO> fileEntryDTOS, String creatorName) {
+        return List.of();
     }
 
     public Resource downloadAsResource(UUID uuid) {
@@ -62,10 +77,10 @@ public class FileEntryController extends ElementController<FileEntry, UUID, File
     }
 
     public Chunk downloadChunk(UUID uuid, long skip, int size) {
-        final FileEntry fileEntry =
-            getProvider().get(uuid).orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'."));
+        final FileEntry fileEntry = getProvider().get(uuid).orElseThrow(
+                () -> new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'."));
 
-        return downloadChunk(fileEntry, skip, size);
+        return downloadChunk(convert(fileEntry), skip, size);
     }
 
     public Resource downloadAsResource(String filePath) {
@@ -76,7 +91,7 @@ public class FileEntryController extends ElementController<FileEntry, UUID, File
 
     public ChunkData downloadChunk(String filePath, long skip, int size) {
         final FileEntry fileEntry = getProvider().findByFilePath(filePath)
-            .orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with path '" + filePath + "'."));
+                .orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with path '" + filePath + "'."));
         try {
             return new ChunkData(seaweedClient.getChunk(filePath, skip, size), fileEntry.getMimeType());
         } catch (IOException e) {
@@ -93,7 +108,7 @@ public class FileEntryController extends ElementController<FileEntry, UUID, File
         }
     }
 
-    private Chunk downloadChunk(FileEntry fileEntry, long skip, int size) {
+    private Chunk downloadChunk(FileEntryDTO fileEntry, long skip, int size) {
         try {
             return seaweedClient.getChunk(fileEntry.getFilePath(), skip, size);
         } catch (IOException e) {
@@ -102,44 +117,43 @@ public class FileEntryController extends ElementController<FileEntry, UUID, File
     }
 
     public FileEntryDTO upload(MultipartFile file, FileEntryDTO fileEntryDTO, Boolean forceRewrite, String createdBy) {
+        if (fileEntryDTO == null) {
+            fileEntryDTO = new FileEntryDTO();
+        }
+        final FileEntry fileEntry = reverse(fileEntryDTO);
+        setFields(fileEntry, file, createdBy);
+        if (forceRewrite == null || !forceRewrite) {
+            //Check if file already exists.
+            checkExistingFile(fileEntry);
+        }
         try {
-            if (fileEntryDTO == null) {
-                fileEntryDTO = new FileEntryDTO();
-            }
-            setFields(fileEntryDTO, file, createdBy);
-            if (forceRewrite == null || !forceRewrite) {
-                //Check if file already exists.
-                checkExistingFile(fileEntryDTO);
-            }
-            try {
-                seaweedClient.addFile(fileEntryDTO.getCompleteFilePath(), file);
-                //Save it on Opensearch
-                openSearchClient.indexData(fileEntryDTO, OPENSEARCH_INDEX, fileEntryDTO.getUuid().toString());
-                return fileEntryDTO;
-            } catch (IOException e) {
-                throw new SeaweedClientException(this.getClass(), e);
-            }
-        } catch (DataIntegrityViolationException e) {
-            throw new FileAlreadyExistsException(this.getClass(), e);
+            seaweedClient.addFile(fileEntry.getFullPath(), file);
+            //Save it on Opensearch
+            fileEntryProvider.save(fileEntry);
+            return convert(fileEntry);
+        } catch (IOException e) {
+            throw new FileHandlingException(this.getClass(), e);
+        } catch (OpenSearchException e) {
+            //Cannot be stored on OpenSearch. Remove it from seaweed.
+            seaweedClient.removeFile(fileEntry.getFullPath());
+            throw new FileHandlingException(this.getClass(), e);
         }
     }
 
 
-    private void setFields(FileEntryDTO fileEntryDTO, MultipartFile file, String createdBy) {
-        fileEntryDTO.setMimeType(MediaTypeCalculator.getRealMimeType(file));
-        fileEntryDTO.setFileName(file.getOriginalFilename());
+    private void setFields(FileEntry fileEntry, MultipartFile file, String createdBy) {
+        fileEntry.setMimeType(MediaTypeCalculator.getRealMimeType(file));
+        fileEntry.setFileName(file.getOriginalFilename());
         final IAuthenticatedUser user = authenticatedUserProvider.findByUsername(createdBy).orElseThrow(() ->
                 new UserNotFoundException(this.getClass(), "No User with username '" + createdBy + "' found on the system."));
-        fileEntryDTO.setCreatedBy(user.getUID());
-        fileEntryDTO.setFilePath("/uploads/" + user.getUID());
+        fileEntry.setCreatedBy(user.getUID());
+        fileEntry.setFilePath("/uploads/" + user.getUID());
     }
 
 
-    private void checkExistingFile(FileEntryDTO fileEntryDTO) {
-        if (seaweedClient.getEntry(fileEntryDTO.getFilePath(), fileEntryDTO.getFileName()) != null) {
-            throw new FileAlreadyExistsException(this.getClass(), "File '" + fileEntryDTO + "' already exists.");
+    private void checkExistingFile(FileEntry fileEntry) {
+        if (seaweedClient.getEntry(fileEntry.getFilePath(), fileEntry.getFileName()) != null) {
+            throw new FileAlreadyExistsException(this.getClass(), "File '" + fileEntry + "' already exists.");
         }
     }
-
-
 }

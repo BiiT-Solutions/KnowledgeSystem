@@ -7,6 +7,15 @@ import org.springframework.http.HttpStatus;
 public class LoggedException extends RuntimeException {
     private HttpStatus status;
 
+    public LoggedException(Class<?> clazz, String message, ExceptionType type) {
+        this(clazz, message, type, null);
+    }
+
+    public LoggedException(Class<?> clazz, String message, Throwable e, ExceptionType type, HttpStatus status) {
+        this(clazz, message, type, status);
+        KnowledgeSystemLogger.errorMessage(clazz, e);
+    }
+
     protected LoggedException(Class<?> clazz, String message, ExceptionType type, HttpStatus status) {
         super(message);
         this.status = status;

@@ -1,22 +1,31 @@
 package com.biit.ks.persistence.repositories;
 
-
 import com.biit.ks.persistence.entities.Form;
-import com.biit.server.persistence.repositories.ElementRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Transactional
-public interface FormRepository extends ElementRepository<Form, Long> {
+public class FormRepository {
+    public Optional<Form> findById(Long id) {
+        return Optional.empty();
+    }
 
-    List<Form> findByNameOrderByVersionDesc(String name);
+    public List<Form> findAll() {
+        return null;
+    }
 
-    Optional<Form> findByNameAndVersion(String name, Integer version);
+    public Collection<Form> findByNameOrderByVersionDesc(String name) {
+        return null;
+    }
 
-    List<Form> findByName(String name);
+    public Optional<Form> findByNameAndVersion(String name, Integer version) {
+        return Optional.empty();
+    }
 
+    public Form save(Form form) {
+        return null;
+    }
 }
