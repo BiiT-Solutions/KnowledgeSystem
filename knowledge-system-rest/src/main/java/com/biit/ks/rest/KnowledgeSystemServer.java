@@ -27,7 +27,7 @@ import org.springframework.web.servlet.DispatcherServlet;
         @PropertySource("classpath:application.properties"),
         @PropertySource(value = "file:${EXTERNAL_CONFIG_FILE}", ignoreResourceNotFound = true)
 })
-@ComponentScan(basePackages = {"com.biit.ks", "com.biit.server.security", "com.biit.server", "com.biit.messagebird.client"},
+@ComponentScan(basePackages = {"com.biit.ks", "com.biit.server.security", "com.biit.server", "com.biit.messagebird.client", "com.biit.usermanager.client"},
         excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {UserGuardDatabaseConfigurator.class})})
 @ConfigurationPropertiesScan({"com.biit.ks.rest"})
 public class KnowledgeSystemServer {
