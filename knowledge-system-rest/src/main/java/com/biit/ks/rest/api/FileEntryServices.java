@@ -37,6 +37,7 @@ public class FileEntryServices {
         this.fileEntryController = fileEntryController;
     }
 
+
     @PreAuthorize("hasAnyAuthority(@securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Uploads a file.", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -46,6 +47,14 @@ public class FileEntryServices {
                                Authentication authentication, HttpServletRequest request) {
         return fileEntryController.upload(file, fileEntryDTO, forceRewrite.isPresent() && forceRewrite.get(),
                 authentication.getName());
+    }
+
+
+    @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
+    @Operation(summary = "Downloads a file metadata.", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping(value = "/uuid/{uuid}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public FileEntryDTO downloadMetadata(@PathVariable("uuid") UUID uuid, Authentication authentication, HttpServletResponse response) {
+        return fileEntryController.getMetadata(uuid);
     }
 
 

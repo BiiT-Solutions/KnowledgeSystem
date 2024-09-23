@@ -6,11 +6,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.stereotype.Service;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.biit.ks", "com.biit.server", "com.biit.usermanager.client", "com.biit.messagebird.client"},
         excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {UserGuardDatabaseConfigurator.class})})
-@ConfigurationPropertiesScan({"com.biit.ks.rest", "com.biit.server.security.userguard"})
+@ConfigurationPropertiesScan({"com.biit.ks.rest"})
 public class KnowledgeSystemServer {
     public static void main(String[] args) {
         SpringApplication.run(KnowledgeSystemServer.class, args);

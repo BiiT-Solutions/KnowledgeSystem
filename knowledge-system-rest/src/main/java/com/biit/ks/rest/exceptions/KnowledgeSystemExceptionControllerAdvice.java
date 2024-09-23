@@ -1,6 +1,7 @@
 package com.biit.ks.rest.exceptions;
 
 import com.biit.ks.core.exceptions.FileHandlingException;
+import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.exceptions.SeaweedClientException;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchException;
 import com.biit.server.exceptions.ErrorResponse;
@@ -39,5 +40,11 @@ public class KnowledgeSystemExceptionControllerAdvice extends ServerExceptionCon
     public ResponseEntity<Object> fileHandlingException(Exception ex) {
         RestServerExceptionLogger.errorMessage(this.getClass().getName(), ex);
         return new ResponseEntity<>(new ErrorResponse("INTERNAL_SERVER_ERROR", "error_handling_files", ex), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(FileNotFoundException.class)
+    public ResponseEntity<Object> fileNotFoundException(Exception ex) {
+        RestServerExceptionLogger.errorMessage(this.getClass().getName(), ex);
+        return new ResponseEntity<>(new ErrorResponse("NOT_FOUND", "file_not_found", ex), HttpStatus.NOT_FOUND);
     }
 }

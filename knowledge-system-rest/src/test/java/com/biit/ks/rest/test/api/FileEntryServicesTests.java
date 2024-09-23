@@ -1,7 +1,8 @@
 package com.biit.ks.rest.test.api;
 
 import com.biit.ks.core.models.FileEntryDTO;
-import com.biit.server.security.IAuthenticatedUserProvider;
+import com.biit.ks.core.seaweed.SeaweedClient;
+import com.biit.ks.persistence.opensearch.OpenSearchClient;
 import com.biit.server.security.model.AuthRequest;
 import com.biit.usermanager.client.providers.AuthenticatedUserProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -24,13 +25,19 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
+import static com.biit.ks.core.controllers.FileEntryController.SEAWEED_PATH;
+import static com.biit.ks.persistence.repositories.FileEntryRepository.OPENSEARCH_INDEX;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -44,6 +51,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
     private final static String JWT_SALT = "4567";
 
     private final static String FILE = "BlackSquare.jpg";
+    private final static String VIDEO = "test_video.mp4";
 
     @Autowired
     private WebApplicationContext context;
@@ -56,6 +64,12 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private OpenSearchClient openSearchClient;
+
+    @Autowired
+    private SeaweedClient seaweedClient;
 
     private MockMvc mockMvc;
 
@@ -114,6 +128,18 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
 
 
     @Test
+    public void checkDoesNotExists() throws Exception {
+        this.mockMvc
+                .perform(get("/files/uuid/" + UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
+                        .with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andReturn();
+    }
+
+
+    @Test
     public void getMimeType() throws Exception {
         //Must be called "file" to match the MultipartFile parameter name.
         final MockMultipartFile multipartFile = new MockMultipartFile("file", FileEntryServicesTests.class.getClassLoader().getResourceAsStream(FILE));
@@ -128,10 +154,47 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
                         .content(toJson(fileEntryDTO))
                         .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.header().exists(HttpHeaders.AUTHORIZATION))
                 .andReturn();
 
         FileEntryDTO fileEntryResult = fromJson(createResult.getResponse().getContentAsString(), FileEntryDTO.class);
-        Assert.assertEquals(fileEntryResult.getMimeType(), USER_NAME);
+        Assert.assertEquals(fileEntryResult.getMimeType(), "image/jpeg");
+    }
+
+    @Test
+    public void uploadVideo() throws Exception {
+        //Must be called "file" to match the MultipartFile parameter name.
+        final MockMultipartFile multipartFile = new MockMultipartFile("file", FileEntryServicesTests.class.getClassLoader().getResourceAsStream(VIDEO));
+        final FileEntryDTO fileEntryDTO = new FileEntryDTO();
+
+        MvcResult createResult = this.mockMvc
+                .perform(MockMvcRequestBuilders.multipart("/files")
+                        .file(multipartFile)
+                        .param("force", "true")
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
+                        .content(toJson(fileEntryDTO))
+                        .with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        FileEntryDTO fileEntryResult = fromJson(createResult.getResponse().getContentAsString(), FileEntryDTO.class);
+        Assert.assertEquals(fileEntryResult.getMimeType(), "video/quicktime");
+    }
+
+    @Test(dependsOnMethods = "uploadVideo")
+    public void downloadVideo() throws Exception {
+
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void cleanUp() {
+        openSearchClient.deleteIndex(OPENSEARCH_INDEX);
+    }
+
+
+    @AfterClass(alwaysRun = true)
+    public void deleteFile() {
+        seaweedClient.removeFile(SEAWEED_PATH + File.separator + "video");
+
     }
 }
