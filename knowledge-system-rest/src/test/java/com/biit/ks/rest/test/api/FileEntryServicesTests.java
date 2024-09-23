@@ -75,6 +75,8 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
 
     private String jwtToken;
 
+    private UUID videoUUID;
+
     private <T> String toJson(T object) throws JsonProcessingException {
         return objectMapper.writeValueAsString(object);
     }
@@ -142,7 +144,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
     @Test
     public void getMimeType() throws Exception {
         //Must be called "file" to match the MultipartFile parameter name.
-        final MockMultipartFile multipartFile = new MockMultipartFile("file", FileEntryServicesTests.class.getClassLoader().getResourceAsStream(FILE));
+        final MockMultipartFile multipartFile = new MockMultipartFile("file", "myImage", null, FileEntryServicesTests.class.getClassLoader().getResourceAsStream(FILE));
         final FileEntryDTO fileEntryDTO = new FileEntryDTO();
 
         MvcResult createResult = this.mockMvc
@@ -163,7 +165,8 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
     @Test
     public void uploadVideo() throws Exception {
         //Must be called "file" to match the MultipartFile parameter name.
-        final MockMultipartFile multipartFile = new MockMultipartFile("file", FileEntryServicesTests.class.getClassLoader().getResourceAsStream(VIDEO));
+        final MockMultipartFile multipartFile = new MockMultipartFile("file", "myVideo", null,
+                FileEntryServicesTests.class.getClassLoader().getResourceAsStream(VIDEO));
         final FileEntryDTO fileEntryDTO = new FileEntryDTO();
 
         MvcResult createResult = this.mockMvc
@@ -177,14 +180,20 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
 
-        FileEntryDTO fileEntryResult = fromJson(createResult.getResponse().getContentAsString(), FileEntryDTO.class);
+        final FileEntryDTO fileEntryResult = fromJson(createResult.getResponse().getContentAsString(), FileEntryDTO.class);
         Assert.assertEquals(fileEntryResult.getMimeType(), "video/quicktime");
+        videoUUID = fileEntryResult.getUuid();
     }
+
 
     @Test(dependsOnMethods = "uploadVideo")
     public void downloadVideo() throws Exception {
-
-
+        this.mockMvc
+                .perform(get("/stream/file-entry/uuid/" + videoUUID.toString())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
+                        .with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
     }
 
     @AfterClass(alwaysRun = true)

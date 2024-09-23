@@ -6,7 +6,6 @@ import com.biit.ks.core.exceptions.FileAlreadyExistsException;
 import com.biit.ks.core.exceptions.FileHandlingException;
 import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.files.MediaTypeCalculator;
-import com.biit.ks.core.models.Chunk;
 import com.biit.ks.core.models.ChunkData;
 import com.biit.ks.core.models.FileEntryDTO;
 import com.biit.ks.core.providers.FileEntryProvider;
@@ -86,17 +85,21 @@ public class FileEntryController extends SimpleController<FileEntry, FileEntryDT
         return downloadAsResource(fileEntry);
     }
 
-    public Chunk downloadChunk(UUID uuid, long skip, int size) {
-        final FileEntry fileEntry = getProvider().get(uuid).orElseThrow(
-                () -> new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'."));
-
-        return downloadChunk(convert(fileEntry), skip, size);
-    }
-
     public Resource downloadAsResource(String filePath) {
         final FileEntry fileEntry = getProvider().findByFilePath(filePath)
                 .orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with path '" + filePath + "'."));
         return downloadAsResource(fileEntry);
+    }
+
+    public ChunkData downloadChunk(UUID uuid, long skip, int size) {
+        final FileEntry fileEntry = getProvider().get(uuid).orElseThrow(
+                () -> new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'."));
+
+        return downloadChunk(fileEntry, skip, size);
+    }
+
+    private ChunkData downloadChunk(FileEntry fileEntry, long skip, int size) {
+        return downloadChunk(fileEntry.getCompleteFilePath(), skip, size);
     }
 
     public ChunkData downloadChunk(String filePath, long skip, int size) {
@@ -113,14 +116,6 @@ public class FileEntryController extends SimpleController<FileEntry, FileEntryDT
         try {
             final SeaweedInputStream seaweedInputStream = seaweedClient.getFile(fileEntry.getFilePath());
             return new InputStreamResource(seaweedInputStream);
-        } catch (IOException e) {
-            throw new FileNotFoundException(this.getClass(), "No file '" + fileEntry + "'.", e);
-        }
-    }
-
-    private Chunk downloadChunk(FileEntryDTO fileEntry, long skip, int size) {
-        try {
-            return seaweedClient.getChunk(fileEntry.getFilePath(), skip, size);
         } catch (IOException e) {
             throw new FileNotFoundException(this.getClass(), "No file '" + fileEntry + "'.", e);
         }
@@ -154,6 +149,9 @@ public class FileEntryController extends SimpleController<FileEntry, FileEntryDT
     private void setFields(FileEntry fileEntry, MultipartFile file, String createdBy) {
         fileEntry.setMimeType(MediaTypeCalculator.getRealMimeType(file));
         fileEntry.setFileName(file.getOriginalFilename());
+        if (fileEntry.getUuid() == null) {
+            fileEntry.setUuid(UUID.randomUUID());
+        }
         final IAuthenticatedUser user = authenticatedUserProvider.findByUsername(createdBy).orElseThrow(() ->
                 new UserNotFoundException(this.getClass(), "No User with username '" + createdBy + "' found on the system."));
         fileEntry.setCreatedBy(user.getUID());

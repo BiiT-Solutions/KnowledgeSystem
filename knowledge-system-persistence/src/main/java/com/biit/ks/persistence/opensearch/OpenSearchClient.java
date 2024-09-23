@@ -10,6 +10,7 @@ import com.biit.ks.persistence.opensearch.search.intervals.IntervalsSearchOperat
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;

@@ -1,7 +1,6 @@
 package com.biit.ks.rest.api;
 
 import com.biit.ks.core.controllers.FileEntryController;
-import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.models.ChunkData;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,12 +9,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
+
+import java.util.UUID;
 
 import static com.biit.ks.rest.Constants.HEADER.ACCEPT_RANGES;
 import static com.biit.ks.rest.Constants.HEADER.CONTENT_LENGTH;
@@ -26,42 +28,69 @@ import static com.biit.ks.rest.Constants.UNITS.BYTES;
 @RestController
 @RequestMapping("/stream")
 public class StreamServices {
-  private final FileEntryController fileEntryController;
+    private final FileEntryController fileEntryController;
 
-  @Value("${seaweed.stream.max-chunk-size}")
-  private int maxSize;
+    @Value("${seaweed.stream.max-chunk-size}")
+    private int maxSize;
 
-  public StreamServices(final FileEntryController fileEntryController) {
-    this.fileEntryController = fileEntryController;
-  }
-
-
-  @Operation(summary = "Downloads a file.")
-  @GetMapping(value = "/path/**")
-  @ResponseStatus(HttpStatus.PARTIAL_CONTENT)
-  @ResponseBody
-  public byte[] streamFileName(final HttpServletResponse response, final HttpServletRequest request,
-                           @RequestHeader(value = "Range", required = false) final String range) {
-    String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
-    path = StringUtils.removeStart(path, "/stream/path");
-
-    final String[] ranges = range == null ? new String[0] : range.split("-");
-    // Skip the first 6 characters "bytes="
-    final long skip = range == null ? 0 : Long.parseLong(ranges[0].substring(BYTES.length() + 1));
-    int size = ranges.length > 1 ? Integer.parseInt(ranges[1]) : maxSize;
-    if (size > maxSize) {
-      size = maxSize;
-    }
-    final ChunkData chunk = fileEntryController.downloadChunk(path, skip, size);
-
-    if (chunk == null) {
-      throw new FileNotFoundException(this.getClass(), "File not found with path '" + path + "'.");
+    public StreamServices(final FileEntryController fileEntryController) {
+        this.fileEntryController = fileEntryController;
     }
 
-    response.setHeader(CONTENT_TYPE, chunk.getMimeType());
-    response.setHeader(ACCEPT_RANGES, BYTES);
-    response.setHeader(CONTENT_LENGTH, String.valueOf(chunk.getData().length));
-    response.setHeader(CONTENT_RANGE, BYTES + " " + skip + "-" + (skip + chunk.getData().length - 1) + "/" + chunk.getFileSize());
-    return chunk.getData();
-  }
+
+    @Operation(summary = "Downloads a file.")
+    @GetMapping(value = "/path/**")
+    @ResponseStatus(HttpStatus.PARTIAL_CONTENT)
+    @ResponseBody
+    public byte[] streamFileName(final HttpServletResponse response, final HttpServletRequest request,
+                                 @RequestHeader(value = "Range", required = false) final String range) {
+        String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+        path = StringUtils.removeStart(path, "/stream/path");
+
+        final long skip = getSkip(range);
+        final int size = getSize(range);
+        final ChunkData chunk = fileEntryController.downloadChunk(path, skip, size);
+
+        response.setHeader(CONTENT_TYPE, chunk.getMimeType());
+        response.setHeader(ACCEPT_RANGES, BYTES);
+        response.setHeader(CONTENT_LENGTH, String.valueOf(chunk.getData().length));
+        response.setHeader(CONTENT_RANGE, BYTES + " " + skip + "-" + (skip + chunk.getData().length - 1) + "/" + chunk.getFileSize());
+        return chunk.getData();
+    }
+
+
+    @Operation(summary = "Downloads a file.")
+    @GetMapping(value = "/file-entry/uuid/{uuid}")
+    @ResponseStatus(HttpStatus.PARTIAL_CONTENT)
+    @ResponseBody
+    public byte[] streamFileEntry(@PathVariable("uuid") UUID uuid,
+                                  final HttpServletResponse response, final HttpServletRequest request,
+                                  @RequestHeader(value = "Range", required = false) final String range) {
+        final long skip = getSkip(range);
+        final int size = getSize(range);
+        final ChunkData chunk = fileEntryController.downloadChunk(uuid, skip, size);
+
+        response.setHeader(CONTENT_TYPE, chunk.getMimeType());
+        response.setHeader(ACCEPT_RANGES, BYTES);
+        response.setHeader(CONTENT_LENGTH, String.valueOf(chunk.getData().length));
+        response.setHeader(CONTENT_RANGE, BYTES + " " + skip + "-" + (skip + chunk.getData().length - 1) + "/" + chunk.getFileSize());
+        return chunk.getData();
+    }
+
+
+    private long getSkip(String range) {
+        final String[] ranges = range == null ? new String[0] : range.split("-");
+        // Skip the first 6 characters "bytes="
+        return range == null ? 0 : Long.parseLong(ranges[0].substring(BYTES.length() + 1));
+    }
+
+
+    private int getSize(String range) {
+        final String[] ranges = range == null ? new String[0] : range.split("-");
+        int size = ranges.length > 1 ? Integer.parseInt(ranges[1]) : maxSize;
+        if (size > maxSize) {
+            size = maxSize;
+        }
+        return size;
+    }
 }

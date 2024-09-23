@@ -1,6 +1,8 @@
 package com.biit.ks.persistence.entities;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.File;
 import java.util.UUID;
 
@@ -56,6 +58,7 @@ public class FileEntry extends Element<UUID> {
         this.filePath = filePath;
     }
 
+    @JsonIgnore
     public String getCompleteFilePath() {
         if (filePath != null) {
             return filePath + File.separator + fileName;
@@ -79,6 +82,7 @@ public class FileEntry extends Element<UUID> {
         this.mimeType = mimeType;
     }
 
+    @JsonIgnore
     public String getFullPath() {
         if (filePath != null) {
             return filePath + File.separator + fileName;
