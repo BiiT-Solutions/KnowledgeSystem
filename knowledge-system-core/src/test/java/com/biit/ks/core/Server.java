@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @SpringBootApplication
 @ConfigurationPropertiesScan({"com.biit.ks"})
 @EnableJpaRepositories({"com.biit.ks.persistence.repositories"})
-@EntityScan({"com.biit.ks.persistence.entities"})
 @ComponentScan({"com.biit.ks", "com.biit.usermanager.client", "com.biit.server.client"})
 public class Server {
     public static void main(String[] args) {

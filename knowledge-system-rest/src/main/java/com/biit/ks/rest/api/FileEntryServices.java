@@ -40,7 +40,7 @@ public class FileEntryServices {
     @PreAuthorize("hasAnyAuthority(@securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Uploads a file.", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public FileEntryDTO upload(@RequestPart("file") MultipartFile file,
+    public FileEntryDTO upload(@RequestParam("file") MultipartFile file,
                                @RequestPart(required = false) FileEntryDTO fileEntryDTO,
                                @RequestParam(name = "force", required = false) Optional<Boolean> forceRewrite,
                                Authentication authentication, HttpServletRequest request) {

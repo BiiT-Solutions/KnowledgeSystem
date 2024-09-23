@@ -1,18 +1,18 @@
 package com.biit.ks.rest;
 
 import com.biit.ks.logger.KnowledgeSystemLogger;
-
+import com.biit.server.security.userguard.UserGuardDatabaseConfigurator;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.servers.Server;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -27,9 +27,9 @@ import org.springframework.web.servlet.DispatcherServlet;
         @PropertySource("classpath:application.properties"),
         @PropertySource(value = "file:${EXTERNAL_CONFIG_FILE}", ignoreResourceNotFound = true)
 })
-@ComponentScan({"com.biit.ks", "com.biit.server.security", "com.biit.server", "com.biit.messagebird.client", "com.biit.usermanager.client"})
+@ComponentScan(basePackages = {"com.biit.ks", "com.biit.server.security", "com.biit.server", "com.biit.messagebird.client"},
+        excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {UserGuardDatabaseConfigurator.class})})
 @ConfigurationPropertiesScan({"com.biit.ks.rest"})
-@EntityScan({"com.biit.ks.persistence.entities", "com.biit.server"})
 public class KnowledgeSystemServer {
     private static final int POOL_SIZE = 20;
     private static final int MAX_POOL_SIZE = 100;
@@ -62,5 +62,14 @@ public class KnowledgeSystemServer {
     @Bean
     public ApplicationListener<ContextRefreshedEvent> startupLoggingListener() {
         return event -> KnowledgeSystemLogger.info(KnowledgeSystemServer.class, "### Server started ###");
+    }
+
+    @Bean
+    public UserGuardDatabaseConfigurator userGuardDatabaseConfigurator() {
+        try {
+            return new UserGuardDatabaseConfigurator();
+        } catch (UnsupportedClassVersionError e) {
+            return null;
+        }
     }
 }
