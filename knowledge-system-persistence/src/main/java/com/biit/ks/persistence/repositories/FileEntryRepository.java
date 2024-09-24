@@ -3,13 +3,18 @@ package com.biit.ks.persistence.repositories;
 
 import com.biit.ks.persistence.entities.FileEntry;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
+import com.biit.ks.persistence.opensearch.search.Fuzziness;
+import com.biit.ks.persistence.opensearch.search.FuzzinessDefinition;
 import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
+import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import jakarta.annotation.PostConstruct;
 import org.opensearch.client.opensearch._types.OpenSearchException;
 import org.opensearch.client.opensearch.core.GetResponse;
 import org.opensearch.client.opensearch.core.SearchResponse;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -67,5 +72,18 @@ public class FileEntryRepository {
             return Optional.empty();
         }
         return Optional.of(response.source());
+    }
+
+    public List<FileEntry> search(String query) {
+        final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();
+        shouldHavePredicates.add(Pair.of("description", query));
+        shouldHavePredicates.add(Pair.of("fileName", query));
+        shouldHavePredicates.add(Pair.of("fileFormat", query));
+        shouldHavePredicates.add(Pair.of("mimeType", query));
+        shouldHavePredicates.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
+        shouldHavePredicates.setMinimumShouldMatch(1);
+        final SearchResponse<FileEntry> response = openSearchClient.searchData(FileEntry.class, shouldHavePredicates);
+        return openSearchClient.convertResponse(response);
+
     }
 }

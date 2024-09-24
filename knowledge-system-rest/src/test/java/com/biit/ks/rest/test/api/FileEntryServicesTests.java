@@ -31,6 +31,8 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import static com.biit.ks.core.controllers.FileEntryController.SEAWEED_PATH;
@@ -197,6 +199,23 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
                         .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isPartialContent())
                 .andReturn();
+    }
+
+    @Test(dependsOnMethods = "uploadVideo")
+    public void searchVideo() throws Exception {
+        //Force index refresh
+        openSearchClient.refreshIndex();
+
+        MvcResult createResult = this.mockMvc
+                .perform(get("/files/search/query:myVideo")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
+                        .with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        final List<FileEntryDTO> fileEntryResults = Arrays.asList(fromJson(createResult.getResponse().getContentAsString(), FileEntryDTO[].class));
+        Assert.assertEquals(fileEntryResults.size(), 1);
+
     }
 
     @AfterClass(alwaysRun = true)

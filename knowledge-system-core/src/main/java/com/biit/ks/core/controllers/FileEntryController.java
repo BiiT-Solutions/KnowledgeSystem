@@ -70,6 +70,11 @@ public class FileEntryController extends SimpleController<FileEntry, FileEntryDT
         return List.of();
     }
 
+    public List<FileEntryDTO> search(String searchQuery) {
+        final List<FileEntry> results = getProvider().search(searchQuery);
+        return convertAll(results);
+    }
+
     public FileEntryDTO getMetadata(UUID uuid) {
         final FileEntry fileEntry =
                 getProvider().get(uuid).orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'."));

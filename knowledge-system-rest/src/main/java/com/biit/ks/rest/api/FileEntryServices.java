@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -91,5 +92,14 @@ public class FileEntryServices {
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
 
         return ResponseEntity.ok().body(file);
+    }
+
+
+    @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
+    @Operation(summary = "Search for a file.", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping(value = "/search/{query:.+}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public List<FileEntryDTO> search(@PathVariable String query, HttpServletResponse response) {
+        return fileEntryController.search(query.replace("query:", ""));
     }
 }

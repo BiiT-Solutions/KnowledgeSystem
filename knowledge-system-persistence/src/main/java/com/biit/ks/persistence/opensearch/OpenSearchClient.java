@@ -272,8 +272,10 @@ public class OpenSearchClient {
 
     public <I> List<I> convertResponse(SearchResponse<I> searchResponse) {
         final List<I> output = new ArrayList<>();
-        for (int i = 0; i < searchResponse.hits().hits().size(); i++) {
-            output.add(searchResponse.hits().hits().get(i).source());
+        if (searchResponse != null && searchResponse.hits() != null && searchResponse.hits().hits() != null) {
+            for (int i = 0; i < searchResponse.hits().hits().size(); i++) {
+                output.add(searchResponse.hits().hits().get(i).source());
+            }
         }
         return output;
     }

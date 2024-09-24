@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,6 +33,9 @@ public class FileEntryProvider {
         return getRepository().save(fileEntry);
     }
 
+    public List<FileEntry> search(String searchQuery) {
+        return getRepository().search(searchQuery);
+    }
 
     public Optional<FileEntry> get(UUID uuid) {
         if (uuid == null) {
