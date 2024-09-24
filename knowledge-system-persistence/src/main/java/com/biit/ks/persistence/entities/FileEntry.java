@@ -9,20 +9,12 @@ import java.util.UUID;
 
 public class FileEntry extends Element<UUID> {
 
-
     private UUID uuid;
-
-
     private String filePath;
-
-
     private String fileName;
-
-
     private String fileFormat;
-
-
     private String mimeType;
+    private String description;
 
     @Override
     public UUID getId() {
@@ -80,6 +72,14 @@ public class FileEntry extends Element<UUID> {
 
     public void setMimeType(String mimeType) {
         this.mimeType = mimeType;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @JsonIgnore

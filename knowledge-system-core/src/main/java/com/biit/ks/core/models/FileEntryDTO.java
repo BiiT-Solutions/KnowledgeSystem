@@ -14,6 +14,7 @@ public class FileEntryDTO extends ElementDTO<UUID> {
     private String fileName;
     private String fileFormat;
     private String mimeType;
+    private String description;
 
     @Override
     public UUID getId() {
@@ -63,6 +64,14 @@ public class FileEntryDTO extends ElementDTO<UUID> {
 
     public void setMimeType(String mimeType) {
         this.mimeType = mimeType;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
