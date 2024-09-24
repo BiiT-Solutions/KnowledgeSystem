@@ -6,7 +6,7 @@ Ensure that the next properties are defined in your `application.properties`:
 ```
 opensearch.scheme=http
 opensearch.server=localhost
-opensearch.port=9200
+opensearch.port=9199
 opensearch.user=admin
 opensearch.password=*****
 ```
