@@ -10,7 +10,6 @@ import com.biit.ks.persistence.opensearch.search.intervals.IntervalsSearchOperat
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -121,6 +120,7 @@ public class OpenSearchClient {
 
     public void refreshIndex() {
         try {
+            KnowledgeSystemLogger.debug(this.getClass(), "Refreshing index...");
             client.indices().refresh();
         } catch (IOException e) {
             KnowledgeSystemLogger.severe(this.getClass(), "Failed to refresh index!");
@@ -201,6 +201,10 @@ public class OpenSearchClient {
             }
             throw new OpenSearchConnectionException(this.getClass(), e);
         }
+    }
+
+    public <I> SearchResponse<I> getAll(Class<I> indexDataClass, String indexName) {
+        return searchData(indexDataClass, indexName);
     }
 
     public <I> SearchResponse<I> searchData(Class<I> indexDataClass, String indexName) {

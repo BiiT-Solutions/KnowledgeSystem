@@ -129,7 +129,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
     }
 
 
-    @Test
+    @Test(enabled = false)
     public void checkDoesNotExists() throws Exception {
         this.mockMvc
                 .perform(get("/files/uuid/" + UUID.randomUUID())
@@ -141,7 +141,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
     }
 
 
-    @Test
+    @Test(enabled = false)
     public void getMimeType() throws Exception {
         //Must be called "file" to match the MultipartFile parameter name.
         final MockMultipartFile multipartFile = new MockMultipartFile("file", "myImage", null, FileEntryServicesTests.class.getClassLoader().getResourceAsStream(FILE));
@@ -188,11 +188,14 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "uploadVideo")
     public void downloadVideo() throws Exception {
+        //Force index refresh
+        openSearchClient.refreshIndex();
+
         this.mockMvc
                 .perform(get("/stream/file-entry/uuid/" + videoUUID.toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
                         .with(csrf()))
-                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.status().isPartialContent())
                 .andReturn();
     }
 

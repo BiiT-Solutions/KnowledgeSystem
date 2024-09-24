@@ -47,9 +47,10 @@ public class FileEntryRepository {
         }
         final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.add("filePath", filePath);
-        mustHaveParameters.add("fileName", "fileName");
+        mustHaveParameters.add("fileName", fileName);
+        openSearchClient.getAll(FileEntry.class, OPENSEARCH_INDEX);
         final SearchResponse<FileEntry> response = openSearchClient.searchData(FileEntry.class, mustHaveParameters);
-        if (response == null || response.hits().hits().isEmpty() || response.hits().hits().get(0) == null
+        if (response == null || response.hits() == null || response.hits().hits().isEmpty() || response.hits().hits().get(0) == null
                 || response.hits().hits().get(0).source() == null) {
             return Optional.empty();
         }
