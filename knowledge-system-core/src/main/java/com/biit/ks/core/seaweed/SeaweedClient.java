@@ -81,6 +81,7 @@ public class SeaweedClient {
     public void addFile(String seaweedPath, MultipartFile file) throws IOException {
         if (file != null) {
             try (SeaweedOutputStream seaweedOutputStream = new SeaweedOutputStream(filerClient, seaweedPath)) {
+                SeaweedLogger.debug(this.getClass(), "Storing file '{}'.", seaweedPath);
                 Streams.copy(file.getInputStream(), seaweedOutputStream, true);
             }
         }
@@ -160,18 +161,18 @@ public class SeaweedClient {
 
     public Chunk getChunk(String fullPath, long offset, int size) throws IOException {
         KnowledgeSystemLogger.debug(this.getClass(), "Getting chunk from '{}'.", fullPath);
-      try (SeaweedInputStream seaweedInputStream = new SeaweedInputStream(filerClient, fullPath)) {
-        KnowledgeSystemLogger.debug(this.getClass(), "Connected to '{}'.", fullPath);
-        final long fileSize = seaweedInputStream.available();
-        seaweedInputStream.seek(offset);
-        final long remaining = seaweedInputStream.available();
-        KnowledgeSystemLogger.debug(this.getClass(), "Position set to '{}'.", offset);
-        final byte[] chunk = new byte[size];
-        KnowledgeSystemLogger.debug(this.getClass(), "Reading chunk of size '{}'.", size);
-        seaweedInputStream.readNBytes(chunk, 0, (int) Math.min(size, remaining));
-        KnowledgeSystemLogger.debug(this.getClass(), "Chunk read.");
-        return new Chunk(chunk, fileSize);
-      }
+        try (SeaweedInputStream seaweedInputStream = new SeaweedInputStream(filerClient, fullPath)) {
+            KnowledgeSystemLogger.debug(this.getClass(), "Connected to '{}'.", fullPath);
+            final long fileSize = seaweedInputStream.available();
+            seaweedInputStream.seek(offset);
+            final long remaining = seaweedInputStream.available();
+            KnowledgeSystemLogger.debug(this.getClass(), "Position set to '{}'.", offset);
+            final byte[] chunk = new byte[size];
+            KnowledgeSystemLogger.debug(this.getClass(), "Reading chunk of size '{}'.", size);
+            seaweedInputStream.readNBytes(chunk, 0, (int) Math.min(size, remaining));
+            KnowledgeSystemLogger.debug(this.getClass(), "Chunk read.");
+            return new Chunk(chunk, fileSize);
+        }
     }
 
 }
