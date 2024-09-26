@@ -4,11 +4,13 @@ OpenSearchClient is a bean that can be used at any part of the code.
 Ensure that the next properties are defined in your `application.properties`:
 
 ```
-opensearch.scheme=http
+opensearch.scheme=https
 opensearch.server=localhost
 opensearch.port=9199
 opensearch.user=admin
 opensearch.password=*****
+opensearch.truststore.path=/opt/opensearch/opensearch-truststore
+opensearch.truststore.password=*****
 ```
 
 And for searching, you can rely on `SearchQuery<I>` class. Where `<I>` is the class you are looking for on OpenSearch.
