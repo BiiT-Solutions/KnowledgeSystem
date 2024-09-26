@@ -9,7 +9,7 @@ opensearch.server=localhost
 opensearch.port=9199
 opensearch.user=admin
 opensearch.password=*****
-opensearch.truststore.path=/opt/opensearch/opensearch-truststore
+opensearch.truststore.path=../cert/opensearch-truststore
 opensearch.truststore.password=*****
 ```
 
