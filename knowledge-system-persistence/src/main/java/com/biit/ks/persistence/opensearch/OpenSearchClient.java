@@ -69,11 +69,22 @@ public class OpenSearchClient {
 
     private final org.opensearch.client.opensearch.OpenSearchClient client;
 
+    static {
+        System.setProperty("javax.net.ssl.trustStore", "/opt/opensearch/opensearch-truststore");
+        System.setProperty("javax.net.ssl.trustStorePassword", "AUaf9LKQyViZayNbOAq5");
+    }
+
     public OpenSearchClient(@Value("${opensearch.scheme}") String scheme,
                             @Value("${opensearch.server}") String server,
+//                            @Value("${opensearch.pathPrefix}") String pathPrefix,
                             @Value("${opensearch.port}") String serverPort,
                             @Value("${opensearch.user}") String user,
-                            @Value("${opensearch.password}") String password) {
+                            @Value("${opensearch.password}") String password,
+                            @Value("${opensearch.truststore.path}") String truststorePath,
+                            @Value("${opensearch.truststore.password}") String truststorePassword) {
+
+        System.setProperty("javax.net.ssl.trustStore", truststorePath);
+        System.setProperty("javax.net.ssl.trustStorePassword", truststorePassword);
 
         int convertedPort;
         if (serverPort != null) {
@@ -95,8 +106,9 @@ public class OpenSearchClient {
 
         //Initialize the client with SSL and TLS enabled
         restClient = RestClient.builder(host).
-                setHttpClientConfigCallback(httpClientBuilder ->
-                        httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)).build();
+//                setPathPrefix(pathPrefix).
+        setHttpClientConfigCallback(httpClientBuilder ->
+        httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)).build();
 
         //For LocalDateTime usage
         final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
