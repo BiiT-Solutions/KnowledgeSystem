@@ -81,6 +81,8 @@ public class OpenSearchClient {
         System.setProperty("javax.net.ssl.trustStore", truststorePath);
         System.setProperty("javax.net.ssl.trustStorePassword", truststorePassword);
 
+        OpenSearchLogger.debug(this.getClass(), "Reading certificates from '{}'.", truststorePath);
+
         int convertedPort;
         if (serverPort != null) {
             try {
