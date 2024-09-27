@@ -69,11 +69,6 @@ public class OpenSearchClient {
 
     private final org.opensearch.client.opensearch.OpenSearchClient client;
 
-    static {
-        System.setProperty("javax.net.ssl.trustStore", "/opt/opensearch/opensearch-truststore");
-        System.setProperty("javax.net.ssl.trustStorePassword", "AUaf9LKQyViZayNbOAq5");
-    }
-
     public OpenSearchClient(@Value("${opensearch.scheme}") String scheme,
                             @Value("${opensearch.server}") String server,
 //                            @Value("${opensearch.pathPrefix}") String pathPrefix,
