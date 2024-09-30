@@ -8,11 +8,13 @@
     <test name="Knowledge System" enabled="true" preserve-order="true">
         <groups>
             <run>
-                <exclude name="seaweedClient"/>
+                <include name="seaweedClient"/>
+                <include name="thumbnailTests"/>
             </run>
         </groups>
         <classes>
             <class name="com.biit.ks.core.seaweed.SeaweedClientTests"/>
+            <class name="com.biit.ks.core.ThumbnailTests"/>
         </classes>
     </test>
 </suite>

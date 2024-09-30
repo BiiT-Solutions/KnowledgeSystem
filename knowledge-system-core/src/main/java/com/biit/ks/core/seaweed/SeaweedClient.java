@@ -14,6 +14,7 @@ import seaweedfs.client.SeaweedInputStream;
 import seaweedfs.client.SeaweedOutputStream;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -173,6 +174,23 @@ public class SeaweedClient {
             KnowledgeSystemLogger.debug(this.getClass(), "Chunk read.");
             return new Chunk(chunk, fileSize);
         }
+    }
+
+    public byte[] getBytes(String fullPath, long offset, int size) throws IOException {
+        long readBytes = 0;
+        final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        while (readBytes < size) {
+            final Chunk chunk = getChunk(fullPath, offset + readBytes, size);
+            byteArrayOutputStream.writeBytes(chunk.getData());
+            readBytes += chunk.getFileSize();
+        }
+        return byteArrayOutputStream.toByteArray();
+    }
+
+
+    public byte[] getBytes(String folderPath, String entryName) throws IOException {
+        final FilerProto.Entry entry = getEntry(folderPath, entryName);
+        return entry.getContent().toByteArray();
     }
 
 }
