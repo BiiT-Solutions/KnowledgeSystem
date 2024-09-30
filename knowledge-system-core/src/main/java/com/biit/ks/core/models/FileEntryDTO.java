@@ -15,6 +15,7 @@ public class FileEntryDTO extends ElementDTO<UUID> {
     private String fileFormat;
     private String mimeType;
     private String description;
+    private boolean isPublic = false;
 
     @Override
     public UUID getId() {
@@ -72,6 +73,21 @@ public class FileEntryDTO extends ElementDTO<UUID> {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(boolean aPublic) {
+        isPublic = aPublic;
+    }
+
+    public String getPublicUrl() {
+        if (!isPublic()) {
+            return null;
+        }
+        return "/files/public/download/" + uuid.toString();
     }
 
     @Override

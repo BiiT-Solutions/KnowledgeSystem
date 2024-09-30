@@ -15,6 +15,7 @@ public class FileEntry extends Element<UUID> {
     private String fileFormat;
     private String mimeType;
     private String description;
+    private boolean isPublic = false;
 
     @Override
     public UUID getId() {
@@ -80,6 +81,14 @@ public class FileEntry extends Element<UUID> {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(boolean isPublic) {
+        this.isPublic = isPublic;
     }
 
     @JsonIgnore

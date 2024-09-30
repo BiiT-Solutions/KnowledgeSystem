@@ -10,6 +10,7 @@ import com.biit.ks.core.models.ChunkData;
 import com.biit.ks.core.models.FileEntryDTO;
 import com.biit.ks.core.providers.FileEntryProvider;
 import com.biit.ks.core.seaweed.SeaweedClient;
+import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.FileEntry;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchException;
 import com.biit.server.controller.SimpleController;
@@ -83,9 +84,17 @@ public class FileEntryController extends SimpleController<FileEntry, FileEntryDT
     }
 
 
-    public Resource downloadAsResource(UUID uuid) {
+    public Resource downloadAsResource(UUID uuid, boolean checkIfPublic, String username) {
         final FileEntry fileEntry =
                 getProvider().get(uuid).orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'."));
+
+        if (checkIfPublic && !fileEntry.isPublic()) {
+            KnowledgeSystemLogger.warning(this.getClass(), "Trying to access to file '{}' using the public api. FileEntry is private!", uuid);
+            //Same error as before.
+            throw new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'.");
+        }
+
+        KnowledgeSystemLogger.debug(this.getClass(), "User '{}' is downloading file '{}'.", username, uuid);
 
         return downloadAsResource(fileEntry);
     }
@@ -96,20 +105,27 @@ public class FileEntryController extends SimpleController<FileEntry, FileEntryDT
         return downloadAsResource(fileEntry);
     }
 
-    public ChunkData downloadChunk(UUID uuid, long skip, int size) {
+    public ChunkData downloadChunk(UUID uuid, long skip, int size, boolean checkIfPublic) {
         final FileEntry fileEntry = getProvider().get(uuid).orElseThrow(
                 () -> new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'."));
 
-        return downloadChunk(fileEntry, skip, size);
+        return downloadChunk(fileEntry, skip, size, checkIfPublic);
     }
 
-    private ChunkData downloadChunk(FileEntry fileEntry, long skip, int size) {
-        return downloadChunk(fileEntry.getCompleteFilePath(), skip, size);
+    private ChunkData downloadChunk(FileEntry fileEntry, long skip, int size, boolean checkIfPublic) {
+        return downloadChunk(fileEntry.getCompleteFilePath(), skip, size, checkIfPublic);
     }
 
-    public ChunkData downloadChunk(String filePath, long skip, int size) {
+    public ChunkData downloadChunk(String filePath, long skip, int size, boolean checkIfPublic) {
         final FileEntry fileEntry = getProvider().findByFilePath(filePath)
                 .orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with path '" + filePath + "'."));
+
+        if (checkIfPublic && !fileEntry.isPublic()) {
+            KnowledgeSystemLogger.warning(this.getClass(), "Trying to access to file '{}' using the public api. FileEntry is private!", filePath);
+            //Same error as before.
+            throw new FileNotFoundException(this.getClass(), "No file with path '" + filePath + "'.");
+        }
+
         try {
             return new ChunkData(seaweedClient.getChunk(filePath, skip, size), fileEntry.getMimeType());
         } catch (IOException e) {

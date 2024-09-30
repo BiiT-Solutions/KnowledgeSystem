@@ -4,11 +4,12 @@ package com.biit.ks.core.converters;
 import com.biit.ks.core.converters.models.FileEntryConverterRequest;
 import com.biit.ks.core.models.FileEntryDTO;
 import com.biit.ks.persistence.entities.FileEntry;
+import com.biit.server.controller.converters.SimpleConverter;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 @Component
-public class FileEntryConverter extends ElementConverter<FileEntry, FileEntryDTO, FileEntryConverterRequest> {
+public class FileEntryConverter extends SimpleConverter<FileEntry, FileEntryDTO, FileEntryConverterRequest> {
 
     @Override
     protected FileEntryDTO convertElement(FileEntryConverterRequest from) {

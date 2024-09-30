@@ -1,8 +1,13 @@
 package com.biit.ks.rest.api;
 
 import com.biit.ks.core.controllers.FileEntryController;
+import com.biit.ks.core.converters.FileEntryConverter;
+import com.biit.ks.core.converters.models.FileEntryConverterRequest;
 import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.models.FileEntryDTO;
+import com.biit.ks.core.providers.FileEntryProvider;
+import com.biit.ks.persistence.entities.FileEntry;
+import com.biit.server.rest.SimpleServices;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,12 +35,12 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/files")
-public class FileEntryServices {
-    private final FileEntryController fileEntryController;
+public class FileEntryServices extends SimpleServices<FileEntry, FileEntryDTO, FileEntryProvider, FileEntryConverterRequest,
+        FileEntryConverter, FileEntryController> {
 
 
     protected FileEntryServices(FileEntryController fileEntryController) {
-        this.fileEntryController = fileEntryController;
+        super(fileEntryController);
     }
 
 
@@ -46,7 +51,7 @@ public class FileEntryServices {
                                @RequestPart(required = false) FileEntryDTO fileEntryDTO,
                                @RequestParam(name = "force", required = false) Optional<Boolean> forceRewrite,
                                Authentication authentication, HttpServletRequest request) {
-        return fileEntryController.upload(file, fileEntryDTO, forceRewrite.isPresent() && forceRewrite.get(),
+        return getController().upload(file, fileEntryDTO, forceRewrite.isPresent() && forceRewrite.get(),
                 authentication.getName());
     }
 
@@ -55,20 +60,28 @@ public class FileEntryServices {
     @Operation(summary = "Downloads a file metadata.", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping(value = "/uuid/{uuid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public FileEntryDTO downloadMetadata(@PathVariable("uuid") UUID uuid, Authentication authentication, HttpServletResponse response) {
-        return fileEntryController.getMetadata(uuid);
+        return getController().getMetadata(uuid);
     }
 
 
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Downloads a file.", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping(value = "/download/{uuid}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<Resource> download(@PathVariable("uuid") UUID uuid,
-                                             Authentication authentication, HttpServletResponse response) {
-        final Resource file = fileEntryController.downloadAsResource(uuid);
+    public ResponseEntity<Resource> download(@PathVariable("uuid") UUID uuid, Authentication authentication, HttpServletResponse response) {
+        final Resource file = getController().downloadAsResource(uuid, false, authentication.getName());
 
-        if (file == null) {
-            throw new FileNotFoundException(this.getClass(), "File not found with uuid '" + uuid + "'.");
-        }
+        final ContentDisposition contentDisposition = ContentDisposition.builder("attachment").filename("file").build();
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+
+        return ResponseEntity.ok().body(file);
+    }
+
+
+    @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
+    @Operation(summary = "Downloads a file.", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping(value = "/public/download/{uuid}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<Resource> downloadPublic(@PathVariable("uuid") UUID uuid, HttpServletResponse response) {
+        final Resource file = getController().downloadAsResource(uuid, true, "public");
 
         final ContentDisposition contentDisposition = ContentDisposition.builder("attachment").filename("file").build();
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
@@ -82,7 +95,7 @@ public class FileEntryServices {
     @GetMapping(value = "/download/{filename:.+}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResponseBody
     public ResponseEntity<Resource> download(@PathVariable String filename, HttpServletResponse response) {
-        final Resource file = fileEntryController.downloadAsResource(filename);
+        final Resource file = getController().downloadAsResource(filename);
 
         if (file == null) {
             throw new FileNotFoundException(this.getClass(), "File not found with path '" + filename + "'.");
@@ -100,6 +113,6 @@ public class FileEntryServices {
     @GetMapping(value = "/search/{query:.+}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public List<FileEntryDTO> search(@PathVariable String query, HttpServletResponse response) {
-        return fileEntryController.search(query.replace("query:", ""));
+        return getController().search(query.replace("query:", ""));
     }
 }
