@@ -29,6 +29,7 @@ public class SeaweedClient {
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
     private static final int DIRECTORY_PERMISSIONS = 0755;
+    private static final int SEAWEED_BUFFER_SIZE = 16384;
 
     private FilerClient filerClient;
 
@@ -165,14 +166,17 @@ public class SeaweedClient {
         try (SeaweedInputStream seaweedInputStream = new SeaweedInputStream(filerClient, fullPath)) {
             KnowledgeSystemLogger.debug(this.getClass(), "Connected to '{}'.", fullPath);
             final long fileSize = seaweedInputStream.available();
-            seaweedInputStream.seek(offset);
-            final long remaining = seaweedInputStream.available();
-            KnowledgeSystemLogger.debug(this.getClass(), "Position set to '{}'.", offset);
-            final byte[] chunk = new byte[size];
-            KnowledgeSystemLogger.debug(this.getClass(), "Reading chunk of size '{}'.", size);
-            seaweedInputStream.readNBytes(chunk, 0, (int) Math.min(size, remaining));
-            KnowledgeSystemLogger.debug(this.getClass(), "Chunk read.");
-            return new Chunk(chunk, fileSize);
+            if (offset < fileSize) {
+                seaweedInputStream.seek(offset);
+                final long remaining = seaweedInputStream.available();
+                KnowledgeSystemLogger.debug(this.getClass(), "Position set to '{}'.", offset);
+                final byte[] chunk = new byte[size];
+                KnowledgeSystemLogger.debug(this.getClass(), "Reading chunk of size '{}'.", size);
+                seaweedInputStream.readNBytes(chunk, 0, (int) Math.min(size, remaining));
+                KnowledgeSystemLogger.debug(this.getClass(), "Chunk read.");
+                return new Chunk(chunk, fileSize);
+            }
+            return null;
         }
     }
 
@@ -181,8 +185,12 @@ public class SeaweedClient {
         final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         while (readBytes < size) {
             final Chunk chunk = getChunk(fullPath, offset + readBytes, size);
-            byteArrayOutputStream.writeBytes(chunk.getData());
-            readBytes += chunk.getFileSize();
+            if (chunk != null) {
+                byteArrayOutputStream.writeBytes(chunk.getData());
+                readBytes += chunk.getFileSize();
+            } else {
+                break;
+            }
         }
         return byteArrayOutputStream.toByteArray();
     }

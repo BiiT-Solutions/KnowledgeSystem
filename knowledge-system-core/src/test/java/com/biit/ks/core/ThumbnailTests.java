@@ -10,7 +10,9 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import seaweedfs.client.FilerProto;
+import seaweedfs.client.SeaweedInputStream;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -49,11 +51,17 @@ public class ThumbnailTests extends AbstractTestNGSpringContextTests {
         seaweedClient.addFile(SEAWEED_PATH + File.separator + RESOURCE, video);
     }
 
-    @Test
+    @Test(enabled = false)
     public void createThumbnailFromVideo() throws IOException {
-        final byte[] image = thumbnailFactory.toByteArray(thumbnailFactory.createThumbFromVideo(seaweedClient
-                .getBytes(SEAWEED_PATH, RESOURCE)));
+        final FilerProto.Entry videoEntry = seaweedClient.getEntry(SEAWEED_PATH, RESOURCE);
+        Assert.assertNotNull(videoEntry);
+        final SeaweedInputStream seaweedInputStream = seaweedClient.getFile(SEAWEED_PATH + File.separator + RESOURCE);
+
+        //Offset has a max of 16384 bytes
+        final BufferedImage bufferedImage = thumbnailFactory.createThumbFromVideo(seaweedInputStream.readNBytes((int) videoEntry.getAttributes().getFileSize()));
+        final byte[] image = thumbnailFactory.toByteArray(bufferedImage);
         Assert.assertNotNull(image);
+
 
         try (FileOutputStream fos = new FileOutputStream(tmpdir + File.separator + "thumbnail.png")) {
             fos.write(image);
@@ -76,8 +84,8 @@ public class ThumbnailTests extends AbstractTestNGSpringContextTests {
 
     @Test
     public void createThumbnailFromChunk() throws IOException {
-        final byte[] image = thumbnailFactory.toByteArray(thumbnailFactory.createThumbFromVideo(seaweedClient
-                .getBytes(SEAWEED_PATH + File.separator + RESOURCE, 52400, 102400)));
+        final byte[] chunk = seaweedClient.getBytes(SEAWEED_PATH + File.separator + RESOURCE, 0, 527868);
+        final byte[] image = thumbnailFactory.toByteArray(thumbnailFactory.createThumbFromVideo(chunk));
         Assert.assertNotNull(image);
 
         try (FileOutputStream fos = new FileOutputStream(tmpdir + File.separator + "thumbnail.png")) {

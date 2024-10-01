@@ -62,35 +62,15 @@ public class ThumbnailFactory {
 
 
     public BufferedImage createThumbFromVideo(byte[] videoBytes) {
-        //Download first MBs from a video in Seaweed.
-        try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
-            final FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(new ByteArrayInputStream(videoBytes));
-            try {
-                frameGrabber.setFormat("mp4");
-                frameGrabber.start();
-                //Frame frame = frameGrabber.grabImage();
-                //Frame frame = frameGrabber.grab();
-                final Frame frame = frameGrabber.grabKeyFrame();
-                final BufferedImage bufferedImage = converter.convert(frame);
-                KnowledgeSystemLogger.debug(this.getClass(), "Thumbnail height '{}' and width '{}'.", bufferedImage.getHeight(), bufferedImage.getWidth());
-                return bufferedImage;
-            } catch (Exception e) {
-                KnowledgeSystemLogger.errorMessage(this.getClass(), e);
-            } finally {
-                try {
-                    frameGrabber.stop();
-                    frameGrabber.close();
-                } catch (Exception e) {
-                    KnowledgeSystemLogger.errorMessage(this.getClass(), e);
-                }
-            }
-        }
-        return null;
+        return createThumbFromVideo(new FFmpegFrameGrabber(new ByteArrayInputStream(videoBytes)));
     }
 
     public BufferedImage createThumbFromVideo(String resource) {
+        return createThumbFromVideo(new FFmpegFrameGrabber(resource));
+    }
+
+    public BufferedImage createThumbFromVideo(FFmpegFrameGrabber frameGrabber) {
         try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
-            final FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(resource);
             try {
                 frameGrabber.setFormat("mp4");
                 frameGrabber.start();
