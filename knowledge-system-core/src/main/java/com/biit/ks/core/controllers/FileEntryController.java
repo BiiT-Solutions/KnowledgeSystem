@@ -27,6 +27,7 @@ import seaweedfs.client.SeaweedInputStream;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -68,7 +69,9 @@ public class FileEntryController extends SimpleController<FileEntry, FileEntryDT
 
     @Override
     public Collection<FileEntryDTO> create(Collection<FileEntryDTO> fileEntryDTOS, String creatorName) {
-        return List.of();
+        final List<FileEntryDTO> results = new ArrayList<>();
+        fileEntryDTOS.forEach(fileEntryDTO -> create(fileEntryDTO, creatorName));
+        return results;
     }
 
     public List<FileEntryDTO> search(String searchQuery) {

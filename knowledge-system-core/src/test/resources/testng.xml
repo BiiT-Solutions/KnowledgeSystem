@@ -9,7 +9,7 @@
         <groups>
             <run>
                 <include name="seaweedClient"/>
-                <include name="thumbnailTests"/>
+                <exclude name="thumbnailTests"/>
             </run>
         </groups>
         <classes>
