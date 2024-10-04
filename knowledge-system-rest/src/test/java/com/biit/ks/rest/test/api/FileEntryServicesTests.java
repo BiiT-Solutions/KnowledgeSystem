@@ -172,7 +172,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
         final FileEntryDTO fileEntryDTO = new FileEntryDTO();
 
         MvcResult createResult = this.mockMvc
-                .perform(MockMvcRequestBuilders.multipart("/files")
+                .perform(MockMvcRequestBuilders.multipart("/files/upload")
                         .file(multipartFile)
                         .param("force", "true")
                         .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
