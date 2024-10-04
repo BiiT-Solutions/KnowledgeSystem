@@ -8,7 +8,6 @@ import com.biit.ks.core.providers.CategorizedElementProvider;
 import com.biit.ks.persistence.entities.CategorizedElement;
 import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;
 import com.biit.ks.persistence.repositories.CategorizedElementRepository;
-import com.biit.server.rest.SimpleServices;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,7 +28,7 @@ public abstract class CategorizedElementServices<
         Rq extends CategorizedElementConverterRequest<E>,
         Cv extends CategorizedElementConverter<E, D, Rq>,
         C extends CategorizedElementController<E, D, R, P, Rq, Cv>>
-        extends SimpleServices<E, D, P, Rq, Cv, C> {
+        extends OpenSearchElementService<E, D, R, P, Rq, Cv, C> {
 
     protected CategorizedElementServices(C controller) {
         super(controller);

@@ -1,11 +1,11 @@
 package com.biit.ks.persistence.repositories;
 
-import com.biit.ks.persistence.entities.FileEntry;
 import com.biit.ks.persistence.entities.OpenSearchElement;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
 import jakarta.annotation.PostConstruct;
 import org.opensearch.client.opensearch._types.OpenSearchException;
 import org.opensearch.client.opensearch.core.GetResponse;
+import org.opensearch.client.opensearch.core.SearchResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,6 +58,17 @@ public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>
             return Optional.empty();
         }
         return Optional.of(response.source());
+    }
+
+    public List<E> getAll(Integer from, Integer size) {
+        final SearchResponse<E> response = getOpenSearchClient().getAll(getElementClass(), getOpenSearchIndex(), from, size);
+        return getOpenSearchClient().convertResponse(response);
+    }
+
+    public void delete(E entity) {
+        if (entity != null && entity.getId() != null) {
+            getOpenSearchClient().deleteData(getOpenSearchIndex(), String.valueOf(entity.getId()));
+        }
     }
 
     public abstract List<E> search(String query, Integer from, Integer size);

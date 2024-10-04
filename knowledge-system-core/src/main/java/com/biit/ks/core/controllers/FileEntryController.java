@@ -75,11 +75,6 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
         return results;
     }
 
-    public List<FileEntryDTO> search(String searchQuery, Integer from, Integer size) {
-        final List<FileEntry> results = getProvider().search(searchQuery, from, size);
-        return convertAll(results);
-    }
-
     public FileEntryDTO getMetadata(UUID uuid) {
         final FileEntry fileEntry =
                 getProvider().get(uuid).orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'."));

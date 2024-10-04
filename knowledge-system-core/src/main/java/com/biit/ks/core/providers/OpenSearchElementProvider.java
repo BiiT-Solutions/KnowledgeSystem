@@ -32,6 +32,11 @@ public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends
     }
 
 
+    public void delete(E element) {
+        getRepository().delete(element);
+    }
+
+
     public List<E> search(String searchQuery, Integer from, Integer size) {
         return getRepository().search(searchQuery, from, size);
     }
@@ -48,5 +53,9 @@ public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends
         final Optional<E> saved = getRepository().get(uuid);
         saved.ifPresent(fileEntry -> openSearchElementPool.addElement(fileEntry, uuid.toString()));
         return saved;
+    }
+
+    public List<E> getAll(Integer from, Integer size) {
+        return getRepository().getAll(from, size);
     }
 }

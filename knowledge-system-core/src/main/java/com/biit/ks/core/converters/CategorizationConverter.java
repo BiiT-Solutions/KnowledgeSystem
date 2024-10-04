@@ -4,12 +4,11 @@ package com.biit.ks.core.converters;
 import com.biit.ks.core.converters.models.CategorizationConverterRequest;
 import com.biit.ks.core.models.CategorizationDTO;
 import com.biit.ks.persistence.entities.Categorization;
-import com.biit.server.controller.converters.SimpleConverter;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CategorizationConverter extends SimpleConverter<Categorization, CategorizationDTO, CategorizationConverterRequest> {
+public class CategorizationConverter extends OpenSearchElementConverter<Categorization, CategorizationDTO, CategorizationConverterRequest> {
 
     @Override
     protected CategorizationDTO convertElement(CategorizationConverterRequest from) {
