@@ -16,20 +16,18 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class CategorizationRepository {
+public class CategorizationRepository extends OpenSearchElementRepository<Categorization> {
 
     public static final String OPENSEARCH_INDEX = "categorizations";
 
-    private final OpenSearchClient openSearchClient;
-
     public CategorizationRepository(OpenSearchClient openSearchClient) {
-        this.openSearchClient = openSearchClient;
+        super(Categorization.class, openSearchClient);
     }
 
     @PostConstruct
     public void createIndex() {
         try {
-            openSearchClient.createIndex(OPENSEARCH_INDEX);
+            getOpenSearchClient().createIndex(OPENSEARCH_INDEX);
         } catch (OpenSearchException e) {
             if (!e.getMessage().contains("resource_already_exists_exception")) {
                 throw e;
@@ -37,16 +35,21 @@ public class CategorizationRepository {
         }
     }
 
+    @Override
+    public String getOpenSearchIndex() {
+        return OPENSEARCH_INDEX;
+    }
+
     public Categorization save(Categorization categorization) {
-        openSearchClient.indexData(categorization, OPENSEARCH_INDEX, categorization.getUuid() != null ? categorization.getUuid().toString() : null);
+        getOpenSearchClient().indexData(categorization, OPENSEARCH_INDEX, categorization.getUuid() != null ? categorization.getUuid().toString() : null);
         return categorization;
     }
 
     public Optional<Categorization> get(String name) {
         final MustHavePredicates mustHavePredicates = new MustHavePredicates();
         mustHavePredicates.add(Pair.of("name", name));
-        final SearchResponse<Categorization> response = openSearchClient.searchData(Categorization.class, mustHavePredicates);
-        final List<Categorization> categorizations = openSearchClient.convertResponse(response);
+        final SearchResponse<Categorization> response = getOpenSearchClient().searchData(Categorization.class, mustHavePredicates);
+        final List<Categorization> categorizations = getOpenSearchClient().convertResponse(response);
         if (categorizations.isEmpty()) {
             return Optional.empty();
         }
@@ -58,7 +61,7 @@ public class CategorizationRepository {
         if (uuid == null) {
             return Optional.empty();
         }
-        final GetResponse<Categorization> response = openSearchClient.getData(Categorization.class, OPENSEARCH_INDEX, uuid.toString());
+        final GetResponse<Categorization> response = getOpenSearchClient().getData(Categorization.class, OPENSEARCH_INDEX, uuid.toString());
         if (response == null || response.source() == null) {
             return Optional.empty();
         }
@@ -66,8 +69,8 @@ public class CategorizationRepository {
     }
 
     public List<Categorization> getAll(Integer from, Integer size) {
-        final SearchResponse<Categorization> response = openSearchClient.getAll(Categorization.class, OPENSEARCH_INDEX, from, size);
-        return openSearchClient.convertResponse(response);
+        final SearchResponse<Categorization> response = getOpenSearchClient().getAll(Categorization.class, OPENSEARCH_INDEX, from, size);
+        return getOpenSearchClient().convertResponse(response);
     }
 
 }

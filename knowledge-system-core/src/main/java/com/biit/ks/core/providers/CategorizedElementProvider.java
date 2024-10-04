@@ -11,11 +11,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class CategorizedElementProvider<E extends CategorizedElement<?>, R extends CategorizedElementRepository<E>>
-        extends OpenSearchElementProvider<E> {
+        extends OpenSearchElementProvider<E, R> {
 
     private final CategorizedElementRepository<E> categorizedElementRepository;
 
-    protected CategorizedElementProvider(CategorizedElementRepository<E> categorizedElementRepository) {
+    protected CategorizedElementProvider(R categorizedElementRepository) {
         super(categorizedElementRepository);
         this.categorizedElementRepository = categorizedElementRepository;
     }

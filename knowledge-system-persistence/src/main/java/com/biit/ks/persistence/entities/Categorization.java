@@ -2,7 +2,7 @@ package com.biit.ks.persistence.entities;
 
 import java.util.UUID;
 
-public class Categorization extends Element<UUID> {
+public class Categorization extends OpenSearchElement<UUID> {
 
     private UUID uuid;
     private String name;

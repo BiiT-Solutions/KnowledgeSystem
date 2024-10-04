@@ -7,7 +7,6 @@ import com.biit.ks.core.providers.CategorizedElementProvider;
 import com.biit.ks.persistence.entities.CategorizedElement;
 import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;
 import com.biit.ks.persistence.repositories.CategorizedElementRepository;
-import com.biit.server.controller.SimpleController;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,7 +18,7 @@ public abstract class CategorizedElementController<
         P extends CategorizedElementProvider<E, R>,
         Rq extends CategorizedElementConverterRequest<E>,
         Cv extends CategorizedElementConverter<E, D, Rq>>
-        extends SimpleController<E, D, P, Rq, Cv> {
+        extends OpenSearchElementController<E, D, R, P, Rq, Cv> {
 
 
     protected CategorizedElementController(P provider, Cv converter) {

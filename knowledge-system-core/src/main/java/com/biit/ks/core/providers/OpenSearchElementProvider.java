@@ -3,16 +3,16 @@ package com.biit.ks.core.providers;
 import com.biit.ks.persistence.entities.OpenSearchElement;
 import com.biit.ks.persistence.repositories.OpenSearchElementRepository;
 
-public class OpenSearchElementProvider<E extends OpenSearchElement<?>> {
+public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends OpenSearchElementRepository<E>> {
 
-    private final OpenSearchElementRepository<E> openSearchElementRepository;
+    private final R openSearchElementRepository;
 
-    public OpenSearchElementProvider(OpenSearchElementRepository<E> openSearchElementRepository) {
+    public OpenSearchElementProvider(R openSearchElementRepository) {
         this.openSearchElementRepository = openSearchElementRepository;
     }
 
 
-    public OpenSearchElementRepository<E> getRepository() {
+    public R getRepository() {
         return openSearchElementRepository;
     }
 }

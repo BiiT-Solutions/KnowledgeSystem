@@ -9,11 +9,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class CategorizationProvider {
+public class CategorizationProvider extends OpenSearchElementProvider<Categorization, CategorizationRepository> {
 
     private final CategorizationRepository categorizationRepository;
 
     public CategorizationProvider(CategorizationRepository categorizationRepository) {
+        super(categorizationRepository);
         this.categorizationRepository = categorizationRepository;
     }
 
