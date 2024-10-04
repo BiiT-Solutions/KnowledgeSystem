@@ -7,7 +7,7 @@ import java.io.File;
 import java.util.UUID;
 
 
-public class FileEntry extends Element<UUID> {
+public class FileEntry extends CategorizedElement<UUID> {
 
     private UUID uuid;
     private String filePath;

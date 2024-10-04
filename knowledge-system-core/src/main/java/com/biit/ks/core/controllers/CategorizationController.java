@@ -76,8 +76,8 @@ public class CategorizationController extends SimpleController<Categorization, C
     }
 
 
-    public List<CategorizationDTO> getAll() {
-        final List<Categorization> results = getProvider().getAll();
+    public List<CategorizationDTO> getAll(Integer from, Integer size) {
+        final List<Categorization> results = getProvider().getAll(from, size);
         return convertAll(results);
     }
 }

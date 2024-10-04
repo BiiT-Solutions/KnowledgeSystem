@@ -1,6 +1,6 @@
 package com.biit.ks.persistence.entities;
 
-public class FormRulesLink extends Element<Long> {
+public class FormRulesLink extends CategorizedElement<Long> {
 
 
     private Long id;

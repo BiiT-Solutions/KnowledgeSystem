@@ -13,19 +13,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class FileEntryProvider {
+public class FileEntryProvider extends CategorizedElementProvider<FileEntry, FileEntryRepository> {
 
-    private final FileEntryRepository fileEntryRepository;
     private final FileEntryByStringPool fileEntryByStringPool;
 
     @Autowired
     public FileEntryProvider(FileEntryRepository fileEntryRepository, FileEntryByStringPool fileEntryByStringPool) {
-        this.fileEntryRepository = fileEntryRepository;
+        super(fileEntryRepository);
         this.fileEntryByStringPool = fileEntryByStringPool;
-    }
-
-    private FileEntryRepository getRepository() {
-        return fileEntryRepository;
     }
 
 
@@ -33,8 +28,8 @@ public class FileEntryProvider {
         return getRepository().save(fileEntry);
     }
 
-    public List<FileEntry> search(String searchQuery) {
-        return getRepository().search(searchQuery);
+    public List<FileEntry> search(String searchQuery, Integer from, Integer size) {
+        return getRepository().search(searchQuery, from, size);
     }
 
     public Optional<FileEntry> get(UUID uuid) {

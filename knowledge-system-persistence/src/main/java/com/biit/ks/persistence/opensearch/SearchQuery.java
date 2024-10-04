@@ -1,10 +1,10 @@
 package com.biit.ks.persistence.opensearch;
 
-import com.biit.ks.persistence.opensearch.search.SearchFilter;
-import com.biit.ks.persistence.opensearch.search.SearchPredicates;
 import com.biit.ks.persistence.opensearch.search.IntervalsSearch;
 import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
 import com.biit.ks.persistence.opensearch.search.MustNotHavePredicates;
+import com.biit.ks.persistence.opensearch.search.SearchFilter;
+import com.biit.ks.persistence.opensearch.search.SearchPredicates;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 
 import java.util.Comparator;
@@ -44,6 +44,13 @@ public class SearchQuery<I> {
         this.searchParameters = Set.of(searchParameters);
     }
 
+    public SearchQuery(Class<I> dataClass, Integer from, Integer size, SearchPredicates... searchParameters) {
+        this(dataClass);
+        this.searchParameters = Set.of(searchParameters);
+        setFrom(from);
+        setSize(size);
+    }
+
     public SearchQuery(Class<I> dataClass, IntervalsSearch intervals) {
         this(dataClass);
         this.intervals = intervals;
@@ -53,6 +60,14 @@ public class SearchQuery<I> {
         this(dataClass);
         this.searchParameters = Set.of(searchParameters);
         this.intervals = intervals;
+    }
+
+    public SearchQuery(Class<I> dataClass, Integer from, Integer size, IntervalsSearch intervals, SearchPredicates... searchParameters) {
+        this(dataClass);
+        this.searchParameters = Set.of(searchParameters);
+        this.intervals = intervals;
+        setFrom(from);
+        setSize(size);
     }
 
     public SearchQuery(Class<I> dataClass, Integer from, Integer size) {

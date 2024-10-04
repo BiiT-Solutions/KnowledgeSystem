@@ -13,7 +13,7 @@ import com.biit.ks.core.seaweed.SeaweedClient;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.FileEntry;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchException;
-import com.biit.server.controller.SimpleController;
+import com.biit.ks.persistence.repositories.FileEntryRepository;
 import com.biit.server.exceptions.UserNotFoundException;
 import com.biit.server.logger.DtoControllerLogger;
 import com.biit.server.security.IAuthenticatedUser;
@@ -33,7 +33,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Controller
-public class FileEntryController extends SimpleController<FileEntry, FileEntryDTO, FileEntryProvider, FileEntryConverterRequest, FileEntryConverter> {
+public class FileEntryController extends CategorizedElementController<FileEntry, FileEntryDTO, FileEntryRepository,
+        FileEntryProvider, FileEntryConverterRequest, FileEntryConverter> {
 
     public static final String SEAWEED_PATH = "/uploads";
     private final SeaweedClient seaweedClient;
@@ -74,8 +75,8 @@ public class FileEntryController extends SimpleController<FileEntry, FileEntryDT
         return results;
     }
 
-    public List<FileEntryDTO> search(String searchQuery) {
-        final List<FileEntry> results = getProvider().search(searchQuery);
+    public List<FileEntryDTO> search(String searchQuery, Integer from, Integer size) {
+        final List<FileEntry> results = getProvider().search(searchQuery, from, size);
         return convertAll(results);
     }
 

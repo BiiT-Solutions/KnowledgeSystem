@@ -76,7 +76,7 @@ By default, the system allows a distance of 50 elements between two words.
 - intervalMatch.maxGap: distance allowed between two words from the query.
 - intervalMatch.ordered: if true, the words must respect the order.
 - intervalWildcards.pattern: search for a pattern. Can be combined with `intervalMatch`.
-- intervalsSearchOperator: if you wish to match `all` the defined rules or `any` of them.
+- quantifiersOperator: if you wish to match `all` the defined rules or `any` of them.
 
 ### Pagination
 

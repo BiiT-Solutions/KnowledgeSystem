@@ -11,26 +11,26 @@ import java.util.UUID;
 @Service
 public class CategorizationProvider {
 
-    private final CategorizationRepository fileEntryRepository;
+    private final CategorizationRepository categorizationRepository;
 
-    public CategorizationProvider(CategorizationRepository fileEntryRepository) {
-        this.fileEntryRepository = fileEntryRepository;
+    public CategorizationProvider(CategorizationRepository categorizationRepository) {
+        this.categorizationRepository = categorizationRepository;
     }
 
     public Categorization save(Categorization categorization) {
-        return fileEntryRepository.save(categorization);
+        return categorizationRepository.save(categorization);
     }
 
     public Optional<Categorization> get(String categorization) {
-        return fileEntryRepository.get(categorization);
+        return categorizationRepository.get(categorization);
     }
 
     public Optional<Categorization> get(UUID uuid) {
-        return fileEntryRepository.get(uuid);
+        return categorizationRepository.get(uuid);
     }
 
 
-    public List<Categorization> getAll() {
-        return fileEntryRepository.getAll();
+    public List<Categorization> getAll(Integer from, Integer size) {
+        return categorizationRepository.getAll(from, size);
     }
 }

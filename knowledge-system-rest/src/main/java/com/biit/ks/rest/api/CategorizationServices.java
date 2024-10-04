@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -42,7 +43,10 @@ public class CategorizationServices extends SimpleServices<Categorization, Categ
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Gets all categories.", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public List<CategorizationDTO> getAll(Authentication authentication, HttpServletResponse response) {
-        return getController().getAll();
+    public List<CategorizationDTO> getAll(
+            @RequestParam(name = "from", required = false) Integer from,
+            @RequestParam(name = "size", required = false) Integer size,
+            Authentication authentication, HttpServletResponse response) {
+        return getController().getAll(from, size);
     }
 }

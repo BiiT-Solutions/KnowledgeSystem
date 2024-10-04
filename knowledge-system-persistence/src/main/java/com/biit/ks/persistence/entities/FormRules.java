@@ -1,6 +1,6 @@
 package com.biit.ks.persistence.entities;
 
-public class FormRules extends Element<Long> {
+public class FormRules extends CategorizedElement<Long> {
 
     private static final int MAX_JSON_LENGTH = 100000;
 

@@ -7,7 +7,7 @@ import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.models.FileEntryDTO;
 import com.biit.ks.core.providers.FileEntryProvider;
 import com.biit.ks.persistence.entities.FileEntry;
-import com.biit.server.rest.SimpleServices;
+import com.biit.ks.persistence.repositories.FileEntryRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,7 +35,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/files")
-public class FileEntryServices extends SimpleServices<FileEntry, FileEntryDTO, FileEntryProvider, FileEntryConverterRequest,
+public class FileEntryServices extends CategorizedElementServices<FileEntry, FileEntryDTO, FileEntryRepository, FileEntryProvider, FileEntryConverterRequest,
         FileEntryConverter, FileEntryController> {
 
 
@@ -112,7 +112,10 @@ public class FileEntryServices extends SimpleServices<FileEntry, FileEntryDTO, F
     @Operation(summary = "Search for a file.", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping(value = "/search/{query:.+}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public List<FileEntryDTO> search(@PathVariable String query, HttpServletResponse response) {
-        return getController().search(query.replace("query:", ""));
+    public List<FileEntryDTO> search(@PathVariable String query,
+                                     @RequestParam(name = "from", required = false) Integer from,
+                                     @RequestParam(name = "size", required = false) Integer size,
+                                     HttpServletResponse response) {
+        return getController().search(query.replace("query:", ""), from, size);
     }
 }

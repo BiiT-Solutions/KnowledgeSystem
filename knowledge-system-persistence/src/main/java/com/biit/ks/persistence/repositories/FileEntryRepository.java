@@ -19,13 +19,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class FileEntryRepository {
+public class FileEntryRepository extends CategorizedElementRepository<FileEntry> {
 
     public static final String OPENSEARCH_INDEX = "file-index";
 
     private final OpenSearchClient openSearchClient;
 
     public FileEntryRepository(OpenSearchClient openSearchClient) {
+        super(FileEntry.class, openSearchClient);
         this.openSearchClient = openSearchClient;
     }
 
@@ -74,7 +75,7 @@ public class FileEntryRepository {
         return Optional.of(response.source());
     }
 
-    public List<FileEntry> search(String query) {
+    public List<FileEntry> search(String query, Integer from, Integer size) {
         final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();
         shouldHavePredicates.add(Pair.of("description", query));
         shouldHavePredicates.add(Pair.of("fileName", query));
@@ -82,7 +83,7 @@ public class FileEntryRepository {
         shouldHavePredicates.add(Pair.of("mimeType", query));
         shouldHavePredicates.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
         shouldHavePredicates.setMinimumShouldMatch(1);
-        final SearchResponse<FileEntry> response = openSearchClient.searchData(FileEntry.class, shouldHavePredicates);
+        final SearchResponse<FileEntry> response = openSearchClient.searchData(FileEntry.class, shouldHavePredicates, from, size);
         return openSearchClient.convertResponse(response);
 
     }

@@ -3,7 +3,7 @@ package com.biit.ks.persistence.opensearch.search;
 import com.biit.ks.persistence.opensearch.search.intervals.IntervalMatch;
 import com.biit.ks.persistence.opensearch.search.intervals.IntervalSearchPrefix;
 import com.biit.ks.persistence.opensearch.search.intervals.IntervalWildcards;
-import com.biit.ks.persistence.opensearch.search.intervals.IntervalsSearchOperator;
+import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ public class IntervalsSearch {
     private final List<IntervalSearchPrefix> prefixes;
     private final List<IntervalMatch> matches;
     private final List<IntervalWildcards> wildcards;
-    private IntervalsSearchOperator intervalsSearchOperator;
+    private QuantifiersOperator quantifiersOperator;
 
     public IntervalsSearch() {
         prefixes = new ArrayList<>();
@@ -64,12 +64,12 @@ public class IntervalsSearch {
         addWildcard(new IntervalWildcards(field, pattern));
     }
 
-    public IntervalsSearchOperator getIntervalsSearchOperator() {
-        return intervalsSearchOperator;
+    public QuantifiersOperator getIntervalsSearchOperator() {
+        return quantifiersOperator;
     }
 
-    public void setIntervalsSearchOperator(IntervalsSearchOperator intervalsSearchOperator) {
-        this.intervalsSearchOperator = intervalsSearchOperator;
+    public void setIntervalsSearchOperator(QuantifiersOperator quantifiersOperator) {
+        this.quantifiersOperator = quantifiersOperator;
     }
 
     public String getAnyField() {

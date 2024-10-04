@@ -1,11 +1,9 @@
 package com.biit.ks.core.models;
 
-import com.biit.server.controllers.models.ElementDTO;
-
 import java.io.Serial;
 import java.util.UUID;
 
-public class FileEntryDTO extends ElementDTO<UUID> {
+public class FileEntryDTO extends CategorizedElementDTO<UUID> {
     @Serial
     private static final long serialVersionUID = 3144187148832541249L;
 

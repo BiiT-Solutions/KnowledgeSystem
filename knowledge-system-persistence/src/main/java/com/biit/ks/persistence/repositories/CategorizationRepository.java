@@ -65,8 +65,8 @@ public class CategorizationRepository {
         return Optional.of(response.source());
     }
 
-    public List<Categorization> getAll() {
-        final SearchResponse<Categorization> response = openSearchClient.getAll(Categorization.class, OPENSEARCH_INDEX);
+    public List<Categorization> getAll(Integer from, Integer size) {
+        final SearchResponse<Categorization> response = openSearchClient.getAll(Categorization.class, OPENSEARCH_INDEX, from, size);
         return openSearchClient.convertResponse(response);
     }
 

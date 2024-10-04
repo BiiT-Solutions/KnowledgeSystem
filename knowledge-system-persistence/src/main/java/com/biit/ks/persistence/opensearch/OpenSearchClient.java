@@ -6,7 +6,7 @@ import com.biit.ks.persistence.opensearch.exceptions.OpenSearchConnectionExcepti
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchIndexMissingException;
 import com.biit.ks.persistence.opensearch.search.IntervalsSearch;
 import com.biit.ks.persistence.opensearch.search.SearchPredicates;
-import com.biit.ks.persistence.opensearch.search.intervals.IntervalsSearchOperator;
+import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -61,7 +61,7 @@ import java.util.List;
 @Component
 public class OpenSearchClient {
 
-    private static final int MAX_SEARCH_RESULTS = 1000;
+    private static final int MAX_SEARCH_RESULTS = 100;
     private static final int DEFAULT_OPENSEARCH_PORT = 9200;
     private static final String DEFAULT_EXPAND_REPLICAS = "0-all";
 
@@ -213,12 +213,26 @@ public class OpenSearchClient {
     }
 
     public <I> SearchResponse<I> getAll(Class<I> indexDataClass, String indexName) {
-        return searchData(indexDataClass, indexName);
+        return searchData(indexDataClass, indexName, null, null);
+    }
+
+    public <I> SearchResponse<I> getAll(Class<I> indexDataClass, String indexName, Integer from, Integer size) {
+        return searchData(indexDataClass, indexName, null, null);
     }
 
     public <I> SearchResponse<I> searchData(Class<I> indexDataClass, String indexName) {
+        return searchData(indexDataClass, indexName, null, null);
+    }
+
+    public <I> SearchResponse<I> searchData(Class<I> indexDataClass, String indexName, Integer from, Integer size) {
         try {
-            final SearchResponse<I> searchResponse = client.search(s -> s.index(indexName), indexDataClass);
+            final SearchResponse<I> searchResponse = client.search(
+                    s -> {
+                        s.index(indexName);
+                        s.from(from != null ? from : 0);
+                        s.size(size != null ? size : MAX_SEARCH_RESULTS);
+                        return s;
+                    }, indexDataClass);
             for (int i = 0; i < searchResponse.hits().hits().size(); i++) {
                 OpenSearchLogger.debug(this.getClass(), searchResponse.hits().hits().get(i).source() + "");
             }
@@ -314,6 +328,10 @@ public class OpenSearchClient {
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, SearchPredicates shouldHaveValues) {
         return searchData(new SearchQuery<>(dataClass, shouldHaveValues));
+    }
+
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, SearchPredicates shouldHaveValues, Integer from, Integer size) {
+        return searchData(new SearchQuery<>(dataClass, from, size, shouldHaveValues));
     }
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, IntervalsSearch intervalsSearch) {
@@ -437,7 +455,7 @@ public class OpenSearchClient {
                     intervals.add(intervalsWildcardBuilder.build()._toIntervals());
                 }
             });
-            if (intervalsSearch.getIntervalsSearchOperator() == IntervalsSearchOperator.ANY_OF) {
+            if (intervalsSearch.getIntervalsSearchOperator() == QuantifiersOperator.ANY_OF) {
                 //Why I need a field here, and can be any of the fields used?
                 return List.of(new IntervalsQuery.Builder().field(intervalsSearch.getAnyField()).anyOf(IntervalsQueryBuilders.anyOf()
                         .intervals(intervals).build()).build()._toQuery());

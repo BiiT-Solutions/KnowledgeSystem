@@ -1,7 +1,7 @@
 package com.biit.ks.persistence.opensearch;
 
 import com.biit.ks.persistence.opensearch.search.IntervalsSearch;
-import com.biit.ks.persistence.opensearch.search.intervals.IntervalsSearchOperator;
+import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.indices.PutIndicesSettingsResponse;
@@ -89,7 +89,7 @@ public class OpenSearchMixedSearchTests extends AbstractTestNGSpringContextTests
         intervalsSearch.addMatch("description", "The Data", 3, true);
         //DATA5 not matching.
         intervalsSearch.addWildcard("name", "*Data");
-        intervalsSearch.setIntervalsSearchOperator(IntervalsSearchOperator.ANY_OF);
+        intervalsSearch.setIntervalsSearchOperator(QuantifiersOperator.ANY_OF);
 
 
         final SearchResponse<Data> response = openSearchClient.searchData(Data.class, intervalsSearch);
