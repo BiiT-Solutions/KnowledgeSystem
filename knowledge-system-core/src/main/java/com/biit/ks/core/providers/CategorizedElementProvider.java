@@ -1,5 +1,6 @@
 package com.biit.ks.core.providers;
 
+import com.biit.ks.core.providers.pools.OpenSearchElementPool;
 import com.biit.ks.persistence.entities.Categorization;
 import com.biit.ks.persistence.entities.CategorizedElement;
 import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;
@@ -15,8 +16,8 @@ public abstract class CategorizedElementProvider<E extends CategorizedElement<?>
 
     private final CategorizedElementRepository<E> categorizedElementRepository;
 
-    protected CategorizedElementProvider(R categorizedElementRepository) {
-        super(categorizedElementRepository);
+    protected CategorizedElementProvider(OpenSearchElementPool<E> openSearchElementPool, R categorizedElementRepository) {
+        super(openSearchElementPool, categorizedElementRepository);
         this.categorizedElementRepository = categorizedElementRepository;
     }
 

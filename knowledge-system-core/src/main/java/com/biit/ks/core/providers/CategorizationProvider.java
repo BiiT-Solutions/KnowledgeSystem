@@ -1,5 +1,6 @@
 package com.biit.ks.core.providers;
 
+import com.biit.ks.core.providers.pools.OpenSearchElementPool;
 import com.biit.ks.persistence.entities.Categorization;
 import com.biit.ks.persistence.repositories.CategorizationRepository;
 import org.springframework.stereotype.Service;
@@ -13,8 +14,8 @@ public class CategorizationProvider extends OpenSearchElementProvider<Categoriza
 
     private final CategorizationRepository categorizationRepository;
 
-    public CategorizationProvider(CategorizationRepository categorizationRepository) {
-        super(categorizationRepository);
+    public CategorizationProvider(OpenSearchElementPool<Categorization> openSearchElementPool, CategorizationRepository categorizationRepository) {
+        super(openSearchElementPool, categorizationRepository);
         this.categorizationRepository = categorizationRepository;
     }
 
