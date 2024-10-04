@@ -1,11 +1,9 @@
 package com.biit.ks.core.models;
 
-import com.biit.server.controllers.models.ElementDTO;
-
 import java.io.Serial;
 import java.util.UUID;
 
-public class CategorizationDTO extends ElementDTO<UUID> {
+public class CategorizationDTO extends OpenSearchElementDTO<UUID> {
 
     @Serial
     private static final long serialVersionUID = -6257674089968981919L;
@@ -14,6 +12,7 @@ public class CategorizationDTO extends ElementDTO<UUID> {
     private String name;
 
     public CategorizationDTO() {
+        super();
         uuid = UUID.randomUUID();
     }
 

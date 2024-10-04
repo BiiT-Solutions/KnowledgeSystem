@@ -7,16 +7,12 @@ import com.biit.ks.persistence.opensearch.search.Fuzziness;
 import com.biit.ks.persistence.opensearch.search.FuzzinessDefinition;
 import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
-import jakarta.annotation.PostConstruct;
-import org.opensearch.client.opensearch._types.OpenSearchException;
-import org.opensearch.client.opensearch.core.GetResponse;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public class FileEntryRepository extends CategorizedElementRepository<FileEntry> {
@@ -30,20 +26,9 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
         this.openSearchClient = openSearchClient;
     }
 
-    @PostConstruct
-    public void createIndex() {
-        try {
-            openSearchClient.createIndex(OPENSEARCH_INDEX);
-        } catch (OpenSearchException e) {
-            if (!e.getMessage().contains("resource_already_exists_exception")) {
-                throw e;
-            }
-        }
-    }
-
-    public FileEntry save(FileEntry fileEntry) {
-        openSearchClient.indexData(fileEntry, OPENSEARCH_INDEX, fileEntry.getUuid() != null ? fileEntry.getUuid().toString() : null);
-        return fileEntry;
+    @Override
+    public String getOpenSearchIndex() {
+        return OPENSEARCH_INDEX;
     }
 
 
@@ -63,17 +48,6 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
         return Optional.of(response.hits().hits().get(0).source());
     }
 
-
-    public Optional<FileEntry> get(UUID uuid) {
-        if (uuid == null) {
-            return Optional.empty();
-        }
-        final GetResponse<FileEntry> response = openSearchClient.getData(FileEntry.class, OPENSEARCH_INDEX, uuid.toString());
-        if (response == null || response.source() == null) {
-            return Optional.empty();
-        }
-        return Optional.of(response.source());
-    }
 
     public List<FileEntry> search(String query, Integer from, Integer size) {
         final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();

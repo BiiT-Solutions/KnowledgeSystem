@@ -2,7 +2,7 @@ package com.biit.ks.persistence.entities;
 
 import java.util.List;
 
-public abstract class CategorizedElement<U> extends Element<U> {
+public abstract class CategorizedElement<ID> extends OpenSearchElement<ID> {
 
     private List<Categorization> categorizations;
 

@@ -10,16 +10,10 @@ import org.springframework.data.util.Pair;
 import java.util.Collection;
 import java.util.List;
 
-public class CategorizedElementRepository<E extends CategorizedElement<?>> {
-
-
-    private final Class<E> elementClass;
-    private final OpenSearchClient openSearchClient;
-
+public abstract class CategorizedElementRepository<E extends CategorizedElement<?>> extends OpenSearchElementRepository<E> {
 
     public CategorizedElementRepository(Class<E> elementClass, OpenSearchClient openSearchClient) {
-        this.elementClass = elementClass;
-        this.openSearchClient = openSearchClient;
+        super(elementClass, openSearchClient);
     }
 
 
@@ -33,8 +27,8 @@ public class CategorizedElementRepository<E extends CategorizedElement<?>> {
         } else {
             shouldHavePredicates.setMinimumShouldMatch(1);
         }
-        final SearchResponse<E> response = openSearchClient.searchData(elementClass, shouldHavePredicates, from, size);
-        return openSearchClient.convertResponse(response);
+        final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), shouldHavePredicates, from, size);
+        return getOpenSearchClient().convertResponse(response);
 
     }
 }

@@ -16,10 +16,12 @@ import java.util.UUID;
 public class FileEntryProvider extends CategorizedElementProvider<FileEntry, FileEntryRepository> {
 
     private final FileEntryByStringPool fileEntryByStringPool;
+    private final FileEntryRepository fileEntryRepository;
 
     @Autowired
     public FileEntryProvider(FileEntryRepository fileEntryRepository, FileEntryByStringPool fileEntryByStringPool) {
         super(fileEntryRepository);
+        this.fileEntryRepository = fileEntryRepository;
         this.fileEntryByStringPool = fileEntryByStringPool;
     }
 
@@ -29,7 +31,7 @@ public class FileEntryProvider extends CategorizedElementProvider<FileEntry, Fil
     }
 
     public List<FileEntry> search(String searchQuery, Integer from, Integer size) {
-        return getRepository().search(searchQuery, from, size);
+        return fileEntryRepository.search(searchQuery, from, size);
     }
 
     public Optional<FileEntry> get(UUID uuid) {
@@ -57,7 +59,7 @@ public class FileEntryProvider extends CategorizedElementProvider<FileEntry, Fil
         final File f = new File(filePath);
         final String realFilePath = f.getParent();
         final String fileName = f.getName();
-        final Optional<FileEntry> saved = getRepository().findFileEntryByFilePathAndFileName(realFilePath, fileName);
+        final Optional<FileEntry> saved = fileEntryRepository.findFileEntryByFilePathAndFileName(realFilePath, fileName);
         saved.ifPresent(fileEntry -> fileEntryByStringPool.addElement(fileEntry, filePath));
         return saved;
     }

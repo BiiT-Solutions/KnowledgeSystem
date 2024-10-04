@@ -10,24 +10,22 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public abstract class CategorizedElementProvider<E extends CategorizedElement<?>, R extends CategorizedElementRepository<E>> {
+public abstract class CategorizedElementProvider<E extends CategorizedElement<?>, R extends CategorizedElementRepository<E>>
+        extends OpenSearchElementProvider<E> {
 
-    private final R repository;
+    private final CategorizedElementRepository<E> categorizedElementRepository;
 
-    protected CategorizedElementProvider(R repository) {
-        this.repository = repository;
-    }
-
-    public R getRepository() {
-        return repository;
+    protected CategorizedElementProvider(CategorizedElementRepository<E> categorizedElementRepository) {
+        super(categorizedElementRepository);
+        this.categorizedElementRepository = categorizedElementRepository;
     }
 
     public List<E> searchByCategories(Set<Categorization> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
-        return getRepository().searchByCategories(categorizations.stream().map(Categorization::getName).collect(Collectors.toSet()),
+        return categorizedElementRepository.searchByCategories(categorizations.stream().map(Categorization::getName).collect(Collectors.toSet()),
                 quantifiersOperator, from, size);
     }
 
     public List<E> searchByCategories(Collection<String> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
-        return getRepository().searchByCategories(categorizations, quantifiersOperator, from, size);
+        return categorizedElementRepository.searchByCategories(categorizations, quantifiersOperator, from, size);
     }
 }
