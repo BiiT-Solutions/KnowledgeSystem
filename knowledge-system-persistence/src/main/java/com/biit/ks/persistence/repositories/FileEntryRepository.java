@@ -19,11 +19,9 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
 
     public static final String OPENSEARCH_INDEX = "file-index";
 
-    private final OpenSearchClient openSearchClient;
 
     public FileEntryRepository(OpenSearchClient openSearchClient) {
         super(FileEntry.class, openSearchClient);
-        this.openSearchClient = openSearchClient;
     }
 
     @Override
@@ -39,8 +37,8 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
         final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.add("filePath", filePath);
         mustHaveParameters.add("fileName", fileName);
-        openSearchClient.getAll(FileEntry.class, OPENSEARCH_INDEX);
-        final SearchResponse<FileEntry> response = openSearchClient.searchData(FileEntry.class, mustHaveParameters);
+        getOpenSearchClient().getAll(FileEntry.class, OPENSEARCH_INDEX);
+        final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, mustHaveParameters);
         if (response == null || response.hits() == null || response.hits().hits().isEmpty() || response.hits().hits().get(0) == null
                 || response.hits().hits().get(0).source() == null) {
             return Optional.empty();
@@ -57,8 +55,8 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
         shouldHavePredicates.add(Pair.of("mimeType", query));
         shouldHavePredicates.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
         shouldHavePredicates.setMinimumShouldMatch(1);
-        final SearchResponse<FileEntry> response = openSearchClient.searchData(FileEntry.class, shouldHavePredicates, from, size);
-        return openSearchClient.convertResponse(response);
+        final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, shouldHavePredicates, from, size);
+        return getOpenSearchClient().convertResponse(response);
 
     }
 }

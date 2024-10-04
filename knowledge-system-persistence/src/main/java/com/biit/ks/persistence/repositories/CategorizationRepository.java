@@ -3,17 +3,16 @@ package com.biit.ks.persistence.repositories;
 
 import com.biit.ks.persistence.entities.Categorization;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
+import com.biit.ks.persistence.opensearch.search.Fuzziness;
+import com.biit.ks.persistence.opensearch.search.FuzzinessDefinition;
 import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
-import jakarta.annotation.PostConstruct;
-import org.opensearch.client.opensearch._types.OpenSearchException;
-import org.opensearch.client.opensearch.core.GetResponse;
+import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public class CategorizationRepository extends OpenSearchElementRepository<Categorization> {
@@ -24,25 +23,9 @@ public class CategorizationRepository extends OpenSearchElementRepository<Catego
         super(Categorization.class, openSearchClient);
     }
 
-    @PostConstruct
-    public void createIndex() {
-        try {
-            getOpenSearchClient().createIndex(OPENSEARCH_INDEX);
-        } catch (OpenSearchException e) {
-            if (!e.getMessage().contains("resource_already_exists_exception")) {
-                throw e;
-            }
-        }
-    }
-
     @Override
     public String getOpenSearchIndex() {
         return OPENSEARCH_INDEX;
-    }
-
-    public Categorization save(Categorization categorization) {
-        getOpenSearchClient().indexData(categorization, OPENSEARCH_INDEX, categorization.getUuid() != null ? categorization.getUuid().toString() : null);
-        return categorization;
     }
 
     public Optional<Categorization> get(String name) {
@@ -57,16 +40,16 @@ public class CategorizationRepository extends OpenSearchElementRepository<Catego
     }
 
 
-    public Optional<Categorization> get(UUID uuid) {
-        if (uuid == null) {
-            return Optional.empty();
-        }
-        final GetResponse<Categorization> response = getOpenSearchClient().getData(Categorization.class, OPENSEARCH_INDEX, uuid.toString());
-        if (response == null || response.source() == null) {
-            return Optional.empty();
-        }
-        return Optional.of(response.source());
+    @Override
+    public List<Categorization> search(String query, Integer from, Integer size) {
+        final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();
+        shouldHavePredicates.add(Pair.of("name", query));
+        shouldHavePredicates.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
+        shouldHavePredicates.setMinimumShouldMatch(1);
+        final SearchResponse<Categorization> response = getOpenSearchClient().searchData(Categorization.class, shouldHavePredicates, from, size);
+        return getOpenSearchClient().convertResponse(response);
     }
+
 
     public List<Categorization> getAll(Integer from, Integer size) {
         final SearchResponse<Categorization> response = getOpenSearchClient().getAll(Categorization.class, OPENSEARCH_INDEX, from, size);

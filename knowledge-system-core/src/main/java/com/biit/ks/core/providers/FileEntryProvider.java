@@ -1,6 +1,7 @@
 package com.biit.ks.core.providers;
 
 
+import com.biit.ks.core.providers.pools.OpenSearchElementPool;
 import com.biit.ks.persistence.entities.FileEntry;
 import com.biit.ks.persistence.repositories.FileEntryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +16,8 @@ public class FileEntryProvider extends CategorizedElementProvider<FileEntry, Fil
     private final FileEntryRepository fileEntryRepository;
 
     @Autowired
-    public FileEntryProvider(FileEntryRepository fileEntryRepository) {
-        super(fileEntryRepository);
+    public FileEntryProvider(OpenSearchElementPool<FileEntry> openSearchElementPool, FileEntryRepository fileEntryRepository) {
+        super(openSearchElementPool, fileEntryRepository);
         this.fileEntryRepository = fileEntryRepository;
     }
 
