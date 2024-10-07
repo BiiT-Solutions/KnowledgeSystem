@@ -78,16 +78,19 @@ public class OpenSearchClient {
                             @Value("${opensearch.port}") String serverPort,
                             @Value("${opensearch.user}") String user,
                             @Value("${opensearch.password}") String password,
-                            @Value("${opensearch.truststore.path}") String truststorePath,
-                            @Value("${opensearch.truststore.password}") String truststorePassword) {
+                            @Value("${opensearch.truststore.path:#{null}}") String truststorePath,
+                            @Value("${opensearch.truststore.password:#{null}}") String truststorePassword,
+                            @Value("${opensearch.insecure.skip.verify:#{false}}") boolean skipSslCheck) {
 
-        System.setProperty("javax.net.ssl.trustStore", truststorePath);
-        System.setProperty("javax.net.ssl.trustStorePassword", truststorePassword);
+        if (truststorePath != null && !truststorePath.isBlank() && !skipSslCheck) {
+            System.setProperty("javax.net.ssl.trustStore", truststorePath);
+            System.setProperty("javax.net.ssl.trustStorePassword", truststorePassword);
 
-        OpenSearchLogger.debug(this.getClass(), "Reading certificates from '{}'.", truststorePath);
+            OpenSearchLogger.debug(this.getClass(), "Reading certificates from '{}'.", truststorePath);
 
-        if (!Files.exists(Path.of(truststorePath))) {
-            OpenSearchLogger.severe(this.getClass(), "Certificates not found at '{}'.", truststorePath);
+            if (!Files.exists(Path.of(truststorePath))) {
+                OpenSearchLogger.severe(this.getClass(), "Certificates not found at '{}'.", truststorePath);
+            }
         }
 
         int convertedPort;
@@ -115,6 +118,11 @@ public class OpenSearchClient {
 
         if (pathPrefix != null && !pathPrefix.isBlank()) {
             restClientBuilder.setPathPrefix(pathPrefix);
+        }
+
+        if (skipSslCheck) {
+            restClientBuilder.setHttpClientConfigCallback(httpAsyncClientBuilder ->
+                    httpAsyncClientBuilder.setSSLHostnameVerifier((s, sslSession) -> true));
         }
 
         restClient = restClientBuilder.build();
