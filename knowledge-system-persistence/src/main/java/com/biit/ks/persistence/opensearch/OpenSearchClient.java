@@ -54,6 +54,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -82,6 +84,10 @@ public class OpenSearchClient {
         System.setProperty("javax.net.ssl.trustStorePassword", truststorePassword);
 
         OpenSearchLogger.debug(this.getClass(), "Reading certificates from '{}'.", truststorePath);
+
+        if (!Files.exists(Path.of(truststorePath))) {
+            OpenSearchLogger.severe(this.getClass(), "Certificates not found at '{}'.", truststorePath);
+        }
 
         int convertedPort;
         if (serverPort != null) {
