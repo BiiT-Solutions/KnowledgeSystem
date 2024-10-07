@@ -28,7 +28,7 @@ public class OpenSearchClientLogging extends AbstractLogging {
     }
 
     /**
-     * This is the method which I would like to execute before a selected method
+     * This is the method that I would like to execute before a selected method
      * execution.
      *
      * @param joinPoint the joinPoint
@@ -50,7 +50,7 @@ public class OpenSearchClientLogging extends AbstractLogging {
     }
 
     /**
-     * This is the method which I would like to execute after a selected method
+     * This is the method that I would like to execute after a selected method
      * execution.
      */
     @After(value = "searches()")
@@ -58,7 +58,7 @@ public class OpenSearchClientLogging extends AbstractLogging {
     }
 
     /**
-     * This is the method which I would like to execute when any method returns.
+     * This is the method that I would like to execute when any method returns.
      *
      * @param retVal the returning value.
      */
@@ -72,7 +72,7 @@ public class OpenSearchClientLogging extends AbstractLogging {
     }
 
     /**
-     * This is the method which I would like to execute if there is an exception
+     * This is the method that I would like to execute if there is an exception
      * raised by any method.
      *
      * @param ex the exception

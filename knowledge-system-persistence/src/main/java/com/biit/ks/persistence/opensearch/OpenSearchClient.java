@@ -16,6 +16,7 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.opensearch.client.RestClient;
+import org.opensearch.client.RestClientBuilder;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch._types.FieldValue;
@@ -73,7 +74,7 @@ public class OpenSearchClient {
 
     public OpenSearchClient(@Value("${opensearch.scheme}") String scheme,
                             @Value("${opensearch.server}") String server,
-//                            @Value("${opensearch.pathPrefix}") String pathPrefix,
+                            @Value("${opensearch.pathPrefix:#{null}}") String pathPrefix,
                             @Value("${opensearch.port}") String serverPort,
                             @Value("${opensearch.user}") String user,
                             @Value("${opensearch.password}") String password,
@@ -108,10 +109,15 @@ public class OpenSearchClient {
         credentialsProvider.setCredentials(new AuthScope(host), new UsernamePasswordCredentials(user, password));
 
         //Initialize the client with SSL and TLS enabled
-        restClient = RestClient.builder(host).
-//                setPathPrefix(pathPrefix).
-        setHttpClientConfigCallback(httpClientBuilder ->
-        httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)).build();
+        final RestClientBuilder restClientBuilder = RestClient.builder(host).
+                setHttpClientConfigCallback(httpClientBuilder ->
+                        httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider));
+
+        if (pathPrefix != null && !pathPrefix.isBlank()) {
+            restClientBuilder.setPathPrefix(pathPrefix);
+        }
+
+        restClient = restClientBuilder.build();
 
         //For LocalDateTime usage
         final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
