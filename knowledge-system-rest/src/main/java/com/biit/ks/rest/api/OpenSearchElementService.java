@@ -62,8 +62,8 @@ public abstract class OpenSearchElementService<
 
 
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
-    @Operation(summary = "Gets all categories.", security = @SecurityRequirement(name = "bearerAuth"))
-    @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Gets all elements.", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<D> getAll(
             @RequestParam(name = "from", required = false) Integer from,
             @RequestParam(name = "size", required = false) Integer size,
