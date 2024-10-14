@@ -37,6 +37,11 @@ public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends
     }
 
 
+    public void delete(UUID id) {
+        getRepository().delete(id);
+    }
+
+
     public List<E> search(String searchQuery, Integer from, Integer size) {
         return getRepository().search(searchQuery, from, size);
     }

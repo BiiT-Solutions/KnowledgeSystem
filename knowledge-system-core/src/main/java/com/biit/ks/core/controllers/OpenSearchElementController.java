@@ -47,4 +47,10 @@ public abstract class OpenSearchElementController<
         KnowledgeSystemLogger.warning(this.getClass(), "User '{}' is deleting '{}'.", deletedBy, dto);
         getProvider().delete(reverse(dto));
     }
+
+
+    public void delete(UUID id, String deletedBy) {
+        KnowledgeSystemLogger.warning(this.getClass(), "User '{}' is deleting '{}'.", deletedBy, id);
+        getProvider().delete(id);
+    }
 }

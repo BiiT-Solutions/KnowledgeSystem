@@ -71,5 +71,11 @@ public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>
         }
     }
 
+    public void delete(UUID uuid) {
+        if (uuid != null) {
+            getOpenSearchClient().deleteData(getOpenSearchIndex(), String.valueOf(uuid));
+        }
+    }
+
     public abstract List<E> search(String query, Integer from, Integer size);
 }

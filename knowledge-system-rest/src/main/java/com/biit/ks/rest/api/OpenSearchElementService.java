@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.List;
+import java.util.UUID;
 
 public abstract class OpenSearchElementService<
         E extends OpenSearchElement<?>,
@@ -40,12 +42,31 @@ public abstract class OpenSearchElementService<
         super(controller);
     }
 
+
+    @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
+    @Operation(summary = "Gets an entity.", security = {@SecurityRequirement(name = "bearerAuth")})
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @GetMapping(value = {"/{uuid}"}, produces = {"application/json"})
+    public void get(@PathVariable("uuid") UUID uuid, Authentication authentication, HttpServletRequest request) {
+        this.getController().get(uuid);
+    }
+
+
     @PreAuthorize("hasAnyAuthority(@securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Deletes an entity.", security = {@SecurityRequirement(name = "bearerAuth")})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping(value = {"/delete"}, produces = {"application/json"})
     public void delete(@RequestBody D dto, Authentication authentication, HttpServletRequest request) {
         this.getController().delete(dto, authentication.getName());
+    }
+
+
+    @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
+    @Operation(summary = "Gets an entity.", security = {@SecurityRequirement(name = "bearerAuth")})
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping(value = {"/{uuid}"}, produces = {"application/json"})
+    public void delete(@PathVariable("uuid") UUID uuid, Authentication authentication, HttpServletRequest request) {
+        this.getController().delete(uuid, authentication.getName());
     }
 
 
