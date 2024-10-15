@@ -65,7 +65,7 @@ public class FileEntryServices extends CategorizedElementServices<FileEntry, Fil
     }
 
 
-    @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
+    @PreAuthorize("hasAnyAuthority(@securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Downloads a file metadata.", security = @SecurityRequirement(name = "bearerAuth"))
     @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public FileEntryDTO uploadMetadata(@RequestBody FileEntryDTO fileEntryDTO, Authentication authentication, HttpServletResponse response) {
