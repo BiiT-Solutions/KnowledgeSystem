@@ -75,13 +75,6 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
         return results;
     }
 
-    public FileEntryDTO getMetadata(UUID uuid) {
-        final FileEntry fileEntry =
-                getProvider().get(uuid).orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'."));
-
-        return convert(fileEntry);
-    }
-
 
     public Resource downloadAsResource(UUID uuid, boolean checkIfPublic, String username) {
         final FileEntry fileEntry =

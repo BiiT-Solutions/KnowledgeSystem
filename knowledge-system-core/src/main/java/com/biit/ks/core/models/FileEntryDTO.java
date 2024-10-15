@@ -8,6 +8,7 @@ public class FileEntryDTO extends CategorizedElementDTO<UUID> {
     private static final long serialVersionUID = 3144187148832541249L;
 
     private UUID uuid;
+    private String alias;
     private String filePath;
     private String fileName;
     private String fileFormat;
@@ -86,6 +87,14 @@ public class FileEntryDTO extends CategorizedElementDTO<UUID> {
             return null;
         }
         return "/files/public/download/" + uuid.toString();
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 
     @Override

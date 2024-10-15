@@ -10,6 +10,7 @@ import com.biit.ks.persistence.entities.OpenSearchElement;
 import com.biit.ks.persistence.repositories.OpenSearchElementRepository;
 import com.biit.server.controller.SimpleController;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,6 +36,14 @@ public abstract class OpenSearchElementController<
         final E fileEntry =
                 getProvider().get(uuid).orElseThrow(() -> new FileNotFoundException(this.getClass(), "No element with uuid '" + uuid + "'."));
         return convert(fileEntry);
+    }
+
+
+    public D update(D data, String updatedBy) {
+        data.setUpdatedBy(updatedBy);
+        data.setUpdatedAt(LocalDateTime.now());
+        getProvider().update(reverse(data));
+        return data;
     }
 
     public List<D> getAll(Integer from, Integer size) {

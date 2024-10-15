@@ -10,6 +10,7 @@ import java.util.UUID;
 public class FileEntry extends CategorizedElement<UUID> {
 
     private UUID uuid;
+    private String alias;
     private String filePath;
     private String fileName;
     private String fileFormat;
@@ -97,6 +98,14 @@ public class FileEntry extends CategorizedElement<UUID> {
             return filePath + File.separator + fileName;
         }
         return fileName;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 
     @Override

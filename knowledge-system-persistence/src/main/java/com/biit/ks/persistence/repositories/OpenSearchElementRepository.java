@@ -43,9 +43,24 @@ public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>
         return openSearchClient;
     }
 
+
     public E save(E element) {
-        openSearchClient.indexData(element, getOpenSearchIndex(), element.getId() != null ? element.getId().toString() : null);
-        return element;
+        try {
+            openSearchClient.indexData(element, getOpenSearchIndex(), element.getId() != null ? element.getId().toString() : null);
+            return element;
+        } finally {
+            new Thread(openSearchClient::refreshIndex).start();
+        }
+    }
+
+
+    public E update(E element) {
+        try {
+            openSearchClient.updateData(elementClass, element, getOpenSearchIndex(), element.getId() != null ? element.getId().toString() : null);
+            return element;
+        } finally {
+            new Thread(openSearchClient::refreshIndex).start();
+        }
     }
 
 
@@ -67,13 +82,21 @@ public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>
 
     public void delete(E entity) {
         if (entity != null && entity.getId() != null) {
-            getOpenSearchClient().deleteData(getOpenSearchIndex(), String.valueOf(entity.getId()));
+            try {
+                getOpenSearchClient().deleteData(getOpenSearchIndex(), String.valueOf(entity.getId()));
+            } finally {
+                new Thread(openSearchClient::refreshIndex).start();
+            }
         }
     }
 
     public void delete(UUID uuid) {
         if (uuid != null) {
-            getOpenSearchClient().deleteData(getOpenSearchIndex(), String.valueOf(uuid));
+            try {
+                getOpenSearchClient().deleteData(getOpenSearchIndex(), String.valueOf(uuid));
+            } finally {
+                new Thread(openSearchClient::refreshIndex).start();
+            }
         }
     }
 

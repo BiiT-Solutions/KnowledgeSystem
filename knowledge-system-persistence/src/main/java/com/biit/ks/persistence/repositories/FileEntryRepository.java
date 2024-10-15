@@ -49,6 +49,7 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
 
     public List<FileEntry> search(String query, Integer from, Integer size) {
         final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();
+        shouldHavePredicates.add(Pair.of("alias", query));
         shouldHavePredicates.add(Pair.of("description", query));
         shouldHavePredicates.add(Pair.of("fileName", query));
         shouldHavePredicates.add(Pair.of("fileFormat", query));

@@ -12,6 +12,7 @@ import org.opensearch.client.opensearch.core.DeleteResponse;
 import org.opensearch.client.opensearch.core.GetResponse;
 import org.opensearch.client.opensearch.core.IndexResponse;
 import org.opensearch.client.opensearch.core.SearchResponse;
+import org.opensearch.client.opensearch.core.UpdateResponse;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.indices.PutIndicesSettingsResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,8 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
     private static final String DATA_ID = "1";
     private static final String DATA_NAME = "firstData";
     private static final String DATA_DESCRIPTION = "The First Data";
+    private static final String UPDATED_DATA_NAME = "firstDataUpdated";
+    private static final String UPDATED_DATA_DESCRIPTION = "The First Data is Updated";
 
     @Autowired
     private OpenSearchClient openSearchClient;
@@ -152,8 +155,23 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(response.hits().hits().size(), 0);
     }
 
+    @Test(dependsOnMethods = {"searchData", "getData", "searchDataByQuery", "searchDataByShouldQuery", "searchDataByMustQuery", "searchDataByShouldQueryInvalid", "searchDataByMustNotQuery"})
+    public void updateData() {
+        final Data newData = new Data(UPDATED_DATA_NAME, UPDATED_DATA_DESCRIPTION);
+        final UpdateResponse<Data> response = openSearchClient.updateData(Data.class, newData, INDEX, DATA_ID);
+        Assert.assertEquals(response.id(), DATA_ID);
+        Assert.assertEquals(response.result(), Result.Updated);
 
-    @Test(dependsOnMethods = {"searchData", "getData", "searchDataByQuery", "searchDataByShouldQuery", "searchDataByMustQuery", "searchDataByShouldQueryInvalid", "searchDataByMustNotQuery"}, alwaysRun = true)
+        openSearchClient.refreshIndex();
+
+        final MustHavePredicates mustHaveParameters = new MustHavePredicates();
+        mustHaveParameters.addMultiSearch(List.of("name"), UPDATED_DATA_NAME);
+        final SearchResponse<Data> searchResponse = openSearchClient.searchData(Data.class, mustHaveParameters);
+        Assert.assertEquals(searchResponse.hits().hits().size(), 1);
+    }
+
+
+    @Test(dependsOnMethods = {"searchData", "getData", "searchDataByQuery", "searchDataByShouldQuery", "searchDataByMustQuery", "searchDataByShouldQueryInvalid", "searchDataByMustNotQuery", "updateData"}, alwaysRun = true)
     public void deleteData() {
         final DeleteResponse response = openSearchClient.deleteData(INDEX, DATA_ID);
         Assert.assertEquals(response.id(), DATA_ID);

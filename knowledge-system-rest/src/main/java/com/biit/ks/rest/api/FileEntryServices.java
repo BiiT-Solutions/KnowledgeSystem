@@ -22,6 +22,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -59,7 +61,15 @@ public class FileEntryServices extends CategorizedElementServices<FileEntry, Fil
     @Operation(summary = "Downloads a file metadata.", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping(value = "/uuid/{uuid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public FileEntryDTO downloadMetadata(@PathVariable("uuid") UUID uuid, Authentication authentication, HttpServletResponse response) {
-        return getController().getMetadata(uuid);
+        return getController().get(uuid);
+    }
+
+
+    @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
+    @Operation(summary = "Downloads a file metadata.", security = @SecurityRequirement(name = "bearerAuth"))
+    @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    public FileEntryDTO uploadMetadata(@RequestBody FileEntryDTO fileEntryDTO, Authentication authentication, HttpServletResponse response) {
+        return getController().update(fileEntryDTO, authentication.getName());
     }
 
 

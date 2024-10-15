@@ -43,6 +43,8 @@ import org.opensearch.client.opensearch.core.IndexRequest;
 import org.opensearch.client.opensearch.core.IndexResponse;
 import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
+import org.opensearch.client.opensearch.core.UpdateRequest;
+import org.opensearch.client.opensearch.core.UpdateResponse;
 import org.opensearch.client.opensearch.indices.CreateIndexRequest;
 import org.opensearch.client.opensearch.indices.DeleteIndexRequest;
 import org.opensearch.client.opensearch.indices.DeleteIndexResponse;
@@ -171,6 +173,7 @@ public class OpenSearchClient {
         }
     }
 
+
     public DeleteIndexResponse deleteIndex(String indexName) {
         try {
             final DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest.Builder().index(indexName).build();
@@ -185,9 +188,10 @@ public class OpenSearchClient {
         return new DeleteIndexResponse.Builder().acknowledged(false).build();
     }
 
-    public <I> IndexResponse indexData(I indexData, String indexName, String id) {
+
+    public <I> IndexResponse indexData(I data, String indexName, String id) {
         try {
-            final IndexRequest<I> indexRequest = new IndexRequest.Builder<I>().index(indexName).id(id).document(indexData).build();
+            final IndexRequest<I> indexRequest = new IndexRequest.Builder<I>().index(indexName).id(id).document(data).build();
             return client.index(indexRequest);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
@@ -199,11 +203,27 @@ public class OpenSearchClient {
         }
     }
 
+
     public <I> GetResponse<I> getData(Class<I> dataClass, String indexName, String id) {
         try {
             //final GetRequest getRequest = new GetRequest(indexName, id);
             final GetRequest getRequest = new GetRequest.Builder().index(indexName).id(id).build();
             return client.get(getRequest, dataClass);
+        } catch (IOException e) {
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        } catch (OpenSearchException e) {
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchIndexMissingException(this.getClass(), e);
+            }
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        }
+    }
+
+
+    public <I> UpdateResponse<I> updateData(Class<I> dataClass, I data, String indexName, String id) {
+        try {
+            final UpdateRequest<I, I> indexRequest = new UpdateRequest.Builder<I, I>().index(indexName).id(id).doc(data).build();
+            return client.update(indexRequest, dataClass);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         } catch (OpenSearchException e) {

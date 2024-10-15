@@ -32,6 +32,11 @@ public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends
     }
 
 
+    public E update(E element) {
+        return getRepository().update(element);
+    }
+
+
     public void delete(E element) {
         getRepository().delete(element);
     }
