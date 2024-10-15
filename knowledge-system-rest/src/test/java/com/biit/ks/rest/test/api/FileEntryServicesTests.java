@@ -2,7 +2,9 @@ package com.biit.ks.rest.test.api;
 
 import com.biit.ks.core.models.FileEntryDTO;
 import com.biit.ks.core.seaweed.SeaweedClient;
+import com.biit.ks.core.seaweed.SeaweedConfigurator;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
+import com.biit.ks.persistence.repositories.OpenSearchConfigurator;
 import com.biit.server.security.model.AuthRequest;
 import com.biit.usermanager.client.providers.AuthenticatedUserProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -29,16 +31,14 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static com.biit.ks.core.controllers.FileEntryController.SEAWEED_PATH;
-import static com.biit.ks.persistence.repositories.FileEntryRepository.OPENSEARCH_INDEX;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -71,6 +71,12 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
     private OpenSearchClient openSearchClient;
 
     @Autowired
+    private OpenSearchConfigurator openSearchConfigurator;
+
+    @Autowired
+    private SeaweedConfigurator seaweedConfigurator;
+
+    @Autowired
     private SeaweedClient seaweedClient;
 
     private MockMvc mockMvc;
@@ -78,6 +84,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
     private String jwtToken;
 
     private UUID videoUUID;
+    private UUID imageUUID;
 
     private <T> String toJson(T object) throws JsonProcessingException {
         return objectMapper.writeValueAsString(object);
@@ -162,6 +169,25 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
 
         FileEntryDTO fileEntryResult = fromJson(createResult.getResponse().getContentAsString(), FileEntryDTO.class);
         Assert.assertEquals(fileEntryResult.getMimeType(), "image/jpeg");
+        imageUUID = fileEntryResult.getUuid();
+    }
+
+    @Test(dependsOnMethods = "getMimeType", alwaysRun = true, enabled = false)
+    public void deleteImage() throws Exception {
+        this.mockMvc
+                .perform(delete("/files/" + imageUUID.toString())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
+                        .with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isNoContent())
+                .andReturn();
+
+        //Cannot be downloaded any more.
+        this.mockMvc
+                .perform(get("/uuid/" + imageUUID.toString())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
+                        .with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andReturn();
     }
 
     @Test
@@ -190,9 +216,6 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "uploadVideo")
     public void downloadVideo() throws Exception {
-        //Force index refresh
-        openSearchClient.refreshIndex();
-
         this.mockMvc
                 .perform(get("/stream/file-entry/uuid/" + videoUUID.toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
@@ -203,9 +226,6 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "uploadVideo")
     public void searchVideo() throws Exception {
-        //Force index refresh
-        openSearchClient.refreshIndex();
-
         MvcResult createResult = this.mockMvc
                 .perform(get("/files/search/query:myVideo")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
@@ -215,18 +235,38 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
 
         final List<FileEntryDTO> fileEntryResults = Arrays.asList(fromJson(createResult.getResponse().getContentAsString(), FileEntryDTO[].class));
         Assert.assertEquals(fileEntryResults.size(), 1);
+    }
 
+
+    @Test(dependsOnMethods = {"searchVideo", "downloadVideo"}, alwaysRun = true)
+    public void deleteVideo() throws Exception {
+        this.mockMvc
+                .perform(delete("/files/" + videoUUID.toString())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
+                        .with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isNoContent())
+                .andReturn();
+
+        Thread.sleep(20000);
+
+        //Cannot be downloaded anymore.
+        this.mockMvc
+                .perform(get("/stream/file-entry/uuid/" + videoUUID.toString())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
+                        .with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andReturn();
     }
 
     @AfterClass(alwaysRun = true)
     public void cleanUp() {
-        openSearchClient.deleteIndex(OPENSEARCH_INDEX);
+        openSearchClient.deleteIndex(openSearchConfigurator.getOpenSearchFileIndex());
+        openSearchClient.deleteIndex(openSearchConfigurator.getOpenSearchCategorizationsIndex());
     }
 
 
     @AfterClass(alwaysRun = true)
-    public void deleteFile() {
-        seaweedClient.removeFile(SEAWEED_PATH + File.separator + "video");
-
+    public void deleteFolder() {
+        seaweedClient.deleteFolder(seaweedConfigurator.getUploadsPath());
     }
 }

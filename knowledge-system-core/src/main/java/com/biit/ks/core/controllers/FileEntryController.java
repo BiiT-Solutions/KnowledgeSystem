@@ -5,11 +5,13 @@ import com.biit.ks.core.converters.models.FileEntryConverterRequest;
 import com.biit.ks.core.exceptions.FileAlreadyExistsException;
 import com.biit.ks.core.exceptions.FileHandlingException;
 import com.biit.ks.core.exceptions.FileNotFoundException;
+import com.biit.ks.core.exceptions.SeaweedClientException;
 import com.biit.ks.core.files.MediaTypeCalculator;
 import com.biit.ks.core.models.ChunkData;
 import com.biit.ks.core.models.FileEntryDTO;
 import com.biit.ks.core.providers.FileEntryProvider;
 import com.biit.ks.core.seaweed.SeaweedClient;
+import com.biit.ks.core.seaweed.SeaweedConfigurator;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.FileEntry;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchException;
@@ -36,20 +38,22 @@ import java.util.UUID;
 public class FileEntryController extends CategorizedElementController<FileEntry, FileEntryDTO, FileEntryRepository,
         FileEntryProvider, FileEntryConverterRequest, FileEntryConverter> {
 
-    public static final String SEAWEED_PATH = "/uploads";
+
     private final SeaweedClient seaweedClient;
     private final IAuthenticatedUserProvider authenticatedUserProvider;
     private final FileEntryProvider fileEntryProvider;
+    private final SeaweedConfigurator seaweedConfigurator;
 
 
     @Autowired
     protected FileEntryController(FileEntryProvider provider, SeaweedClient seaweedClient,
                                   IAuthenticatedUserProvider authenticatedUserProvider, FileEntryProvider fileEntryProvider,
-                                  FileEntryConverter converter) {
+                                  FileEntryConverter converter, SeaweedConfigurator seaweedConfigurator) {
         super(provider, converter);
         this.seaweedClient = seaweedClient;
         this.authenticatedUserProvider = authenticatedUserProvider;
         this.fileEntryProvider = fileEntryProvider;
+        this.seaweedConfigurator = seaweedConfigurator;
     }
 
     @Override
@@ -141,10 +145,14 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
         final FileEntry fileEntry = reverse(fileEntryDTO);
         setFields(fileEntry, file, createdBy);
         if (forceRewrite == null || !forceRewrite) {
-            //Check if file already exists.
+            //Check if the file already exists.
             checkExistingFile(fileEntry);
         }
         try {
+            if (!fileEntry.getFilePath().startsWith(seaweedConfigurator.getUploadsPath())) {
+                throw new SeaweedClientException(this.getClass(), "Invalid file path '" + fileEntry.getFilePath()
+                        + "'. Must be stored on '" + seaweedConfigurator.getUploadsPath() + "'");
+            }
             seaweedClient.addFile(fileEntry.getFullPath(), file);
             //Save it on Opensearch
             fileEntryProvider.save(fileEntry);
@@ -168,7 +176,7 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
         final IAuthenticatedUser user = authenticatedUserProvider.findByUsername(createdBy).orElseThrow(() ->
                 new UserNotFoundException(this.getClass(), "No User with username '" + createdBy + "' found on the system."));
         fileEntry.setCreatedBy(user.getUID());
-        fileEntry.setFilePath(SEAWEED_PATH + File.separator + user.getUID());
+        fileEntry.setFilePath(seaweedConfigurator.getUploadsPath() + File.separator + user.getUID());
     }
 
 

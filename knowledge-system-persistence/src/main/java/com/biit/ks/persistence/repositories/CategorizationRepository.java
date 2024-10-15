@@ -17,15 +17,16 @@ import java.util.Optional;
 @Repository
 public class CategorizationRepository extends OpenSearchElementRepository<Categorization> {
 
-    public static final String OPENSEARCH_INDEX = "categorizations";
+    private final OpenSearchConfigurator openSearchConfigurator;
 
-    public CategorizationRepository(OpenSearchClient openSearchClient) {
+    public CategorizationRepository(OpenSearchClient openSearchClient, OpenSearchConfigurator openSearchConfigurator) {
         super(Categorization.class, openSearchClient);
+        this.openSearchConfigurator = openSearchConfigurator;
     }
 
     @Override
     public String getOpenSearchIndex() {
-        return OPENSEARCH_INDEX;
+        return openSearchConfigurator.getOpenSearchCategorizationsIndex();
     }
 
     public Optional<Categorization> get(String name) {
@@ -52,7 +53,7 @@ public class CategorizationRepository extends OpenSearchElementRepository<Catego
 
 
     public List<Categorization> getAll(Integer from, Integer size) {
-        final SearchResponse<Categorization> response = getOpenSearchClient().getAll(Categorization.class, OPENSEARCH_INDEX, from, size);
+        final SearchResponse<Categorization> response = getOpenSearchClient().getAll(Categorization.class, getOpenSearchIndex(), from, size);
         return getOpenSearchClient().convertResponse(response);
     }
 

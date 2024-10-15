@@ -118,6 +118,10 @@ public class SeaweedClient {
         filerClient.mkdirs(fullPath, permissions);
     }
 
+    public void deleteFolder(String fullPath) {
+        removeFolder(fullPath, true, true);
+    }
+
     /**
      * Removes a folder.
      *

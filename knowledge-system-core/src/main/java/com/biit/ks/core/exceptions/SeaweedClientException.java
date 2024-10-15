@@ -12,11 +12,11 @@ public class SeaweedClientException extends LoggedException {
     private static final long serialVersionUID = -6199332968769763797L;
 
     public SeaweedClientException(Class<?> clazz, String message, ExceptionType type) {
-        super(clazz, message, type, HttpStatus.NOT_FOUND);
+        super(clazz, message, type, HttpStatus.BAD_REQUEST);
     }
 
     public SeaweedClientException(Class<?> clazz, String message) {
-        super(clazz, message, ExceptionType.SEVERE, HttpStatus.NOT_FOUND);
+        super(clazz, message, ExceptionType.SEVERE, HttpStatus.BAD_REQUEST);
     }
 
     public SeaweedClientException(Class<?> clazz) {

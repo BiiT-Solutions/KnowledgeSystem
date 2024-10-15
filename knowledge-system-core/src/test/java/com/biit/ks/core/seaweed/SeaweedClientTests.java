@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import seaweedfs.client.FilerProto;
@@ -18,8 +19,6 @@ import java.util.List;
 @Test(groups = {"seaweedClient"})
 public class SeaweedClientTests extends AbstractTestNGSpringContextTests {
 
-    private static final String SEAWEED_PATH = "/dir/withData";
-
     private static final String RESOURCE_FOLDER = "documents";
     private static final String RESOURCE = "Chuthulu";
     private static final String RESOURCE_EXTENSION = ".png";
@@ -27,46 +26,54 @@ public class SeaweedClientTests extends AbstractTestNGSpringContextTests {
     @Autowired
     private SeaweedClient seaweedClient;
 
+    @Autowired
+    private SeaweedConfigurator seaweedConfigurator;
+
     private long resourceSize;
 
     @BeforeClass
     public void createFolder() {
-        seaweedClient.createFolder(SEAWEED_PATH, 0755);
+        seaweedClient.createFolder(seaweedConfigurator.getUploadsPath(), 0755);
     }
 
     @Test
     public void addFile() throws IOException, URISyntaxException {
         File image = new File(getClass().getClassLoader().getResource(RESOURCE_FOLDER + File.separator + RESOURCE + RESOURCE_EXTENSION).toURI());
         resourceSize = Files.size(image.toPath());
-        seaweedClient.addFile(SEAWEED_PATH + File.separator + RESOURCE, image);
+        seaweedClient.addFile(seaweedConfigurator.getUploadsPath() + File.separator + RESOURCE, image);
     }
 
     @Test(dependsOnMethods = "addFile")
     public void downloadFile() throws IOException {
         File result = File.createTempFile(RESOURCE, RESOURCE_EXTENSION);
         result.deleteOnExit();
-        seaweedClient.getFile(SEAWEED_PATH + File.separator + RESOURCE, result);
+        seaweedClient.getFile(seaweedConfigurator.getUploadsPath() + File.separator + RESOURCE, result);
     }
 
     @Test(dependsOnMethods = "addFile")
     public void listFiles() {
-        final List<FilerProto.Entry> entries = seaweedClient.listEntries(SEAWEED_PATH);
+        final List<FilerProto.Entry> entries = seaweedClient.listEntries(seaweedConfigurator.getUploadsPath());
         Assert.assertEquals(entries.size(), 1);
     }
 
     @Test(dependsOnMethods = "addFile")
     public void getEntry() {
-        final FilerProto.Entry entry = seaweedClient.getEntry(SEAWEED_PATH, RESOURCE);
+        final FilerProto.Entry entry = seaweedClient.getEntry(seaweedConfigurator.getUploadsPath(), RESOURCE);
         Assert.assertEquals(entry.getName(), RESOURCE);
         Assert.assertEquals(entry.getAttributes().getFileSize(), resourceSize);
     }
 
     @Test(dependsOnMethods = {"downloadFile", "listFiles", "getEntry"}, alwaysRun = true)
     public void deleteFile() {
-        seaweedClient.removeFile(SEAWEED_PATH + File.separator + RESOURCE);
+        seaweedClient.removeFile(seaweedConfigurator.getUploadsPath() + File.separator + RESOURCE);
 
-        final List<FilerProto.Entry> entries = seaweedClient.listEntries(SEAWEED_PATH);
+        final List<FilerProto.Entry> entries = seaweedClient.listEntries(seaweedConfigurator.getUploadsPath());
         Assert.assertEquals(entries.size(), 0);
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void deleteFolder() {
+        seaweedClient.deleteFolder(seaweedConfigurator.getUploadsPath());
     }
 
 }

@@ -17,16 +17,17 @@ import java.util.Optional;
 @Repository
 public class FileEntryRepository extends CategorizedElementRepository<FileEntry> {
 
-    public static final String OPENSEARCH_INDEX = "file-index";
+    private final OpenSearchConfigurator openSearchConfigurator;
 
 
-    public FileEntryRepository(OpenSearchClient openSearchClient) {
+    public FileEntryRepository(OpenSearchClient openSearchClient, OpenSearchConfigurator openSearchConfigurator) {
         super(FileEntry.class, openSearchClient);
+        this.openSearchConfigurator = openSearchConfigurator;
     }
 
     @Override
     public String getOpenSearchIndex() {
-        return OPENSEARCH_INDEX;
+        return openSearchConfigurator.getOpenSearchFileIndex();
     }
 
 
@@ -37,7 +38,7 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
         final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.add("filePath", filePath);
         mustHaveParameters.add("fileName", fileName);
-        getOpenSearchClient().getAll(FileEntry.class, OPENSEARCH_INDEX);
+        getOpenSearchClient().getAll(FileEntry.class, getOpenSearchIndex());
         final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, mustHaveParameters);
         if (response == null || response.hits() == null || response.hits().hits().isEmpty() || response.hits().hits().get(0) == null
                 || response.hits().hits().get(0).source() == null) {
