@@ -6,6 +6,7 @@ import com.biit.ks.persistence.opensearch.search.MustNotHavePredicates;
 import com.biit.ks.persistence.opensearch.search.SearchFilter;
 import com.biit.ks.persistence.opensearch.search.SearchPredicates;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
+import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 
 import java.util.Comparator;
 import java.util.HashSet;
@@ -30,6 +31,8 @@ public class SearchQuery<I> {
     //How many should predicate must be present.
     private Integer minimumShouldMatch;
 
+    private SortResultOptions sortResultOptions;
+
     //Pagination to restrict the number of results.
     private Integer from;
     private Integer size;
@@ -39,9 +42,23 @@ public class SearchQuery<I> {
         this.dataClass = dataClass;
     }
 
+    public SearchQuery(Class<I> dataClass, SortResultOptions sortResultOptions, SearchPredicates... searchParameters) {
+        this(dataClass);
+        this.sortResultOptions = sortResultOptions;
+        this.searchParameters = Set.of(searchParameters);
+    }
+
     public SearchQuery(Class<I> dataClass, SearchPredicates... searchParameters) {
         this(dataClass);
         this.searchParameters = Set.of(searchParameters);
+    }
+
+    public SearchQuery(Class<I> dataClass, SortResultOptions sortResultOptions, Integer from, Integer size, SearchPredicates... searchParameters) {
+        this(dataClass);
+        this.searchParameters = Set.of(searchParameters);
+        this.sortResultOptions = sortResultOptions;
+        setFrom(from);
+        setSize(size);
     }
 
     public SearchQuery(Class<I> dataClass, Integer from, Integer size, SearchPredicates... searchParameters) {
@@ -151,5 +168,13 @@ public class SearchQuery<I> {
 
     public void setMinimumShouldMatch(Integer minimumShouldMatch) {
         this.minimumShouldMatch = minimumShouldMatch;
+    }
+
+    public SortResultOptions getSortResultOptions() {
+        return sortResultOptions;
+    }
+
+    public void setSortResultOptions(SortResultOptions sortResultOptions) {
+        this.sortResultOptions = sortResultOptions;
     }
 }

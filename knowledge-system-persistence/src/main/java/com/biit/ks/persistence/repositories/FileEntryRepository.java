@@ -7,6 +7,8 @@ import com.biit.ks.persistence.opensearch.search.Fuzziness;
 import com.biit.ks.persistence.opensearch.search.FuzzinessDefinition;
 import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
+import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
+import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Repository;
@@ -57,7 +59,8 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
         shouldHavePredicates.add(Pair.of("mimeType", query));
         shouldHavePredicates.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
         shouldHavePredicates.setMinimumShouldMatch(1);
-        final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, shouldHavePredicates, from, size);
+        final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, shouldHavePredicates,
+                new SortResultOptions("createdAt", SortOptionOrder.DESC), from, size);
         return getOpenSearchClient().convertResponse(response);
 
     }

@@ -6,6 +6,7 @@ import com.biit.ks.persistence.opensearch.exceptions.OpenSearchConnectionExcepti
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchIndexMissingException;
 import com.biit.ks.persistence.opensearch.search.IntervalsSearch;
 import com.biit.ks.persistence.opensearch.search.SearchPredicates;
+import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -21,6 +22,8 @@ import org.opensearch.client.json.JsonData;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch._types.OpenSearchException;
+import org.opensearch.client.opensearch._types.SortOptions;
+import org.opensearch.client.opensearch._types.mapping.TypeMapping;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Intervals;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsMatch;
@@ -45,7 +48,6 @@ import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.core.UpdateRequest;
 import org.opensearch.client.opensearch.core.UpdateResponse;
-import org.opensearch.client.opensearch.indices.CreateIndexRequest;
 import org.opensearch.client.opensearch.indices.DeleteIndexRequest;
 import org.opensearch.client.opensearch.indices.DeleteIndexResponse;
 import org.opensearch.client.opensearch.indices.IndexSettings;
@@ -161,8 +163,13 @@ public class OpenSearchClient {
 
     public PutIndicesSettingsResponse createIndex(String indexName) {
         try {
-            final CreateIndexRequest createIndexRequest = new CreateIndexRequest.Builder().index(indexName).build();
-            client.indices().create(createIndexRequest);
+            final TypeMapping mappings = TypeMapping.of(mappingsBuilder -> {
+                for (String sortingProperty : SortResultOptions.ALLOWED_FIELDS) {
+                    mappingsBuilder.properties(sortingProperty, type -> type.keyword(keyword -> keyword));
+                }
+                return mappingsBuilder;
+            });
+            client.indices().create(idxBuilder -> idxBuilder.index(indexName).mappings(mappings));
 
             final IndexSettings indexSettings = new IndexSettings.Builder().autoExpandReplicas(DEFAULT_EXPAND_REPLICAS).build();
             final PutIndicesSettingsRequest putIndicesSettingsRequest = new PutIndicesSettingsRequest.Builder().index(indexName)
@@ -252,25 +259,20 @@ public class OpenSearchClient {
         }
     }
 
-    public <I> SearchResponse<I> getAll(Class<I> indexDataClass, String indexName) {
-        return searchData(indexDataClass, indexName, null, null);
-    }
-
-    public <I> SearchResponse<I> getAll(Class<I> indexDataClass, String indexName, Integer from, Integer size) {
-        return searchData(indexDataClass, indexName, null, null);
-    }
-
     public <I> SearchResponse<I> searchData(Class<I> indexDataClass, String indexName) {
-        return searchData(indexDataClass, indexName, null, null);
+        return searchData(indexDataClass, indexName, null, null, null);
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> indexDataClass, String indexName, Integer from, Integer size) {
+    public <I> SearchResponse<I> searchData(Class<I> indexDataClass, String indexName, SortOptions sortOptions, Integer from, Integer size) {
         try {
             final SearchResponse<I> searchResponse = client.search(
                     s -> {
                         s.index(indexName);
                         s.from(from != null ? from : 0);
                         s.size(size != null ? size : MAX_SEARCH_RESULTS);
+                        if (sortOptions != null) {
+                            s.sort(List.of(sortOptions));
+                        }
                         return s;
                     }, indexDataClass);
             for (int i = 0; i < searchResponse.hits().hits().size(); i++) {
@@ -300,15 +302,18 @@ public class OpenSearchClient {
     }
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, Query query) {
-        return searchData(dataClass, query, null, null);
+        return searchData(dataClass, query, null, null, null);
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, Query query, Integer from, Integer size) {
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, Query query, SortOptions sortOptions, Integer from, Integer size) {
         try {
             return client.search(s -> {
                 s.query(query);
                 s.from(from != null ? from : 0);
                 s.size(size != null ? size : MAX_SEARCH_RESULTS);
+                if (sortOptions != null) {
+                    s.sort(List.of(sortOptions));
+                }
                 return s;
             }, dataClass);
         } catch (IOException e) {
@@ -353,9 +358,22 @@ public class OpenSearchClient {
      * @return The search response containing the search hits.
      * @throws IOException If an error occurs while performing the search.
      */
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, String indexName, String field, String query, int size) throws IOException {
-        return client.search(s -> s.index(indexName).query(q -> q
-                .match(t -> t.field(field).query(FieldValue.of(query)))).size(size), dataClass);
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, String indexName, String field, String query, SortOptions sortOptions,
+                                            Integer from, Integer size) throws IOException {
+        try {
+            return client.search(s -> {
+                s.index(indexName);
+                s.query(q -> q.match(t -> t.field(field).query(FieldValue.of(query))));
+                if (sortOptions != null) {
+                    s.sort(List.of(sortOptions));
+                }
+                s.from(from != null ? from : 0);
+                s.size(size != null ? size : MAX_SEARCH_RESULTS);
+                return s;
+            }, dataClass);
+        } catch (IOException e) {
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        }
     }
 
     public DeleteResponse deleteData(String indexName, String id) {
@@ -366,12 +384,35 @@ public class OpenSearchClient {
         }
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, SearchPredicates shouldHaveValues) {
-        return searchData(new SearchQuery<>(dataClass, shouldHaveValues));
+    public <I> SearchResponse<I> getAll(Class<I> indexDataClass, String indexName) {
+        return getAll(indexDataClass, indexName, null, null);
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, SearchPredicates shouldHaveValues, Integer from, Integer size) {
-        return searchData(new SearchQuery<>(dataClass, from, size, shouldHaveValues));
+    public <I> SearchResponse<I> getAll(Class<I> indexDataClass, String indexName, Integer from, Integer size) {
+        return getAll(indexDataClass, indexName, null, from, size);
+    }
+
+    public <I> SearchResponse<I> getAll(Class<I> indexDataClass, String indexName, SortResultOptions sortResultOptions, Integer from, Integer size) {
+        return searchData(indexDataClass, indexName,
+                sortResultOptions != null && sortResultOptions.getField() != null ? sortResultOptions.convert() : null,
+                from, size);
+    }
+
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, SearchPredicates searchPredicates) {
+        return searchData(dataClass, searchPredicates, null);
+    }
+
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, SearchPredicates searchPredicates, SortResultOptions sortResultOptions) {
+        return searchData(new SearchQuery<>(dataClass, sortResultOptions, searchPredicates));
+    }
+
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, SearchPredicates searchPredicates, Integer from, Integer size) {
+        return searchData(dataClass, searchPredicates, null, from, size);
+    }
+
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, SearchPredicates searchPredicates, SortResultOptions sortResultOptions,
+                                            Integer from, Integer size) {
+        return searchData(new SearchQuery<>(dataClass, sortResultOptions, from, size, searchPredicates));
     }
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, IntervalsSearch intervalsSearch) {
@@ -380,7 +421,10 @@ public class OpenSearchClient {
 
 
     public <I> SearchResponse<I> searchData(SearchQuery<I> searchQuery) {
-        return searchData(searchQuery.getDataClass(), createQuery(searchQuery), searchQuery.getFrom(), searchQuery.getSize());
+        return searchData(searchQuery.getDataClass(), createQuery(searchQuery),
+                searchQuery.getSortResultOptions() != null && searchQuery.getSortResultOptions().getField() != null
+                        ? searchQuery.getSortResultOptions().convert() : null,
+                searchQuery.getFrom(), searchQuery.getSize());
     }
 
     public <I> CountResponse countData(SearchQuery<I> searchQuery) {

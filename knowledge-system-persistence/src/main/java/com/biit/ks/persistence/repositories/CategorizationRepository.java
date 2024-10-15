@@ -51,10 +51,4 @@ public class CategorizationRepository extends OpenSearchElementRepository<Catego
         return getOpenSearchClient().convertResponse(response);
     }
 
-
-    public List<Categorization> getAll(Integer from, Integer size) {
-        final SearchResponse<Categorization> response = getOpenSearchClient().getAll(Categorization.class, getOpenSearchIndex(), from, size);
-        return getOpenSearchClient().convertResponse(response);
-    }
-
 }

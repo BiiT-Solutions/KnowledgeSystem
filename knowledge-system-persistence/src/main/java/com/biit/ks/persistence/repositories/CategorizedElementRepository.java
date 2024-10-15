@@ -3,6 +3,8 @@ package com.biit.ks.persistence.repositories;
 import com.biit.ks.persistence.entities.CategorizedElement;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
+import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
+import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.springframework.data.util.Pair;
@@ -27,7 +29,8 @@ public abstract class CategorizedElementRepository<E extends CategorizedElement<
         } else {
             shouldHavePredicates.setMinimumShouldMatch(1);
         }
-        final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), shouldHavePredicates, from, size);
+        final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), shouldHavePredicates,
+                new SortResultOptions("createdAt", SortOptionOrder.DESC), from, size);
         return getOpenSearchClient().convertResponse(response);
 
     }

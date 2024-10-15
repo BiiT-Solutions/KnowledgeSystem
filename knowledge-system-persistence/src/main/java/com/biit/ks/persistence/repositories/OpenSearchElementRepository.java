@@ -2,6 +2,8 @@ package com.biit.ks.persistence.repositories;
 
 import com.biit.ks.persistence.entities.OpenSearchElement;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
+import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
+import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import jakarta.annotation.PostConstruct;
 import org.opensearch.client.opensearch._types.OpenSearchException;
 import org.opensearch.client.opensearch.core.GetResponse;
@@ -76,7 +78,8 @@ public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>
     }
 
     public List<E> getAll(Integer from, Integer size) {
-        final SearchResponse<E> response = getOpenSearchClient().getAll(getElementClass(), getOpenSearchIndex(), from, size);
+        final SearchResponse<E> response = getOpenSearchClient().getAll(getElementClass(), getOpenSearchIndex(),
+                new SortResultOptions("createdAt", SortOptionOrder.DESC), from, size);
         return getOpenSearchClient().convertResponse(response);
     }
 
