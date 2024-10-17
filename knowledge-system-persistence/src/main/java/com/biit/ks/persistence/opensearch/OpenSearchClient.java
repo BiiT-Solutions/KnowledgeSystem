@@ -457,8 +457,8 @@ public class OpenSearchClient {
         if (searchParameters != null && !searchParameters.isEmpty()) {
             for (SearchPredicates searchParameter : searchParameters) {
                 searchParameter.getSearch().forEach(stringPair -> {
-                    final MatchQuery.Builder builder = new MatchQuery.Builder().field(stringPair.getFirst())
-                            .query(FieldValue.of(stringPair.getSecond()));
+                    final MatchQuery.Builder builder = new MatchQuery.Builder().field(stringPair.getLeft())
+                            .query(FieldValue.of(stringPair.getRight()));
                     if (searchParameter.getFuzzinessDefinition() != null) {
                         builder.fuzziness(searchParameter.getFuzzinessDefinition().getFuzziness().tag());
                         if (searchParameter.getFuzzinessDefinition().getMaxExpansions() != null) {
@@ -471,8 +471,8 @@ public class OpenSearchClient {
                     searchQuery.add(builder.build()._toQuery());
                 });
                 searchParameter.getMultiSearch().forEach(listStringPair -> {
-                    final MultiMatchQuery.Builder builder = new MultiMatchQuery.Builder().fields(listStringPair.getFirst())
-                            .query(listStringPair.getSecond());
+                    final MultiMatchQuery.Builder builder = new MultiMatchQuery.Builder().fields(listStringPair.getLeft())
+                            .query(listStringPair.getRight());
                     if (searchParameter.getFuzzinessDefinition() != null) {
                         builder.fuzziness(searchParameter.getFuzzinessDefinition().getFuzziness().tag());
                         if (searchParameter.getFuzzinessDefinition().getMaxExpansions() != null) {

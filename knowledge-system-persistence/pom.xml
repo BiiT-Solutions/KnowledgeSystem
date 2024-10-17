@@ -25,6 +25,12 @@
         <dependency>
             <groupId>com.biit</groupId>
             <artifactId>rest-server-security</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.data</groupId>
+                    <artifactId>spring-data-jpa</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.opensearch.client</groupId>
@@ -36,11 +42,6 @@
         </dependency>
 
         <!--Testing-->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>

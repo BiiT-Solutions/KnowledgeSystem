@@ -8,7 +8,7 @@ import com.biit.ks.persistence.opensearch.search.FuzzinessDefinition;
 import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import org.opensearch.client.opensearch.core.SearchResponse;
-import org.springframework.data.util.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

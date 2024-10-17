@@ -10,7 +10,7 @@ import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
 import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import org.opensearch.client.opensearch.core.SearchResponse;
-import org.springframework.data.util.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

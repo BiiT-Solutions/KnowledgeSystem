@@ -1,6 +1,6 @@
 package com.biit.ks.persistence.opensearch.search;
 
-import org.springframework.data.util.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
