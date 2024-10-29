@@ -4,6 +4,7 @@ import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.logger.OpenSearchLogger;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchConnectionException;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchIndexMissingException;
+import com.biit.ks.persistence.opensearch.exceptions.OpenSearchInvalidSearchQueryException;
 import com.biit.ks.persistence.opensearch.search.IntervalsSearch;
 import com.biit.ks.persistence.opensearch.search.SearchPredicates;
 import com.biit.ks.persistence.opensearch.search.SortResultOptions;
@@ -282,8 +283,13 @@ public class OpenSearchClient {
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         } catch (OpenSearchException e) {
+            OpenSearchLogger.severe(this.getClass(), "Query failed. Parameters: Class '{}', Index '{}', Sorting '{}', From '{}', Size '{}'.",
+                    indexDataClass, indexName, sortOptions, from, size);
             if (e.getMessage().contains("index_not_found_exception")) {
                 throw new OpenSearchIndexMissingException(this.getClass(), e);
+            }
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchInvalidSearchQueryException(this.getClass(), e);
             }
             throw new OpenSearchConnectionException(this.getClass(), e);
         }
@@ -297,6 +303,16 @@ public class OpenSearchClient {
             }
             return searchResponse;
         } catch (IOException e) {
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        } catch (OpenSearchException e) {
+            OpenSearchLogger.severe(this.getClass(), "Query failed. Parameters: Class '{}', SearchRequest '{}'.",
+                    dataClass, request);
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchIndexMissingException(this.getClass(), e);
+            }
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchInvalidSearchQueryException(this.getClass(), e);
+            }
             throw new OpenSearchConnectionException(this.getClass(), e);
         }
     }
@@ -318,6 +334,16 @@ public class OpenSearchClient {
             }, dataClass);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
+        } catch (OpenSearchException e) {
+            OpenSearchLogger.severe(this.getClass(), "Query failed. Parameters: Class '{}', Query '{}', Sorting '{}', From '{}', Size '{}'.",
+                    dataClass, query, sortOptions, from, size);
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchIndexMissingException(this.getClass(), e);
+            }
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchInvalidSearchQueryException(this.getClass(), e);
+            }
+            throw new OpenSearchConnectionException(this.getClass(), e);
         }
     }
 
@@ -326,6 +352,16 @@ public class OpenSearchClient {
             return client.count(new CountRequest.Builder().query(query).build());
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
+        } catch (OpenSearchException e) {
+            OpenSearchLogger.severe(this.getClass(), "Count query failed. Parameters: Query '{}'.",
+                    query);
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchIndexMissingException(this.getClass(), e);
+            }
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchInvalidSearchQueryException(this.getClass(), e);
+            }
+            throw new OpenSearchConnectionException(this.getClass(), e);
         }
     }
 
@@ -333,6 +369,16 @@ public class OpenSearchClient {
         try {
             return client.deleteByQuery(new DeleteByQueryRequest.Builder().query(query).build());
         } catch (IOException e) {
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        } catch (OpenSearchException e) {
+            OpenSearchLogger.severe(this.getClass(), "Delete query failed. Parameters: Query '{}'.",
+                    query);
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchIndexMissingException(this.getClass(), e);
+            }
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchInvalidSearchQueryException(this.getClass(), e);
+            }
             throw new OpenSearchConnectionException(this.getClass(), e);
         }
     }
@@ -373,6 +419,17 @@ public class OpenSearchClient {
             }, dataClass);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
+        } catch (OpenSearchException e) {
+            OpenSearchLogger.severe(this.getClass(), "Query failed. Parameters: Class '{}', Index '{}', Field '{}', Query '{}', Sorting '{}'"
+                            + ", From '{}', Size '{}'",
+                    dataClass, indexName, field, query, sortOptions, from, size);
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchIndexMissingException(this.getClass(), e);
+            }
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchInvalidSearchQueryException(this.getClass(), e);
+            }
+            throw new OpenSearchConnectionException(this.getClass(), e);
         }
     }
 
@@ -380,6 +437,15 @@ public class OpenSearchClient {
         try {
             return client.delete(b -> b.index(indexName).id(id));
         } catch (IOException e) {
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        } catch (OpenSearchException e) {
+            OpenSearchLogger.severe(this.getClass(), "Delete query failed. Parameters: Index '{}', Id '{}'.", indexName, id);
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchIndexMissingException(this.getClass(), e);
+            }
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchInvalidSearchQueryException(this.getClass(), e);
+            }
             throw new OpenSearchConnectionException(this.getClass(), e);
         }
     }

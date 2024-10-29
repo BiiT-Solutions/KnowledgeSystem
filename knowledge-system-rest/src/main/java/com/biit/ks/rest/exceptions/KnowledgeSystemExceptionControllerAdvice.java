@@ -4,6 +4,7 @@ import com.biit.ks.core.exceptions.FileHandlingException;
 import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.exceptions.SeaweedClientException;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchException;
+import com.biit.ks.persistence.opensearch.exceptions.OpenSearchInvalidSearchQueryException;
 import com.biit.server.exceptions.ErrorResponse;
 import com.biit.server.exceptions.NotFoundException;
 import com.biit.server.exceptions.ServerExceptionControllerAdvice;
@@ -47,4 +48,11 @@ public class KnowledgeSystemExceptionControllerAdvice extends ServerExceptionCon
         RestServerExceptionLogger.errorMessage(this.getClass().getName(), ex);
         return new ResponseEntity<>(new ErrorResponse("NOT_FOUND", "file_not_found", ex), HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(OpenSearchInvalidSearchQueryException.class)
+    public ResponseEntity<Object> openSearchInvalidSearchQueryException(Exception ex) {
+        RestServerExceptionLogger.errorMessage(this.getClass().getName(), ex);
+        return new ResponseEntity<>(new ErrorResponse("INTERNAL_SERVER_ERROR", "invalid_query", ex), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 }

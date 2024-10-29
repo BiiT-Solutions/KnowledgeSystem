@@ -238,7 +238,21 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
     }
 
 
-    @Test(dependsOnMethods = {"searchVideo", "downloadVideo"}, alwaysRun = true)
+    @Test(dependsOnMethods = "uploadVideo")
+    public void getAll() throws Exception {
+        MvcResult createResult = this.mockMvc
+                .perform(get("/files")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
+                        .with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        final List<FileEntryDTO> fileEntryResults = Arrays.asList(fromJson(createResult.getResponse().getContentAsString(), FileEntryDTO[].class));
+        Assert.assertEquals(fileEntryResults.size(), 1);
+    }
+
+
+    @Test(dependsOnMethods = {"searchVideo", "downloadVideo", "getAll"}, alwaysRun = true)
     public void deleteVideo() throws Exception {
         this.mockMvc
                 .perform(delete("/files/" + videoUUID.toString())
