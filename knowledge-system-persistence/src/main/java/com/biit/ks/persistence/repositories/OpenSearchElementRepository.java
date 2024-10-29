@@ -15,6 +15,8 @@ import java.util.UUID;
 
 public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>> {
 
+    private static final String SORTING_FIELD = "createdAt";
+
     private final Class<E> elementClass;
     private final OpenSearchClient openSearchClient;
 
@@ -79,7 +81,7 @@ public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>
 
     public List<E> getAll(Integer from, Integer size) {
         final SearchResponse<E> response = getOpenSearchClient().getAll(getElementClass(), getOpenSearchIndex(),
-                new SortResultOptions("createdAt", SortOptionOrder.DESC), from, size);
+                new SortResultOptions(SORTING_FIELD, SortOptionOrder.DESC), from, size);
         return getOpenSearchClient().convertResponse(response);
     }
 

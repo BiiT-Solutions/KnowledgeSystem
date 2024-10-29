@@ -88,6 +88,8 @@ public class OpenSearchClient {
                             @Value("${opensearch.insecure.skip.verify:#{false}}") boolean skipSslCheck) {
 
         if (truststorePath != null && !truststorePath.isBlank() && !skipSslCheck) {
+            //Include lestencrypt root certificate 'isrgrootx1.der'
+            // on the trustStore to allow connections with user manager from localhost.
             System.setProperty("javax.net.ssl.trustStore", truststorePath);
             System.setProperty("javax.net.ssl.trustStorePassword", truststorePassword);
 
@@ -269,8 +271,12 @@ public class OpenSearchClient {
             final SearchResponse<I> searchResponse = client.search(
                     s -> {
                         s.index(indexName);
-                        s.from(from != null ? from : 0);
-                        s.size(size != null ? size : MAX_SEARCH_RESULTS);
+                        if (from != null) {
+                            s.from(from);
+                        }
+                        if (size != null) {
+                            s.size(size);
+                        }
                         if (sortOptions != null) {
                             s.sort(List.of(sortOptions));
                         }
@@ -325,8 +331,12 @@ public class OpenSearchClient {
         try {
             return client.search(s -> {
                 s.query(query);
-                s.from(from != null ? from : 0);
-                s.size(size != null ? size : MAX_SEARCH_RESULTS);
+                if (from != null) {
+                    s.from(from);
+                }
+                if (size != null) {
+                    s.size(size);
+                }
                 if (sortOptions != null) {
                     s.sort(List.of(sortOptions));
                 }
@@ -413,8 +423,12 @@ public class OpenSearchClient {
                 if (sortOptions != null) {
                     s.sort(List.of(sortOptions));
                 }
-                s.from(from != null ? from : 0);
-                s.size(size != null ? size : MAX_SEARCH_RESULTS);
+                if (from != null) {
+                    s.from(from);
+                }
+                if (size != null) {
+                    s.size(size);
+                }
                 return s;
             }, dataClass);
         } catch (IOException e) {

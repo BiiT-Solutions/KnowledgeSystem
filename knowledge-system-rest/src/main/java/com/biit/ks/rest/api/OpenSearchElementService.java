@@ -62,7 +62,7 @@ public abstract class OpenSearchElementService<
 
 
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
-    @Operation(summary = "Gets an entity.", security = {@SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Deletes an entity by uuid.", security = {@SecurityRequirement(name = "bearerAuth")})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(value = {"/{uuid}"}, produces = {"application/json"})
     public void delete(@PathVariable("uuid") UUID uuid, Authentication authentication, HttpServletRequest request) {
