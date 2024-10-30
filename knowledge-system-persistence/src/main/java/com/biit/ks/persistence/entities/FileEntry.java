@@ -17,6 +17,7 @@ public class FileEntry extends CategorizedElement<UUID> {
     private String mimeType;
     private String description;
     private boolean isPublic = false;
+    private byte[] thumbnail;
 
     @Override
     public UUID getId() {
@@ -106,6 +107,14 @@ public class FileEntry extends CategorizedElement<UUID> {
 
     public void setAlias(String alias) {
         this.alias = alias;
+    }
+
+    public byte[] getThumbnail() {
+        return thumbnail;
+    }
+
+    public void setThumbnail(byte[] thumbnail) {
+        this.thumbnail = thumbnail;
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.biit.ks.core.files;
 
 import com.biit.ks.core.seaweed.SeaweedClient;
 import com.biit.ks.logger.KnowledgeSystemLogger;
+import com.biit.ks.persistence.entities.FileEntry;
 import org.bytedeco.ffmpeg.global.avutil;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FFmpegLogCallback;
@@ -20,6 +21,8 @@ import java.io.IOException;
 
 @Component
 public class ThumbnailFactory {
+    private static final int MIN_THUMBNAIL_SIZE = 200;
+
     private final SeaweedClient seaweedClient;
 
     public ThumbnailFactory(SeaweedClient seaweedClient) {
@@ -41,9 +44,44 @@ public class ThumbnailFactory {
         return null;
     }
 
+    public void setThumbnail(FileEntry fileEntry) throws IOException {
+        if (fileEntry == null) {
+            return;
+        }
+        if (fileEntry.getMimeType() != null) {
+            if (fileEntry.getMimeType().startsWith("image/")) {
+                fileEntry.setThumbnail(toByteArray(createThumbFromImage(fileEntry)));
+            } else if (fileEntry.getMimeType().startsWith("video/")) {
+                fileEntry.setThumbnail(toByteArray(createThumbFromVideo(fileEntry)));
+            }
+        }
+    }
+
+    public BufferedImage createThumbFromImage(FileEntry fileEntry) throws IOException {
+        final byte[] sourceImage = seaweedClient.getBytes(fileEntry.getFilePath(), fileEntry.getFileName());
+        return createThumbFromImage(ImageIO.read(new ByteArrayInputStream(sourceImage)), MIN_THUMBNAIL_SIZE);
+    }
+
+
     public BufferedImage createThumbFromImage(byte[] pngImage, int width, int height) throws IOException {
         return createThumbFromImage(ImageIO.read(new ByteArrayInputStream(pngImage)), width, height);
     }
+
+
+    public BufferedImage createThumbFromImage(BufferedImage inputImage, int minSize) {
+        final int height;
+        final int width;
+
+        if (inputImage.getWidth() > inputImage.getHeight()) {
+            height = minSize;
+            width = inputImage.getWidth() * (minSize / inputImage.getHeight());
+        } else {
+            width = minSize;
+            height = inputImage.getHeight() * (minSize / inputImage.getWidth());
+        }
+        return createThumbFromImage(inputImage, width, height);
+    }
+
 
     public BufferedImage createThumbFromImage(BufferedImage inputImage, int width, int height) {
         // scale width, height to keep aspect constant
@@ -62,6 +100,11 @@ public class ThumbnailFactory {
         g2.drawImage(inputImage, 0, 0, width, height, null);
         g2.dispose();
         return bi;
+    }
+
+
+    public BufferedImage createThumbFromVideo(FileEntry fileEntry) throws IOException {
+        return createThumbFromVideo(fileEntry.getFilePath(), fileEntry.getFileName());
     }
 
 
@@ -115,3 +158,4 @@ public class ThumbnailFactory {
     }
 
 }
+

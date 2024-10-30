@@ -7,6 +7,7 @@ import com.biit.ks.core.exceptions.FileHandlingException;
 import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.exceptions.SeaweedClientException;
 import com.biit.ks.core.files.MediaTypeCalculator;
+import com.biit.ks.core.files.ThumbnailFactory;
 import com.biit.ks.core.models.ChunkData;
 import com.biit.ks.core.models.FileEntryDTO;
 import com.biit.ks.core.providers.FileEntryProvider;
@@ -43,17 +44,19 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
     private final IAuthenticatedUserProvider authenticatedUserProvider;
     private final FileEntryProvider fileEntryProvider;
     private final SeaweedConfigurator seaweedConfigurator;
+    private final ThumbnailFactory thumbnailFactory;
 
 
     @Autowired
     protected FileEntryController(FileEntryProvider provider, SeaweedClient seaweedClient,
                                   IAuthenticatedUserProvider authenticatedUserProvider, FileEntryProvider fileEntryProvider,
-                                  FileEntryConverter converter, SeaweedConfigurator seaweedConfigurator) {
+                                  FileEntryConverter converter, SeaweedConfigurator seaweedConfigurator, ThumbnailFactory thumbnailFactory) {
         super(provider, converter);
         this.seaweedClient = seaweedClient;
         this.authenticatedUserProvider = authenticatedUserProvider;
         this.fileEntryProvider = fileEntryProvider;
         this.seaweedConfigurator = seaweedConfigurator;
+        this.thumbnailFactory = thumbnailFactory;
     }
 
     @Override
@@ -156,6 +159,16 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
             seaweedClient.addFile(fileEntry.getFullPath(), file);
             //Save it on Opensearch
             fileEntryProvider.save(fileEntry);
+            //Thumbnail generation.
+            new Thread(() -> {
+                try {
+                    thumbnailFactory.setThumbnail(fileEntry);
+                } catch (IOException e) {
+                    KnowledgeSystemLogger.errorMessage(this.getClass(), e);
+                    fileEntry.setThumbnail(new byte[0]);
+                }
+                fileEntryProvider.save(fileEntry);
+            }).start();
             return convert(fileEntry);
         } catch (IOException e) {
             throw new FileHandlingException(this.getClass(), e);
