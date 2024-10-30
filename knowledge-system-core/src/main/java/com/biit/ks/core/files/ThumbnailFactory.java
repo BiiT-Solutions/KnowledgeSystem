@@ -1,5 +1,6 @@
 package com.biit.ks.core.files;
 
+import com.biit.ks.core.seaweed.SeaweedClient;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import org.bytedeco.ffmpeg.global.avutil;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
@@ -14,12 +15,15 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 
 @Component
 public class ThumbnailFactory {
+    private final SeaweedClient seaweedClient;
 
-    public ThumbnailFactory() {
+    public ThumbnailFactory(SeaweedClient seaweedClient) {
+        this.seaweedClient = seaweedClient;
         FFmpegLogCallback.set();
         FFmpegLogCallback.setLevel(avutil.AV_LOG_ERROR);
     }
@@ -65,18 +69,34 @@ public class ThumbnailFactory {
         return createThumbFromVideo(new FFmpegFrameGrabber(new ByteArrayInputStream(videoBytes)));
     }
 
+
+    public BufferedImage createThumbFromVideo(String seaweedPath, String resourceName) {
+        final File file;
+        try {
+            file = File.createTempFile("downloadedVideo", "mp4");
+            file.deleteOnExit();
+            seaweedClient.getFile(seaweedPath + File.separator + resourceName, file);
+            return createThumbFromVideo(file.getPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
     public BufferedImage createThumbFromVideo(String resource) {
         return createThumbFromVideo(new FFmpegFrameGrabber(resource));
     }
+
 
     public BufferedImage createThumbFromVideo(FFmpegFrameGrabber frameGrabber) {
         try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
             try {
                 frameGrabber.setFormat("mp4");
                 frameGrabber.start();
-                //Frame frame = frameGrabber.grabImage();
-                //Frame frame = frameGrabber.grab();
-                final Frame frame = frameGrabber.grabKeyFrame();
+                final int frameCount = frameGrabber.getLengthInFrames();
+                //final Frame frame = frameGrabber.grabKeyFrame();
+                frameGrabber.setFrameNumber(frameCount / 2);
+                final Frame frame = frameGrabber.grabImage();
                 final BufferedImage bufferedImage = converter.convert(frame);
                 KnowledgeSystemLogger.debug(this.getClass(), "Thumbnail height '{}' and width '{}'.", bufferedImage.getHeight(), bufferedImage.getWidth());
                 return bufferedImage;

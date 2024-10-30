@@ -10,7 +10,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import seaweedfs.client.FilerProto;
-import seaweedfs.client.SeaweedInputStream;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -26,12 +25,11 @@ import java.util.List;
 @Test(groups = {"thumbnailTests"})
 public class ThumbnailTests extends AbstractTestNGSpringContextTests {
 
-    private static final String SEAWEED_PATH = "/dir/withData";
+    private static final String SEAWEED_PATH = "/testDir/withData";
     private static final String RESOURCE_FOLDER = "documents";
     private static final String RESOURCE = "1mb.mp4";
 
-    private static String tmpdir = System.getProperty("java.io.tmpdir");
-    ;
+    private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 
     @Autowired
     private SeaweedClient seaweedClient;
@@ -51,44 +49,47 @@ public class ThumbnailTests extends AbstractTestNGSpringContextTests {
         seaweedClient.addFile(SEAWEED_PATH + File.separator + RESOURCE, video);
     }
 
-    @Test(enabled = false)
-    public void createThumbnailFromVideo() throws IOException {
-        final FilerProto.Entry videoEntry = seaweedClient.getEntry(SEAWEED_PATH, RESOURCE);
-        Assert.assertNotNull(videoEntry);
-        final SeaweedInputStream seaweedInputStream = seaweedClient.getFile(SEAWEED_PATH + File.separator + RESOURCE);
-
+    @Test
+    public void createThumbnailFromVideoFromSeaweed() throws IOException {
         //Offset has a max of 16384 bytes
-        final BufferedImage bufferedImage = thumbnailFactory.createThumbFromVideo(seaweedInputStream.readNBytes((int) videoEntry.getAttributes().getFileSize()));
+        final BufferedImage bufferedImage = thumbnailFactory.createThumbFromVideo(SEAWEED_PATH, RESOURCE);
         final byte[] image = thumbnailFactory.toByteArray(bufferedImage);
         Assert.assertNotNull(image);
 
-
-        try (FileOutputStream fos = new FileOutputStream(tmpdir + File.separator + "thumbnail.png")) {
+        final File file = new File(TMPDIR + File.separator + "thumbnail-seaweed.png");
+        file.deleteOnExit();
+        try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(image);
         }
     }
 
     @Test
     public void createThumbnailFromResource() throws IOException {
+        final File source = new File(TMPDIR + File.separator + RESOURCE);
+        source.deleteOnExit();
         Files.copy(getClass().getClassLoader().getResourceAsStream(RESOURCE_FOLDER + File.separator + RESOURCE),
-                Paths.get("/tmp" + File.separator + RESOURCE),
+                Paths.get(source.getPath()),
                 StandardCopyOption.REPLACE_EXISTING);
-        final byte[] image = thumbnailFactory.toByteArray(thumbnailFactory.createThumbFromVideo(tmpdir + File.separator + RESOURCE));
+        final byte[] image = thumbnailFactory.toByteArray(thumbnailFactory.createThumbFromVideo(TMPDIR + File.separator + RESOURCE));
         Assert.assertNotNull(image);
 
-        try (FileOutputStream fos = new FileOutputStream(tmpdir + File.separator + "thumbnail.png")) {
+        final File file = new File(TMPDIR + File.separator + "thumbnail-resource.png");
+        file.deleteOnExit();
+        try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(image);
         }
     }
 
 
-    @Test
+    @Test(enabled = false)
     public void createThumbnailFromChunk() throws IOException {
         final byte[] chunk = seaweedClient.getBytes(SEAWEED_PATH + File.separator + RESOURCE, 0, 527868);
         final byte[] image = thumbnailFactory.toByteArray(thumbnailFactory.createThumbFromVideo(chunk));
         Assert.assertNotNull(image);
 
-        try (FileOutputStream fos = new FileOutputStream(tmpdir + File.separator + "thumbnail.png")) {
+        final File file = new File(TMPDIR + File.separator + "thumbnail-chunk.png");
+        file.deleteOnExit();
+        try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(image);
         }
     }
