@@ -48,14 +48,24 @@ public class ThumbnailFactory {
         if (fileEntry == null) {
             return;
         }
+        KnowledgeSystemLogger.debug(this.getClass(), "Updating thumbnail for '{}'", fileEntry);
         if (fileEntry.getMimeType() != null) {
             if (fileEntry.getMimeType().startsWith("image/")) {
+                KnowledgeSystemLogger.debug(this.getClass(), "FileEntry is an image '{}'.", fileEntry.getMimeType());
                 fileEntry.setThumbnail(toByteArray(createThumbFromImage(fileEntry)));
             } else if (fileEntry.getMimeType().startsWith("video/")) {
+                KnowledgeSystemLogger.debug(this.getClass(), "FileEntry is a video '{}'.", fileEntry.getMimeType());
                 fileEntry.setThumbnail(toByteArray(createThumbFromVideo(fileEntry)));
+            } else {
+                KnowledgeSystemLogger.debug(this.getClass(), "Unknown mimetype '{}' for fileEntry.", fileEntry.getMimeType());
+                fileEntry.setThumbnail(new byte[0]);
             }
+        } else {
+            KnowledgeSystemLogger.debug(this.getClass(), "FileEntry has no mimetype");
+            fileEntry.setThumbnail(new byte[0]);
         }
     }
+
 
     public BufferedImage createThumbFromImage(FileEntry fileEntry) throws IOException {
         final byte[] sourceImage = seaweedClient.getBytes(fileEntry.getFilePath(), fileEntry.getFileName());
@@ -84,6 +94,7 @@ public class ThumbnailFactory {
 
 
     public BufferedImage createThumbFromImage(BufferedImage inputImage, int width, int height) {
+        KnowledgeSystemLogger.debug(this.getClass(), "Creating thumbnail with width '{}' and height '{}'.", width, height);
         // scale width, height to keep aspect constant
         final double outputAspect = 1.0 * width / height;
         final double inputAspect = 1.0 * inputImage.getWidth() / inputImage.getHeight();
@@ -104,40 +115,48 @@ public class ThumbnailFactory {
 
 
     public BufferedImage createThumbFromVideo(FileEntry fileEntry) throws IOException {
-        return createThumbFromVideo(fileEntry.getFilePath(), fileEntry.getFileName());
+        return createThumbFromVideo(fileEntry.getFilePath(), fileEntry.getFileName(), fileEntry.getMimeType());
     }
 
 
-    public BufferedImage createThumbFromVideo(byte[] videoBytes) {
-        return createThumbFromVideo(new FFmpegFrameGrabber(new ByteArrayInputStream(videoBytes)));
+    /**
+     * Will assume MP4 format.
+     *
+     * @param videoBytes
+     * @return
+     */
+    public BufferedImage createThumbFromVideo(byte[] videoBytes, String mimeType) {
+        return createThumbFromVideo(new FFmpegFrameGrabber(new ByteArrayInputStream(videoBytes)), mimeType);
     }
 
 
-    public BufferedImage createThumbFromVideo(String seaweedPath, String resourceName) {
+    public BufferedImage createThumbFromVideo(String seaweedPath, String resourceName, String mimeType) {
         final File file;
         try {
             file = File.createTempFile("downloadedVideo", "mp4");
             file.deleteOnExit();
             seaweedClient.getFile(seaweedPath + File.separator + resourceName, file);
-            return createThumbFromVideo(file.getPath());
+            return createThumbFromVideo(file.getPath(), mimeType);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
 
-    public BufferedImage createThumbFromVideo(String resource) {
-        return createThumbFromVideo(new FFmpegFrameGrabber(resource));
+    public BufferedImage createThumbFromVideo(String resource, String mimeType) {
+        return createThumbFromVideo(new FFmpegFrameGrabber(resource), mimeType);
     }
 
 
-    public BufferedImage createThumbFromVideo(FFmpegFrameGrabber frameGrabber) {
+    public BufferedImage createThumbFromVideo(FFmpegFrameGrabber frameGrabber, String mimeType) {
         try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
             try {
-                frameGrabber.setFormat("mp4");
+                final String detectedFormat = MimeTypeToFFmpeg.getFFmpegExtension(mimeType);
+                frameGrabber.setFormat(detectedFormat);
                 frameGrabber.start();
                 final int frameCount = frameGrabber.getLengthInFrames();
                 //final Frame frame = frameGrabber.grabKeyFrame();
+                KnowledgeSystemLogger.debug(this.getClass(), "Creating thumbnail for frame '{}' with format.", frameCount / 2, detectedFormat);
                 frameGrabber.setFrameNumber(frameCount / 2);
                 final Frame frame = frameGrabber.grabImage();
                 final BufferedImage bufferedImage = converter.convert(frame);

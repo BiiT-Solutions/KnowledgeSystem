@@ -9,10 +9,11 @@ import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
 import com.biit.ks.persistence.opensearch.search.SortResultOptions;
-import org.opensearch.client.opensearch.core.SearchResponse;
 import org.apache.commons.lang3.tuple.Pair;
+import org.opensearch.client.opensearch.core.SearchResponse;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,13 +41,23 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
         final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.add("filePath", filePath);
         mustHaveParameters.add("fileName", fileName);
-        getOpenSearchClient().getAll(FileEntry.class, getOpenSearchIndex());
         final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, mustHaveParameters);
         if (response == null || response.hits() == null || response.hits().hits().isEmpty() || response.hits().hits().get(0) == null
                 || response.hits().hits().get(0).source() == null) {
             return Optional.empty();
         }
         return Optional.of(response.hits().hits().get(0).source());
+    }
+
+    public List<FileEntry> findFileEntriesWithThumbnailIsNull() {
+        final MustHavePredicates mustHaveParameters = new MustHavePredicates();
+        mustHaveParameters.add("thumbnail", null);
+        final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, mustHaveParameters);
+        if (response == null || response.hits() == null || response.hits().hits().isEmpty() || response.hits().hits().get(0) == null
+                || response.hits().hits().get(0).source() == null) {
+            return new ArrayList<>();
+        }
+        return getOpenSearchClient().convertResponse(response);
     }
 
 

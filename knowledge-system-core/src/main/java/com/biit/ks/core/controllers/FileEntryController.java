@@ -24,6 +24,7 @@ import com.biit.server.security.IAuthenticatedUserProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.multipart.MultipartFile;
 import seaweedfs.client.SeaweedInputStream;
@@ -161,13 +162,7 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
             fileEntryProvider.save(fileEntry);
             //Thumbnail generation.
             new Thread(() -> {
-                try {
-                    thumbnailFactory.setThumbnail(fileEntry);
-                } catch (IOException e) {
-                    KnowledgeSystemLogger.errorMessage(this.getClass(), e);
-                    fileEntry.setThumbnail(new byte[0]);
-                }
-                fileEntryProvider.save(fileEntry);
+                updateThumbnail(fileEntry);
             }).start();
             return convert(fileEntry);
         } catch (IOException e) {
@@ -177,6 +172,16 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
             seaweedClient.removeFile(fileEntry.getFullPath());
             throw new FileHandlingException(this.getClass(), e);
         }
+    }
+
+    private void updateThumbnail(FileEntry fileEntry) {
+        try {
+            thumbnailFactory.setThumbnail(fileEntry);
+        } catch (IOException e) {
+            KnowledgeSystemLogger.errorMessage(this.getClass(), e);
+            fileEntry.setThumbnail(new byte[0]);
+        }
+        fileEntryProvider.save(fileEntry);
     }
 
 
@@ -197,5 +202,14 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
         if (seaweedClient.getEntry(fileEntry.getFilePath(), fileEntry.getFileName()) != null) {
             throw new FileAlreadyExistsException(this.getClass(), "File '" + fileEntry + "' already exists.");
         }
+    }
+
+    @Scheduled(cron = "@midnight")
+    public void updateThumbnails() {
+        final List<FileEntry> fileEntries = fileEntryProvider.findFilesWithoutThumbnail();
+        KnowledgeSystemLogger.info(this.getClass(), "Found '{}' files that have a missing thumbnail.", fileEntries.size());
+        fileEntries.forEach(
+                this::updateThumbnail
+        );
     }
 }

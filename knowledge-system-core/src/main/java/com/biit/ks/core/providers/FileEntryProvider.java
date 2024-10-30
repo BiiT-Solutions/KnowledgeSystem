@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -36,5 +37,9 @@ public class FileEntryProvider extends CategorizedElementProvider<FileEntry, Fil
         final Optional<FileEntry> saved = fileEntryRepository.findFileEntryByFilePathAndFileName(realFilePath, fileName);
         saved.ifPresent(fileEntry -> getPool().addElement(fileEntry, filePath));
         return saved;
+    }
+
+    public List<FileEntry> findFilesWithoutThumbnail() {
+        return fileEntryRepository.findFileEntriesWithThumbnailIsNull();
     }
 }
