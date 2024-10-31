@@ -15,6 +15,7 @@ public class FileEntryDTO extends CategorizedElementDTO<UUID> {
     private String mimeType;
     private String description;
     private boolean isPublic = false;
+    private String thumbnailUrl;
 
     @Override
     public UUID getId() {
@@ -95,6 +96,14 @@ public class FileEntryDTO extends CategorizedElementDTO<UUID> {
 
     public void setAlias(String alias) {
         this.alias = alias;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 
     @Override
