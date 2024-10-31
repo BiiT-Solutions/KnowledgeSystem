@@ -18,7 +18,7 @@ public class FileEntry extends CategorizedElement<UUID> {
     private String mimeType;
     private String description;
     private boolean isPublic = false;
-    private byte[] thumbnail;
+    private String thumbnailUrl;
 
     public FileEntry() {
         super();
@@ -115,12 +115,12 @@ public class FileEntry extends CategorizedElement<UUID> {
         this.alias = alias;
     }
 
-    public byte[] getThumbnail() {
-        return thumbnail;
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
     }
 
-    public void setThumbnail(byte[] thumbnail) {
-        this.thumbnail = thumbnail;
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 
     @Override

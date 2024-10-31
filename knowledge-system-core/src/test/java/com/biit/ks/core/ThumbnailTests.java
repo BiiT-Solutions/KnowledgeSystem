@@ -1,7 +1,7 @@
 package com.biit.ks.core;
 
 import com.biit.ks.core.files.MimeTypeToFFmpeg;
-import com.biit.ks.core.files.ThumbnailFactory;
+import com.biit.ks.core.controllers.ThumbnailController;
 import com.biit.ks.core.seaweed.SeaweedClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,7 +36,7 @@ public class ThumbnailTests extends AbstractTestNGSpringContextTests {
     private SeaweedClient seaweedClient;
 
     @Autowired
-    private ThumbnailFactory thumbnailFactory;
+    private ThumbnailController thumbnailController;
 
     @BeforeClass
 
@@ -53,8 +53,8 @@ public class ThumbnailTests extends AbstractTestNGSpringContextTests {
     @Test
     public void createThumbnailFromVideoFromSeaweed() throws IOException {
         //Offset has a max of 16384 bytes
-        final BufferedImage bufferedImage = thumbnailFactory.createThumbFromVideo(SEAWEED_PATH, RESOURCE, MimeTypeToFFmpeg.MP4.getMimeType());
-        final byte[] image = thumbnailFactory.toByteArray(bufferedImage);
+        final BufferedImage bufferedImage = thumbnailController.createThumbFromVideo(SEAWEED_PATH, RESOURCE, MimeTypeToFFmpeg.MP4.getMimeType());
+        final byte[] image = thumbnailController.toByteArray(bufferedImage);
         Assert.assertNotNull(image);
 
         final File file = new File(TMPDIR + File.separator + "thumbnail-seaweed.png");
@@ -71,7 +71,7 @@ public class ThumbnailTests extends AbstractTestNGSpringContextTests {
         Files.copy(getClass().getClassLoader().getResourceAsStream(RESOURCE_FOLDER + File.separator + RESOURCE),
                 Paths.get(source.getPath()),
                 StandardCopyOption.REPLACE_EXISTING);
-        final byte[] image = thumbnailFactory.toByteArray(thumbnailFactory.createThumbFromVideo(TMPDIR + File.separator + RESOURCE,
+        final byte[] image = thumbnailController.toByteArray(thumbnailController.createThumbFromVideo(TMPDIR + File.separator + RESOURCE,
                 MimeTypeToFFmpeg.MP4.getMimeType()));
         Assert.assertNotNull(image);
 
@@ -86,7 +86,7 @@ public class ThumbnailTests extends AbstractTestNGSpringContextTests {
     @Test(enabled = false)
     public void createThumbnailFromChunk() throws IOException {
         final byte[] chunk = seaweedClient.getBytes(SEAWEED_PATH + File.separator + RESOURCE, 0, 527868);
-        final byte[] image = thumbnailFactory.toByteArray(thumbnailFactory.createThumbFromVideo(chunk, MimeTypeToFFmpeg.MP4.getMimeType()));
+        final byte[] image = thumbnailController.toByteArray(thumbnailController.createThumbFromVideo(chunk, MimeTypeToFFmpeg.MP4.getMimeType()));
         Assert.assertNotNull(image);
 
         final File file = new File(TMPDIR + File.separator + "thumbnail-chunk.png");

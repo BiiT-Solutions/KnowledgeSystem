@@ -44,25 +44,25 @@ public class FileEntryProviderTest extends AbstractTestNGSpringContextTests {
         fileEntry1 = new FileEntry();
         fileEntry1.setFileName("File1");
         fileEntry1.setAlias("FileTest");
-        fileEntry1.setThumbnail(null);
+        fileEntry1.setThumbnailUrl(null);
         fileEntryProvider.save(fileEntry1);
 
         fileEntry2 = new FileEntry();
         fileEntry2.setFileName("File2");
         fileEntry2.setAlias("FileTest");
-        fileEntry2.setThumbnail(new byte[0]);
+        fileEntry2.setThumbnailUrl("/testurl");
         fileEntryProvider.save(fileEntry2);
 
         fileEntry3 = new FileEntry();
         fileEntry3.setFileName("File3");
         fileEntry3.setAlias("FileTest");
-        fileEntry3.setThumbnail(null);
+        fileEntry3.setThumbnailUrl(null);
         fileEntryProvider.save(fileEntry3);
 
         fileEntry4 = new FileEntry();
         fileEntry4.setFileName("File4");
         fileEntry4.setAlias("FileTest");
-        fileEntry4.setThumbnail(new byte[0]);
+        fileEntry4.setThumbnailUrl("/testurl");
         fileEntryProvider.save(fileEntry4);
     }
 

@@ -51,7 +51,7 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
 
     public List<FileEntry> findFileEntriesWithThumbnailIsNull() {
         final MustHavePredicates mustHaveParameters = new MustHavePredicates();
-        mustHaveParameters.add("thumbnail", null);
+        mustHaveParameters.add("thumbnailUrl", null);
         final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, getOpenSearchIndex(), mustHaveParameters);
         if (response == null || response.hits() == null || response.hits().hits().isEmpty() || response.hits().hits().get(0) == null
                 || response.hits().hits().get(0).source() == null) {

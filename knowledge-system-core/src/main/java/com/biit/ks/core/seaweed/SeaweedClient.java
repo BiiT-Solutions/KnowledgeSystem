@@ -29,9 +29,11 @@ public class SeaweedClient {
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
     private static final int DIRECTORY_PERMISSIONS = 0755;
-    private static final int SEAWEED_BUFFER_SIZE = 16384;
 
     private FilerClient filerClient;
+
+    private static final String TMPDIR = System.getProperty("java.io.tmpdir");
+
 
     public SeaweedClient(@Value("${seaweed.server.url}") String serverUrl,
                          @Value("${seaweed.server.port}") String serverPort) {
@@ -77,8 +79,17 @@ public class SeaweedClient {
                 outputStream.write(bytes, 0, read);
             }
         }
-
     }
+
+    public void addBytes(String seaweedPath, byte[] bytes) throws IOException {
+        final File tempFile = File.createTempFile("byte", ".seaweed");
+        try (FileOutputStream stream = new FileOutputStream(tempFile)) {
+            stream.write(bytes);
+        }
+        addFile(seaweedPath, tempFile);
+        tempFile.deleteOnExit();
+    }
+
 
     public void addFile(String seaweedPath, MultipartFile file) throws IOException {
         if (file != null) {
