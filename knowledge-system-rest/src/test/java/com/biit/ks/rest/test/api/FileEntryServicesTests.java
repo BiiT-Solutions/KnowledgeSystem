@@ -4,7 +4,7 @@ import com.biit.ks.core.models.FileEntryDTO;
 import com.biit.ks.core.seaweed.SeaweedClient;
 import com.biit.ks.core.seaweed.SeaweedConfigurator;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
-import com.biit.ks.persistence.repositories.OpenSearchConfigurator;
+import com.biit.ks.persistence.repositories.IOpenSearchConfigurator;
 import com.biit.server.security.model.AuthRequest;
 import com.biit.usermanager.client.providers.AuthenticatedUserProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -71,7 +71,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
     private OpenSearchClient openSearchClient;
 
     @Autowired
-    private OpenSearchConfigurator openSearchConfigurator;
+    private IOpenSearchConfigurator openSearchConfigurator;
 
     @Autowired
     private SeaweedConfigurator seaweedConfigurator;

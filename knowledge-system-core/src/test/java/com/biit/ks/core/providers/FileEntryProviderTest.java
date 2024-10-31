@@ -2,18 +2,11 @@ package com.biit.ks.core.providers;
 
 import com.biit.ks.persistence.entities.FileEntry;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
-import com.biit.ks.persistence.repositories.FileEntryRepository;
 import com.biit.ks.persistence.repositories.IOpenSearchConfigurator;
-import com.biit.ks.persistence.repositories.OpenSearchConfigurator;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -21,8 +14,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.List;
-
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
