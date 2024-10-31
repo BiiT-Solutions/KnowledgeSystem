@@ -1,5 +1,6 @@
 package com.biit.ks.core.seaweed;
 
+import com.biit.ks.core.exceptions.SeaweedClientException;
 import com.biit.ks.core.models.Chunk;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.logger.SeaweedLogger;
@@ -33,8 +34,8 @@ public class SeaweedClient {
 
     private FilerClient filerClient;
 
-    private static final String TMPDIR = System.getProperty("java.io.tmpdir");
-
+    @Value("${seaweed.max.file.memory:8388608}")
+    private int maxFileSizeOnMemory;
 
     public SeaweedClient(@Value("${seaweed.server.url}") String serverUrl,
                          @Value("${seaweed.server.port}") String serverPort) {
@@ -84,11 +85,12 @@ public class SeaweedClient {
 
     public void addBytes(String seaweedPath, byte[] bytes) throws IOException {
         final File tempFile = File.createTempFile("byte", ".seaweed");
+        tempFile.deleteOnExit();
         try (FileOutputStream stream = new FileOutputStream(tempFile)) {
             stream.write(bytes);
         }
         addFile(seaweedPath, tempFile);
-        tempFile.deleteOnExit();
+        tempFile.delete();
     }
 
 
@@ -218,10 +220,15 @@ public class SeaweedClient {
         final File tempFile = File.createTempFile(entryName, ".seaweed");
         tempFile.deleteOnExit();
         getFile(folderPath + File.separator + entryName, tempFile);
+        if (tempFile.length() > maxFileSizeOnMemory) {
+            throw new SeaweedClientException(this.getClass(), "File length '" + tempFile.length()
+                    + "' exceeds the maximum size allowed on memory '" + maxFileSizeOnMemory + "'.");
+        }
         final byte[] byteArray = new byte[(int) tempFile.length()];
         try (FileInputStream inputStream = new FileInputStream(tempFile)) {
             inputStream.read(byteArray);
         }
+        tempFile.delete();
         return byteArray;
     }
 

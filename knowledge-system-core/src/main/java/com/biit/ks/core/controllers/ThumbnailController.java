@@ -173,8 +173,12 @@ public class ThumbnailController {
         try {
             file = File.createTempFile("downloadedVideo", ".mp4");
             file.deleteOnExit();
-            seaweedClient.getFile(seaweedPath + File.separator + resourceName, file);
-            return createThumbFromVideo(file.getPath(), mimeType);
+            try {
+                seaweedClient.getFile(seaweedPath + File.separator + resourceName, file);
+                return createThumbFromVideo(file.getPath(), mimeType);
+            } finally {
+                file.delete();
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
