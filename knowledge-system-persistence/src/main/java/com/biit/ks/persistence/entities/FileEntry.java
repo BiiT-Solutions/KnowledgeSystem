@@ -2,11 +2,12 @@ package com.biit.ks.persistence.entities;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.File;
 import java.util.UUID;
 
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class FileEntry extends CategorizedElement<UUID> {
 
     private UUID uuid;
@@ -18,6 +19,11 @@ public class FileEntry extends CategorizedElement<UUID> {
     private String description;
     private boolean isPublic = false;
     private byte[] thumbnail;
+
+    public FileEntry() {
+        super();
+        setUuid(UUID.randomUUID());
+    }
 
     @Override
     public UUID getId() {

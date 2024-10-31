@@ -56,7 +56,7 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
         final IntervalsSearch intervalsSearch = new IntervalsSearch();
         intervalsSearch.addPrefix("description", "Th");
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, intervalsSearch);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, intervalsSearch);
         Assert.assertEquals(response.hits().hits().size(), 3);
     }
 
@@ -67,7 +67,7 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
         final IntervalsSearch intervalsSearch = new IntervalsSearch();
         intervalsSearch.addMatch("description", "The Data", 1, true);
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, intervalsSearch);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, intervalsSearch);
         Assert.assertEquals(response.hits().hits().size(), 3);
     }
 
@@ -76,7 +76,7 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
         IntervalsQuery query = new IntervalsQuery.Builder().field("description").match(new IntervalsMatch.Builder().query("The Data").maxGaps(1).ordered(true)
                 .build()).build();
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, query._toQuery());
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, query._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 3);
     }
 
@@ -86,7 +86,7 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
         final IntervalsSearch intervalsSearch = new IntervalsSearch();
         intervalsSearch.addMatch("description", "The Data", 0, false);
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, intervalsSearch);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, intervalsSearch);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
@@ -96,7 +96,7 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
         intervalsSearch.addMatch("description", "Data The", 1, false);
 
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, intervalsSearch);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, intervalsSearch);
         Assert.assertEquals(response.hits().hits().size(), 3);
     }
 
@@ -107,7 +107,7 @@ public class OpenSearchIntervalsTests extends AbstractTestNGSpringContextTests {
         intervalsSearch.addMatch("description", "Data The", 0, false);
 
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, intervalsSearch);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, intervalsSearch);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 

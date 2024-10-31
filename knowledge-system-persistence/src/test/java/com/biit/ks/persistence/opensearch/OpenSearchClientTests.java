@@ -76,22 +76,25 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByFieldExists() {
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, new ExistsQuery.Builder().field("description").build()._toQuery());
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX,
+                new ExistsQuery.Builder().field("description").build()._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByFieldNotExists() {
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, new ExistsQuery.Builder().field("descriptions").build()._toQuery());
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX,
+                new ExistsQuery.Builder().field("descriptions").build()._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 0);
     }
 
 
     @Test(dependsOnMethods = "indexData")
     public void searchDataByQuery() {
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, new MatchQuery.Builder().field("description")
-                .query(FieldValue.of(DATA_DESCRIPTION)).build()._toQuery());
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX,
+                new MatchQuery.Builder().field("description")
+                        .query(FieldValue.of(DATA_DESCRIPTION)).build()._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
@@ -103,7 +106,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         shouldParameters.add("name", "wrong");
         shouldParameters.setMinimumShouldMatch(1);
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, shouldParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, shouldParameters);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
@@ -116,7 +119,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         shouldParameters.add("name", "wrong2");
         shouldParameters.setMinimumShouldMatch(2);
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, shouldParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, shouldParameters);
         Assert.assertEquals(response.hits().hits().size(), 0);
     }
 
@@ -126,7 +129,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         final MustNotHavePredicates mustNotHaveParameters = new MustNotHavePredicates();
         mustNotHaveParameters.add("name", DATA_NAME);
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustNotHaveParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, mustNotHaveParameters);
         for (Hit<Data> data : response.hits().hits()) {
             Assert.assertNotNull(data.source(), DATA_NAME);
             Assert.assertNotEquals(data.source().getName(), DATA_NAME);
@@ -140,7 +143,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         mustHaveParameters.add("name", DATA_NAME);
         mustHaveParameters.add("name", "wrong");
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, mustHaveParameters);
         Assert.assertEquals(response.hits().hits().size(), 0);
     }
 
@@ -151,7 +154,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
         mustHaveParameters.addMultiSearch(List.of("name"), DATA_NAME);
         mustHaveParameters.addMultiSearch(List.of("name"), "wrong");
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, mustHaveParameters);
         Assert.assertEquals(response.hits().hits().size(), 0);
     }
 
@@ -166,7 +169,7 @@ public class OpenSearchClientTests extends AbstractTestNGSpringContextTests {
 
         final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.addMultiSearch(List.of("name"), UPDATED_DATA_NAME);
-        final SearchResponse<Data> searchResponse = openSearchClient.searchData(Data.class, mustHaveParameters);
+        final SearchResponse<Data> searchResponse = openSearchClient.searchData(Data.class, INDEX, mustHaveParameters);
         Assert.assertEquals(searchResponse.hits().hits().size(), 1);
     }
 

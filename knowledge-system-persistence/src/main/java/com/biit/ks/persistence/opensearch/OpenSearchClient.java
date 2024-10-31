@@ -26,6 +26,7 @@ import org.opensearch.client.opensearch._types.OpenSearchException;
 import org.opensearch.client.opensearch._types.SortOptions;
 import org.opensearch.client.opensearch._types.mapping.TypeMapping;
 import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
+import org.opensearch.client.opensearch._types.query_dsl.ExistsQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Intervals;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsMatch;
 import org.opensearch.client.opensearch._types.query_dsl.IntervalsPrefix;
@@ -187,6 +188,7 @@ public class OpenSearchClient {
     public DeleteIndexResponse deleteIndex(String indexName) {
         try {
             final DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest.Builder().index(indexName).build();
+            KnowledgeSystemLogger.warning(this.getClass(), "Deleting index '{}'", indexName);
             return client.indices().delete(deleteIndexRequest);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
@@ -263,7 +265,7 @@ public class OpenSearchClient {
     }
 
     public <I> SearchResponse<I> searchData(Class<I> indexDataClass, String indexName) {
-        return searchData(indexDataClass, indexName, null, null, null);
+        return searchData(indexDataClass, indexName, (SortOptions) null, null, null);
     }
 
     public <I> SearchResponse<I> searchData(Class<I> indexDataClass, String indexName, SortOptions sortOptions, Integer from, Integer size) {
@@ -323,13 +325,16 @@ public class OpenSearchClient {
         }
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, Query query) {
-        return searchData(dataClass, query, null, null, null);
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, String indexName, Query query) {
+        return searchData(dataClass, indexName, query, null, null, null);
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, Query query, SortOptions sortOptions, Integer from, Integer size) {
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, String indexName, Query query, SortOptions sortOptions, Integer from, Integer size) {
         try {
             return client.search(s -> {
+                if (indexName != null) {
+                    s.index(indexName);
+                }
                 s.query(query);
                 if (from != null) {
                     s.from(from);
@@ -357,9 +362,13 @@ public class OpenSearchClient {
         }
     }
 
-    public CountResponse countData(Query query) {
+    public CountResponse countData(String indexName, Query query) {
         try {
-            return client.count(new CountRequest.Builder().query(query).build());
+            final CountRequest.Builder countQuery = new CountRequest.Builder().query(query);
+            if (indexName != null) {
+                countQuery.index(indexName);
+            }
+            return client.count(countQuery.build());
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         } catch (OpenSearchException e) {
@@ -375,9 +384,13 @@ public class OpenSearchClient {
         }
     }
 
-    public DeleteByQueryResponse deleteData(Query query) {
+    public DeleteByQueryResponse deleteData(String indexName, Query query) {
         try {
-            return client.deleteByQuery(new DeleteByQueryRequest.Builder().query(query).build());
+            final DeleteByQueryRequest.Builder deleteQuery = new DeleteByQueryRequest.Builder().query(query);
+            if (indexName != null) {
+                deleteQuery.index(indexName);
+            }
+            return client.deleteByQuery(deleteQuery.build());
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         } catch (OpenSearchException e) {
@@ -478,41 +491,41 @@ public class OpenSearchClient {
                 from, size);
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, SearchPredicates searchPredicates) {
-        return searchData(dataClass, searchPredicates, null);
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, String indexName, SearchPredicates searchPredicates) {
+        return searchData(dataClass, indexName, searchPredicates, null);
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, SearchPredicates searchPredicates, SortResultOptions sortResultOptions) {
-        return searchData(new SearchQuery<>(dataClass, sortResultOptions, searchPredicates));
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, String indexName, SearchPredicates searchPredicates, SortResultOptions sortResultOptions) {
+        return searchData(indexName, new SearchQuery<>(dataClass, sortResultOptions, searchPredicates));
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, SearchPredicates searchPredicates, Integer from, Integer size) {
-        return searchData(dataClass, searchPredicates, null, from, size);
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, String indexName, SearchPredicates searchPredicates, Integer from, Integer size) {
+        return searchData(dataClass, indexName, searchPredicates, null, from, size);
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, SearchPredicates searchPredicates, SortResultOptions sortResultOptions,
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, String indexName, SearchPredicates searchPredicates, SortResultOptions sortResultOptions,
                                             Integer from, Integer size) {
-        return searchData(new SearchQuery<>(dataClass, sortResultOptions, from, size, searchPredicates));
+        return searchData(indexName, new SearchQuery<>(dataClass, sortResultOptions, from, size, searchPredicates));
     }
 
-    public <I> SearchResponse<I> searchData(Class<I> dataClass, IntervalsSearch intervalsSearch) {
-        return searchData(new SearchQuery<>(dataClass, intervalsSearch));
+    public <I> SearchResponse<I> searchData(Class<I> dataClass, String indexName, IntervalsSearch intervalsSearch) {
+        return searchData(indexName, new SearchQuery<>(dataClass, intervalsSearch));
     }
 
 
-    public <I> SearchResponse<I> searchData(SearchQuery<I> searchQuery) {
-        return searchData(searchQuery.getDataClass(), createQuery(searchQuery),
+    public <I> SearchResponse<I> searchData(String indexName, SearchQuery<I> searchQuery) {
+        return searchData(searchQuery.getDataClass(), indexName, createQuery(searchQuery),
                 searchQuery.getSortResultOptions() != null && searchQuery.getSortResultOptions().getField() != null
                         ? searchQuery.getSortResultOptions().convert() : null,
                 searchQuery.getFrom(), searchQuery.getSize());
     }
 
-    public <I> CountResponse countData(SearchQuery<I> searchQuery) {
-        return countData(createQuery(searchQuery));
+    public <I> CountResponse countData(String indexName, SearchQuery<I> searchQuery) {
+        return countData(indexName, createQuery(searchQuery));
     }
 
-    public <I> DeleteByQueryResponse deleteData(SearchQuery<I> searchQuery) {
-        return deleteData(createQuery(searchQuery));
+    public <I> DeleteByQueryResponse deleteData(String indexName, SearchQuery<I> searchQuery) {
+        return deleteData(indexName, createQuery(searchQuery));
     }
 
     private <I> Query createQuery(SearchQuery<I> searchQuery) {
@@ -537,18 +550,25 @@ public class OpenSearchClient {
         if (searchParameters != null && !searchParameters.isEmpty()) {
             for (SearchPredicates searchParameter : searchParameters) {
                 searchParameter.getSearch().forEach(stringPair -> {
-                    final MatchQuery.Builder builder = new MatchQuery.Builder().field(stringPair.getLeft())
-                            .query(FieldValue.of(stringPair.getRight()));
-                    if (searchParameter.getFuzzinessDefinition() != null) {
-                        builder.fuzziness(searchParameter.getFuzzinessDefinition().getFuzziness().tag());
-                        if (searchParameter.getFuzzinessDefinition().getMaxExpansions() != null) {
-                            builder.maxExpansions(searchParameter.getFuzzinessDefinition().getMaxExpansions());
+                    if (stringPair.getRight() != null) {
+                        final MatchQuery.Builder builder = new MatchQuery.Builder().field(stringPair.getLeft())
+                                .query(FieldValue.of(stringPair.getRight()));
+                        if (searchParameter.getFuzzinessDefinition() != null) {
+                            builder.fuzziness(searchParameter.getFuzzinessDefinition().getFuzziness().tag());
+                            if (searchParameter.getFuzzinessDefinition().getMaxExpansions() != null) {
+                                builder.maxExpansions(searchParameter.getFuzzinessDefinition().getMaxExpansions());
+                            }
+                            if (searchParameter.getFuzzinessDefinition().getPrefixLength() != null) {
+                                builder.prefixLength(searchParameter.getFuzzinessDefinition().getPrefixLength());
+                            }
                         }
-                        if (searchParameter.getFuzzinessDefinition().getPrefixLength() != null) {
-                            builder.prefixLength(searchParameter.getFuzzinessDefinition().getPrefixLength());
-                        }
+                        searchQuery.add(builder.build()._toQuery());
+                    } else {
+                        //Search by field that is null.
+                        final BoolQuery nullParameter = new BoolQuery.Builder().mustNot(new ExistsQuery.Builder()
+                                .field(stringPair.getLeft()).build()._toQuery()).build();
+                        searchQuery.add(nullParameter._toQuery());
                     }
-                    searchQuery.add(builder.build()._toQuery());
                 });
                 searchParameter.getMultiSearch().forEach(listStringPair -> {
                     final MultiMatchQuery.Builder builder = new MultiMatchQuery.Builder().fields(listStringPair.getLeft())

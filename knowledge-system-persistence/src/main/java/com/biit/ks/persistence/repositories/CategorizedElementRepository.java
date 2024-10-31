@@ -6,8 +6,8 @@ import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
 import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;
-import org.opensearch.client.opensearch.core.SearchResponse;
 import org.apache.commons.lang3.tuple.Pair;
+import org.opensearch.client.opensearch.core.SearchResponse;
 
 import java.util.Collection;
 import java.util.List;
@@ -29,7 +29,7 @@ public abstract class CategorizedElementRepository<E extends CategorizedElement<
         } else {
             shouldHavePredicates.setMinimumShouldMatch(1);
         }
-        final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), shouldHavePredicates,
+        final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), getOpenSearchIndex(), shouldHavePredicates,
                 new SortResultOptions("createdAt", SortOptionOrder.DESC), from, size);
         return getOpenSearchClient().convertResponse(response);
 

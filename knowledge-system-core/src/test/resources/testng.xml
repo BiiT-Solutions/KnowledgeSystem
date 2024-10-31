@@ -10,11 +10,13 @@
             <run>
                 <include name="seaweedClient"/>
                 <exclude name="thumbnailTests"/>
+                <include name="fileEntryProvider"/>
             </run>
         </groups>
         <classes>
             <class name="com.biit.ks.core.seaweed.SeaweedClientTests"/>
             <class name="com.biit.ks.core.ThumbnailTests"/>
+            <class name="com.biit.ks.core.providers.FileEntryProviderTest"/>
         </classes>
     </test>
 </suite>

@@ -77,7 +77,7 @@ public class OpenSearchMixedSearchTests extends AbstractTestNGSpringContextTests
         //DATA5 not matching.
         intervalsSearch.addWildcard("name", "*Data");
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, intervalsSearch);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, intervalsSearch);
         Assert.assertEquals(response.hits().hits().size(), 3);
     }
 
@@ -92,7 +92,7 @@ public class OpenSearchMixedSearchTests extends AbstractTestNGSpringContextTests
         intervalsSearch.setIntervalsSearchOperator(QuantifiersOperator.ANY_OF);
 
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, intervalsSearch);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, intervalsSearch);
         Assert.assertEquals(response.hits().hits().size(), 5);
     }
 

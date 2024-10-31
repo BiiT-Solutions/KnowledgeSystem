@@ -12,6 +12,9 @@ public abstract class Element<KEY> {
     private String updatedBy;
     private String updatedByHash;
 
+    public Element() {
+        setCreatedAt(LocalDateTime.now());
+    }
 
     public abstract KEY getId();
 

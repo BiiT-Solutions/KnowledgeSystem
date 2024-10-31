@@ -79,7 +79,7 @@ public class OpenSearchRangeSearchTests extends AbstractTestNGSpringContextTests
         final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.addRange("value", 2, 5);
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, mustHaveParameters);
         Assert.assertEquals(response.hits().hits().size(), 2);
     }
 
@@ -89,7 +89,7 @@ public class OpenSearchRangeSearchTests extends AbstractTestNGSpringContextTests
         final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.addRange("dateTime", null, LocalDateTime.now());
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, mustHaveParameters);
         Assert.assertEquals(response.hits().hits().size(), 3);
     }
 
@@ -101,7 +101,7 @@ public class OpenSearchRangeSearchTests extends AbstractTestNGSpringContextTests
 
         BoolQuery boolQuery = new BoolQuery.Builder().must(rangeQuery._toQuery()).build();
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, boolQuery._toQuery());
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, boolQuery._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 3);
     }
 
@@ -110,7 +110,7 @@ public class OpenSearchRangeSearchTests extends AbstractTestNGSpringContextTests
         //DATE1, DATA2 and DATA3
         final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.addRange("value", null, 4);
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustHaveParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, mustHaveParameters);
         Assert.assertEquals(response.hits().hits().size(), 3);
     }
 
@@ -122,7 +122,7 @@ public class OpenSearchRangeSearchTests extends AbstractTestNGSpringContextTests
 
         BoolQuery boolQuery = new BoolQuery.Builder().must(rangeQuery._toQuery()).build();
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, boolQuery._toQuery());
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, boolQuery._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 3);
     }
 

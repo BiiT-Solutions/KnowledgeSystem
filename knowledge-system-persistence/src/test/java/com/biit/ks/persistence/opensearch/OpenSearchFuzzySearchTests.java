@@ -87,7 +87,7 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
 
         BoolQuery boolQuery = new BoolQuery.Builder().must(fuzzyQuery._toQuery()).build();
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, boolQuery._toQuery());
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, boolQuery._toQuery());
         Assert.assertEquals(response.hits().hits().size(), 4);
     }
 
@@ -98,7 +98,7 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
         mustParameters.add(Pair.of("description", "This Paca"));
         mustParameters.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, mustParameters);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
@@ -110,7 +110,7 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
         mustParameters.add(Pair.of("color", "bluey"));
         mustParameters.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, mustParameters);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
@@ -122,7 +122,7 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
         mustParameters.add(Pair.of("color", "bluey"));
         mustParameters.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO, 1));
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, mustParameters);
         Assert.assertEquals(response.hits().hits().size(), 1);
     }
 
@@ -134,7 +134,7 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
         mustParameters.add(Pair.of("description", "worl"));
         mustParameters.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO, 1));
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, mustParameters);
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class, INDEX, mustParameters);
         Assert.assertEquals(response.hits().hits().size(), 2);
     }
 
@@ -146,7 +146,7 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
         mustParameters.add(Pair.of("description", "Worl"));
         mustParameters.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO, null, 1));
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class,
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class,INDEX,
                 mustParameters);
         Assert.assertEquals(response.hits().hits().size(), 0);
     }
@@ -159,7 +159,7 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
         mustParameters.add(Pair.of("description", "Worl"));
         mustParameters.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
 
-        final SearchResponse<Data> response = openSearchClient.searchData(Data.class,
+        final SearchResponse<Data> response = openSearchClient.searchData(Data.class,INDEX,
                 mustParameters);
         Assert.assertEquals(response.hits().hits().size(), 0);
     }
@@ -175,7 +175,7 @@ public class OpenSearchFuzzySearchTests extends AbstractTestNGSpringContextTests
         shouldParameters.add(Pair.of("color", "bluey"));
         shouldParameters.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
 
-        final SearchResponse<Data> response = openSearchClient.searchData(new SearchQuery<>(Data.class,
+        final SearchResponse<Data> response = openSearchClient.searchData(INDEX, new SearchQuery<>(Data.class,
                 mustParameters, shouldParameters));
         Assert.assertEquals(response.hits().hits().size(), 1);
     }

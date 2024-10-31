@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -39,6 +40,12 @@ public class ObjectMapperConfiguration {
     public Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder() {
         return new Jackson2ObjectMapperBuilder().serializers(LOCAL_DATETIME_SERIALIZER)
                 .serializationInclusion(JsonInclude.Include.NON_NULL);
+    }
+
+    @Bean
+    public JacksonJsonpMapper jacksonJsonMapper() {
+        return new JacksonJsonpMapper(new ObjectMapper()
+                .setSerializationInclusion(JsonInclude.Include.ALWAYS));
     }
 
 

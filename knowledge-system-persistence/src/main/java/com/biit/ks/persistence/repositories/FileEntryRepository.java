@@ -20,10 +20,10 @@ import java.util.Optional;
 @Repository
 public class FileEntryRepository extends CategorizedElementRepository<FileEntry> {
 
-    private final OpenSearchConfigurator openSearchConfigurator;
+    private final IOpenSearchConfigurator openSearchConfigurator;
 
 
-    public FileEntryRepository(OpenSearchClient openSearchClient, OpenSearchConfigurator openSearchConfigurator) {
+    public FileEntryRepository(OpenSearchClient openSearchClient, IOpenSearchConfigurator openSearchConfigurator) {
         super(FileEntry.class, openSearchClient);
         this.openSearchConfigurator = openSearchConfigurator;
     }
@@ -41,7 +41,7 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
         final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.add("filePath", filePath);
         mustHaveParameters.add("fileName", fileName);
-        final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, mustHaveParameters);
+        final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, getOpenSearchIndex(), mustHaveParameters);
         if (response == null || response.hits() == null || response.hits().hits().isEmpty() || response.hits().hits().get(0) == null
                 || response.hits().hits().get(0).source() == null) {
             return Optional.empty();
@@ -52,7 +52,7 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
     public List<FileEntry> findFileEntriesWithThumbnailIsNull() {
         final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.add("thumbnail", null);
-        final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, mustHaveParameters);
+        final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, getOpenSearchIndex(), mustHaveParameters);
         if (response == null || response.hits() == null || response.hits().hits().isEmpty() || response.hits().hits().get(0) == null
                 || response.hits().hits().get(0).source() == null) {
             return new ArrayList<>();
@@ -70,8 +70,8 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
         shouldHavePredicates.add(Pair.of("mimeType", query));
         shouldHavePredicates.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
         shouldHavePredicates.setMinimumShouldMatch(1);
-        final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, shouldHavePredicates,
-                new SortResultOptions("createdAt", SortOptionOrder.DESC), from, size);
+        final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, getOpenSearchIndex(),
+                shouldHavePredicates, new SortResultOptions("createdAt", SortOptionOrder.DESC), from, size);
         return getOpenSearchClient().convertResponse(response);
 
     }

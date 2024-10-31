@@ -17,9 +17,9 @@ import java.util.Optional;
 @Repository
 public class CategorizationRepository extends OpenSearchElementRepository<Categorization> {
 
-    private final OpenSearchConfigurator openSearchConfigurator;
+    private final IOpenSearchConfigurator openSearchConfigurator;
 
-    public CategorizationRepository(OpenSearchClient openSearchClient, OpenSearchConfigurator openSearchConfigurator) {
+    public CategorizationRepository(OpenSearchClient openSearchClient, IOpenSearchConfigurator openSearchConfigurator) {
         super(Categorization.class, openSearchClient);
         this.openSearchConfigurator = openSearchConfigurator;
     }
@@ -32,7 +32,7 @@ public class CategorizationRepository extends OpenSearchElementRepository<Catego
     public Optional<Categorization> get(String name) {
         final MustHavePredicates mustHavePredicates = new MustHavePredicates();
         mustHavePredicates.add(Pair.of("name", name));
-        final SearchResponse<Categorization> response = getOpenSearchClient().searchData(Categorization.class, mustHavePredicates);
+        final SearchResponse<Categorization> response = getOpenSearchClient().searchData(Categorization.class, getOpenSearchIndex(), mustHavePredicates);
         final List<Categorization> categorizations = getOpenSearchClient().convertResponse(response);
         if (categorizations.isEmpty()) {
             return Optional.empty();
@@ -47,7 +47,8 @@ public class CategorizationRepository extends OpenSearchElementRepository<Catego
         shouldHavePredicates.add(Pair.of("name", query));
         shouldHavePredicates.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
         shouldHavePredicates.setMinimumShouldMatch(1);
-        final SearchResponse<Categorization> response = getOpenSearchClient().searchData(Categorization.class, shouldHavePredicates, from, size);
+        final SearchResponse<Categorization> response = getOpenSearchClient().searchData(Categorization.class, getOpenSearchIndex(),
+                shouldHavePredicates, from, size);
         return getOpenSearchClient().convertResponse(response);
     }
 
