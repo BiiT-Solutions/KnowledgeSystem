@@ -26,7 +26,7 @@ import java.util.UUID;
 public class ThumbnailController {
     private static final int MIN_THUMBNAIL_SIZE = 200;
     private static final String THUMBNAIL_SEAWEED_FOLDER = "/thumbnails";
-    private static final String THUMBNAIL_SERVICE_URL = "/public/download/filename:";
+    private static final String THUMBNAIL_SERVICE_URL = "/public/download/";
 
     private final SeaweedClient seaweedClient;
 
