@@ -2,6 +2,7 @@ package com.biit.ks.core.files;
 
 public enum MimeTypeToFFmpeg {
     MP4("video/mp4", "mp4"),
+    QUICKTIME("video/quicktime", "mp4"),
     MPEG("video/mpeg", "mpegvideo"),
     F3G2("video/3gpp2", "3g2"),
     F3G("video/3gpp", "3gp"),
@@ -40,7 +41,7 @@ public enum MimeTypeToFFmpeg {
                 return mimeTypeToFFmpeg.ffmpegExtension;
             }
         }
-        return MP4.mimeType;
+        return MP4.ffmpegExtension;
     }
 
 }

@@ -126,6 +126,7 @@ public class SeaweedClient {
      * @param permissions Permissions as unix filesystem (i.e. 0755).
      */
     public void createFolder(String fullPath, int permissions) {
+        SeaweedLogger.info(this.getClass(), "Creating folder '{}' with permissions '{}'.", fullPath, permissions);
         filerClient.mkdirs(fullPath, permissions);
     }
 
@@ -141,6 +142,7 @@ public class SeaweedClient {
      * @param ignoreRecursiveError Do not stop removing if something fails.
      */
     public void removeFolder(String fullPath, boolean recursive, boolean ignoreRecursiveError) {
+        SeaweedLogger.info(this.getClass(), "Deleting folder '{}'.", fullPath);
         filerClient.rm(fullPath, recursive, ignoreRecursiveError);
     }
 

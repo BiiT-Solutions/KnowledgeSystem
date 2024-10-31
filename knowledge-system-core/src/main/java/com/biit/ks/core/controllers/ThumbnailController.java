@@ -3,6 +3,7 @@ package com.biit.ks.core.controllers;
 import com.biit.ks.core.exceptions.SeaweedClientException;
 import com.biit.ks.core.files.MimeTypeToFFmpeg;
 import com.biit.ks.core.seaweed.SeaweedClient;
+import com.biit.ks.core.seaweed.SeaweedConfigurator;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.FileEntry;
 import org.bytedeco.ffmpeg.global.avutil;
@@ -25,13 +26,14 @@ import java.util.UUID;
 @Component
 public class ThumbnailController {
     private static final int MIN_THUMBNAIL_SIZE = 200;
-    private static final String THUMBNAIL_SEAWEED_FOLDER = "/thumbnails";
     private static final String THUMBNAIL_SERVICE_URL = "/public/download/";
 
     private final SeaweedClient seaweedClient;
+    private final SeaweedConfigurator seaweedConfigurator;
 
-    public ThumbnailController(SeaweedClient seaweedClient) {
+    public ThumbnailController(SeaweedClient seaweedClient, SeaweedConfigurator seaweedConfigurator) {
         this.seaweedClient = seaweedClient;
+        this.seaweedConfigurator = seaweedConfigurator;
         FFmpegLogCallback.set();
         FFmpegLogCallback.setLevel(avutil.AV_LOG_ERROR);
     }
@@ -58,7 +60,7 @@ public class ThumbnailController {
 
     public byte[] getThumbnail(UUID uuid) {
         try {
-            return seaweedClient.getBytes(THUMBNAIL_SEAWEED_FOLDER + File.separator, uuid.toString());
+            return seaweedClient.getBytes(seaweedConfigurator.getThumbnailsPath(), uuid.toString());
         } catch (IOException e) {
             throw new SeaweedClientException(this.getClass(), e);
         }
@@ -76,7 +78,7 @@ public class ThumbnailController {
                 setThumbnail(fileEntry, toByteArray(createThumbFromImage(fileEntry)));
             } else if (fileEntry.getMimeType().startsWith("video/")) {
                 KnowledgeSystemLogger.debug(this.getClass(), "FileEntry is a video '{}'.", fileEntry.getMimeType());
-                setThumbnail(fileEntry, toByteArray(createThumbFromImage(fileEntry)));
+                setThumbnail(fileEntry, toByteArray(createThumbFromVideo(fileEntry)));
             } else {
                 KnowledgeSystemLogger.debug(this.getClass(), "Unknown mimetype '{}' for fileEntry.", fileEntry.getMimeType());
                 setThumbnail(fileEntry, null);
@@ -94,7 +96,8 @@ public class ThumbnailController {
             return;
         }
         try {
-            seaweedClient.addBytes(THUMBNAIL_SEAWEED_FOLDER + File.separator + fileEntry.getUuid().toString(), thumbnail);
+            KnowledgeSystemLogger.debug(this.getClass(), "Assigning thumbnail to file '{}'.", fileEntry);
+            seaweedClient.addBytes(seaweedConfigurator.getThumbnailsPath() + File.separator + fileEntry.getUuid().toString(), thumbnail);
             fileEntry.setThumbnailUrl(THUMBNAIL_SERVICE_URL + fileEntry.getUuid().toString());
         } catch (IOException e) {
             KnowledgeSystemLogger.errorMessage(this.getClass(), e);
@@ -168,7 +171,7 @@ public class ThumbnailController {
     public BufferedImage createThumbFromVideo(String seaweedPath, String resourceName, String mimeType) {
         final File file;
         try {
-            file = File.createTempFile("downloadedVideo", "mp4");
+            file = File.createTempFile("downloadedVideo", ".mp4");
             file.deleteOnExit();
             seaweedClient.getFile(seaweedPath + File.separator + resourceName, file);
             return createThumbFromVideo(file.getPath(), mimeType);

@@ -31,6 +31,8 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -251,6 +253,26 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(fileEntryResults.size(), 1);
     }
 
+    @Test(dependsOnMethods = {"searchVideo", "downloadVideo", "getAll"}, alwaysRun = true)
+    public void checkThumbnail() throws Exception {
+        Thread.sleep(5000);
+
+        MvcResult createResult = this.mockMvc
+                .perform(get("/thumbnails/public/download/" + videoUUID.toString())
+                        .with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        final byte[] thumbnail = createResult.getResponse().getContentAsByteArray();
+        Assert.assertNotNull(thumbnail);
+
+        final File file = new File("/tmp/thumbnail.png");
+        file.deleteOnExit();
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(thumbnail);
+        }
+    }
+
 
     @Test(dependsOnMethods = {"searchVideo", "downloadVideo", "getAll"}, alwaysRun = true)
     public void deleteVideo() throws Exception {
@@ -282,5 +304,6 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
     @AfterClass(alwaysRun = true)
     public void deleteFolder() {
         seaweedClient.deleteFolder(seaweedConfigurator.getUploadsPath());
+        seaweedClient.deleteFolder(seaweedConfigurator.getThumbnailsPath());
     }
 }
