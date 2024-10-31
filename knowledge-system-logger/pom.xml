@@ -8,7 +8,7 @@
     <parent>
         <artifactId>knowledge-system</artifactId>
         <groupId>com.biit.ks</groupId>
-        <version>1.1.26</version>
+        <version>1.1.27-SNAPSHOT</version>
     </parent>
 
     <properties>
