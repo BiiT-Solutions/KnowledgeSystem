@@ -16,6 +16,7 @@ import seaweedfs.client.SeaweedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -214,8 +215,14 @@ public class SeaweedClient {
 
 
     public byte[] getBytes(String folderPath, String entryName) throws IOException {
-        final FilerProto.Entry entry = getEntry(folderPath, entryName);
-        return entry.getContent().toByteArray();
+        final File tempFile = File.createTempFile(entryName, ".seaweed");
+        tempFile.deleteOnExit();
+        getFile(folderPath + File.separator + entryName, tempFile);
+        final byte[] byteArray = new byte[(int) tempFile.length()];
+        try (FileInputStream inputStream = new FileInputStream(tempFile)) {
+            inputStream.read(byteArray);
+        }
+        return byteArray;
     }
 
 }

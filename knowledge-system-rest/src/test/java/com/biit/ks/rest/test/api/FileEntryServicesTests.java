@@ -218,13 +218,17 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "uploadVideo")
     public void downloadVideo() throws Exception {
-        this.mockMvc
+        MvcResult createResult = this.mockMvc
                 .perform(get("/stream/file-entry/uuid/" + videoUUID.toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
                         .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isPartialContent())
                 .andReturn();
+
+        final byte[] video = createResult.getResponse().getContentAsByteArray();
+        Assert.assertTrue(video.length > 0);
     }
+
 
     @Test(dependsOnMethods = "uploadVideo")
     public void searchVideo() throws Exception {
@@ -271,6 +275,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
         try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(thumbnail);
         }
+        Assert.assertTrue(file.length() > 0);
     }
 
 
