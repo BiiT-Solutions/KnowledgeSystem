@@ -183,7 +183,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
                 .andExpect(MockMvcResultMatchers.status().isNoContent())
                 .andReturn();
 
-        //Cannot be downloaded any more.
+        //Cannot be downloaded anymore.
         this.mockMvc
                 .perform(get("/uuid/" + imageUUID.toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
@@ -288,7 +288,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
                 .andExpect(MockMvcResultMatchers.status().isNoContent())
                 .andReturn();
 
-        Thread.sleep(20000);
+        Thread.sleep(15000);
 
         //Cannot be downloaded anymore.
         this.mockMvc

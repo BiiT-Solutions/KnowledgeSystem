@@ -1,5 +1,9 @@
 package com.biit.ks.core.files;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public enum MimeTypeToFFmpeg {
     MP4("video/mp4", "mp4"),
     QUICKTIME("video/quicktime", "mp4"),
@@ -42,6 +46,11 @@ public enum MimeTypeToFFmpeg {
             }
         }
         return MP4.ffmpegExtension;
+    }
+
+    public static Set<String> getFilteredExtensions(Set<String> ignoredExtensions) {
+        return Arrays.stream(MimeTypeToFFmpeg.values()).filter(value -> !ignoredExtensions.contains(value.ffmpegExtension))
+                .map(value -> value.ffmpegExtension).collect(Collectors.toSet());
     }
 
 }

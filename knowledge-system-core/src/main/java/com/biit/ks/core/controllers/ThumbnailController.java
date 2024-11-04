@@ -21,6 +21,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -191,27 +193,59 @@ public class ThumbnailController {
 
 
     public BufferedImage createThumbFromVideo(FFmpegFrameGrabber frameGrabber, String mimeType) {
+        final String detectedFormat = MimeTypeToFFmpeg.getFFmpegExtension(mimeType);
+        return createThumbFromVideo(frameGrabber, detectedFormat, new HashSet<>());
+    }
+
+
+    /**
+     * Starting from a format, uses all formats until has success creating the thumbnail.
+     *
+     * @param frameGrabber  the video processor.
+     * @param format        current format selected.
+     * @param testedFormats formats already tested that must not be retried.
+     * @return
+     */
+    private BufferedImage createThumbFromVideo(FFmpegFrameGrabber frameGrabber, String format, Set<String> testedFormats) {
+        if (format == null) {
+            return null;
+        }
         try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
             try {
-                final String detectedFormat = MimeTypeToFFmpeg.getFFmpegExtension(mimeType);
-                frameGrabber.setFormat(detectedFormat);
+                frameGrabber.setFormat(format);
                 frameGrabber.start();
                 final int frameCount = frameGrabber.getLengthInFrames();
+                if (frameCount == 0) {
+                    throw new FFmpegFrameGrabber.Exception("Invalid format '" + format + "'. No frames retrieved.");
+                }
                 //final Frame frame = frameGrabber.grabKeyFrame();
-                KnowledgeSystemLogger.debug(this.getClass(), "Creating thumbnail for frame '{}' with format.", frameCount / 2, detectedFormat);
+                KnowledgeSystemLogger.debug(this.getClass(), "Creating thumbnail for frame '{}' with format '{}'.", frameCount / 2, format);
                 frameGrabber.setFrameNumber(frameCount / 2);
                 final Frame frame = frameGrabber.grabImage();
                 final BufferedImage bufferedImage = converter.convert(frame);
                 KnowledgeSystemLogger.debug(this.getClass(), "Thumbnail height '{}' and width '{}'.", bufferedImage.getHeight(), bufferedImage.getWidth());
                 return bufferedImage;
-            } catch (Exception e) {
-                KnowledgeSystemLogger.errorMessage(this.getClass(), e);
-            } finally {
+            } catch (FFmpegFrameGrabber.Exception e) {
                 try {
                     frameGrabber.stop();
                     frameGrabber.close();
-                } catch (Exception e) {
-                    KnowledgeSystemLogger.errorMessage(this.getClass(), e);
+                } catch (Exception f) {
+                    KnowledgeSystemLogger.errorMessage(this.getClass(), f);
+                }
+                //Error with the current format, try a new one.
+                testedFormats.add(format);
+                final Set<String> notTestedFormats = MimeTypeToFFmpeg.getFilteredExtensions(testedFormats);
+                final String nextFormat = notTestedFormats.stream().skip((int) (notTestedFormats.size() * Math.random()))
+                        .findFirst().orElse(null);
+                KnowledgeSystemLogger.debug(this.getClass(), "Format '{}' failed! Testing now format '{}'.", format, nextFormat);
+                return createThumbFromVideo(frameGrabber, nextFormat, testedFormats);
+            } catch (Exception e) {
+                KnowledgeSystemLogger.errorMessage(this.getClass(), e);
+                try {
+                    frameGrabber.stop();
+                    frameGrabber.close();
+                } catch (Exception f) {
+                    KnowledgeSystemLogger.errorMessage(this.getClass(), f);
                 }
             }
         }
