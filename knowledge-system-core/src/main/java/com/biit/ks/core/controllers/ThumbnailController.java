@@ -132,10 +132,10 @@ public class ThumbnailController {
 
         if (inputImage.getWidth() > inputImage.getHeight()) {
             height = minSize;
-            width = inputImage.getWidth() * (minSize / inputImage.getHeight());
+            width = (int) (inputImage.getWidth() * (minSize / (double) inputImage.getHeight()));
         } else {
             width = minSize;
-            height = inputImage.getHeight() * (minSize / inputImage.getWidth());
+            height = (int) (inputImage.getHeight() * (minSize / (double) inputImage.getWidth()));
         }
         return createThumbFromImage(inputImage, width, height);
     }

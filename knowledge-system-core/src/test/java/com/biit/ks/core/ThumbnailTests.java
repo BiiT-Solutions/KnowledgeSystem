@@ -1,7 +1,7 @@
 package com.biit.ks.core;
 
-import com.biit.ks.core.files.MimeTypeToFFmpeg;
 import com.biit.ks.core.controllers.ThumbnailController;
+import com.biit.ks.core.files.MimeTypeToFFmpeg;
 import com.biit.ks.core.seaweed.SeaweedClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,6 +12,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import seaweedfs.client.FilerProto;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,6 +30,7 @@ public class ThumbnailTests extends AbstractTestNGSpringContextTests {
     private static final String SEAWEED_PATH = "/testDir/withData";
     private static final String RESOURCE_FOLDER = "documents";
     private static final String RESOURCE = "1mb.mp4";
+    private static final String IMAGE = "test.png";
 
     private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 
@@ -90,6 +92,22 @@ public class ThumbnailTests extends AbstractTestNGSpringContextTests {
         Assert.assertNotNull(image);
 
         final File file = new File(TMPDIR + File.separator + "thumbnail-chunk.png");
+        file.deleteOnExit();
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(image);
+        }
+    }
+
+    @Test
+    public void createThumbnailFromImage() throws IOException {
+        final File source = new File(TMPDIR + File.separator + IMAGE);
+        source.deleteOnExit();
+        final byte[] image = thumbnailController.toByteArray(thumbnailController.createThumbFromImage(
+                ImageIO.read(getClass().getClassLoader().getResourceAsStream(RESOURCE_FOLDER + File.separator + IMAGE)
+                ), 200));
+        Assert.assertNotNull(image);
+
+        final File file = new File(TMPDIR + File.separator + "thumbnail-image.png");
         file.deleteOnExit();
         try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(image);
