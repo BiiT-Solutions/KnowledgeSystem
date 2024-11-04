@@ -6,6 +6,10 @@ import com.biit.ks.core.seaweed.SeaweedClient;
 import com.biit.ks.core.seaweed.SeaweedConfigurator;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.FileEntry;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.bytedeco.ffmpeg.global.avutil;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FFmpegLogCallback;
@@ -28,6 +32,7 @@ import java.util.UUID;
 @Component
 public class ThumbnailController {
     private static final int MIN_THUMBNAIL_SIZE = 200;
+    private static final int PDF_DPI = 24;
     private static final String THUMBNAIL_SERVICE_URL = "/public/download/";
 
     private final SeaweedClient seaweedClient;
@@ -81,6 +86,9 @@ public class ThumbnailController {
             } else if (fileEntry.getMimeType().startsWith("video/")) {
                 KnowledgeSystemLogger.debug(this.getClass(), "FileEntry is a video '{}'.", fileEntry.getMimeType());
                 setThumbnail(fileEntry, toByteArray(createThumbFromVideo(fileEntry)));
+            } else if (fileEntry.getMimeType().contains("pdf")) {
+                KnowledgeSystemLogger.debug(this.getClass(), "FileEntry is a pdf '{}'.", fileEntry.getMimeType());
+                setThumbnail(fileEntry, toByteArray(createThumbFromPdf(fileEntry)));
             } else {
                 KnowledgeSystemLogger.debug(this.getClass(), "Unknown mimetype '{}' for fileEntry.", fileEntry.getMimeType());
                 setThumbnail(fileEntry, null);
@@ -151,6 +159,23 @@ public class ThumbnailController {
         g2.drawImage(inputImage, 0, 0, width, height, null);
         g2.dispose();
         return bi;
+    }
+
+
+    public BufferedImage createThumbFromPdf(FileEntry fileEntry) throws IOException {
+        final byte[] sourcePdf = seaweedClient.getBytes(fileEntry.getFilePath(), fileEntry.getFileName());
+        return createThumbFromPdf(sourcePdf);
+    }
+
+
+    public BufferedImage createThumbFromPdf(byte[] pdfBytes) {
+        try (PDDocument document = Loader.loadPDF(pdfBytes)) {
+            final PDFRenderer pdfRenderer = new PDFRenderer(document);
+            return pdfRenderer.renderImageWithDPI(0, PDF_DPI, ImageType.RGB);
+        } catch (IOException e) {
+            KnowledgeSystemLogger.errorMessage(this.getClass(), e);
+        }
+        return null;
     }
 
 

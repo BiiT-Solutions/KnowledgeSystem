@@ -46,16 +46,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ExtendWith(MockitoExtension.class)
-@Test(groups = "fileEntry")
-public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
+@Test(groups = "pdfEntry")
+public class PdfEntryServicesTests extends AbstractTestNGSpringContextTests {
 
     private final static String USER_NAME = "user";
     private final static String USER_PASSWORD = "password";
 
     private final static String JWT_SALT = "4567";
 
-    private final static String FILE = "BlackSquare.jpg";
-    private final static String VIDEO = "1mb.mp4";
+    private final static String PDF_FILE = "Cookies.pdf";
 
     @Autowired
     private WebApplicationContext context;
@@ -85,7 +84,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
 
     private String jwtToken;
 
-    private UUID videoUUID;
+    private UUID pdfUUID;
     private UUID imageUUID;
 
     private <T> String toJson(T object) throws JsonProcessingException {
@@ -139,65 +138,17 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
         Assert.assertNotNull(jwtToken);
     }
 
-
-    @Test(enabled = false)
-    public void checkDoesNotExists() throws Exception {
-        this.mockMvc
-                .perform(get("/files/uuid/" + UUID.randomUUID())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
-                        .with(csrf()))
-                .andExpect(MockMvcResultMatchers.status().isNotFound())
-                .andReturn();
-    }
-
-
-    @Test(enabled = false)
-    public void getMimeType() throws Exception {
-        //Must be called "file" to match the MultipartFile parameter name.
-        final MockMultipartFile multipartFile = new MockMultipartFile("file", "myImage", null, FileEntryServicesTests.class.getClassLoader().getResourceAsStream(FILE));
-        final FileEntryDTO fileEntryDTO = new FileEntryDTO();
-
-        MvcResult createResult = this.mockMvc
-                .perform(MockMvcRequestBuilders.multipart("/files")
-                        .file(multipartFile)
-                        .param("force", "false")
-                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
-                        .content(toJson(fileEntryDTO))
-                        .with(csrf()))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
-
-        FileEntryDTO fileEntryResult = fromJson(createResult.getResponse().getContentAsString(), FileEntryDTO.class);
-        Assert.assertEquals(fileEntryResult.getMimeType(), "image/jpeg");
-        imageUUID = fileEntryResult.getUuid();
-    }
-
-    @Test(dependsOnMethods = "getMimeType", alwaysRun = true, enabled = false)
-    public void deleteImage() throws Exception {
-        this.mockMvc
-                .perform(delete("/files/" + imageUUID.toString())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
-                        .with(csrf()))
-                .andExpect(MockMvcResultMatchers.status().isNoContent())
-                .andReturn();
-
-        //Cannot be downloaded anymore.
-        this.mockMvc
-                .perform(get("/uuid/" + imageUUID.toString())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
-                        .with(csrf()))
-                .andExpect(MockMvcResultMatchers.status().isNotFound())
-                .andReturn();
+    @BeforeClass
+    public void prepareIndexes() {
+        openSearchClient.createIndex(openSearchConfigurator.getOpenSearchFileIndex());
+        openSearchClient.createIndex(openSearchConfigurator.getOpenSearchCategorizationsIndex());
     }
 
     @Test
-    public void uploadVideo() throws Exception {
+    public void uploadPdf() throws Exception {
         //Must be called "file" to match the MultipartFile parameter name.
-        final MockMultipartFile multipartFile = new MockMultipartFile("file", "myVideo", null,
-                FileEntryServicesTests.class.getClassLoader().getResourceAsStream(VIDEO));
-        final FileEntryDTO fileEntryDTO = new FileEntryDTO();
+        final MockMultipartFile multipartFile = new MockMultipartFile("file", "myPdf", null,
+                PdfEntryServicesTests.class.getClassLoader().getResourceAsStream(PDF_FILE));
 
         MvcResult createResult = this.mockMvc
                 .perform(MockMvcRequestBuilders.multipart("/files/upload")
@@ -205,35 +156,20 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
                         .param("force", "true")
                         .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
-                        .content(toJson(fileEntryDTO))
                         .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
 
         final FileEntryDTO fileEntryResult = fromJson(createResult.getResponse().getContentAsString(), FileEntryDTO.class);
-        Assert.assertEquals(fileEntryResult.getMimeType(), "video/quicktime");
-        videoUUID = fileEntryResult.getUuid();
+        Assert.assertEquals(fileEntryResult.getMimeType(), "application/pdf");
+        pdfUUID = fileEntryResult.getUuid();
     }
 
 
-    @Test(dependsOnMethods = "uploadVideo")
-    public void downloadVideo() throws Exception {
+    @Test(dependsOnMethods = "uploadPdf")
+    public void searchPdf() throws Exception {
         MvcResult createResult = this.mockMvc
-                .perform(get("/stream/file-entry/uuid/" + videoUUID.toString())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
-                        .with(csrf()))
-                .andExpect(MockMvcResultMatchers.status().isPartialContent())
-                .andReturn();
-
-        final byte[] video = createResult.getResponse().getContentAsByteArray();
-        Assert.assertTrue(video.length > 0);
-    }
-
-
-    @Test(dependsOnMethods = "uploadVideo")
-    public void searchVideo() throws Exception {
-        MvcResult createResult = this.mockMvc
-                .perform(get("/files/search/query:myVideo")
+                .perform(get("/files/search/query:myPdf")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
                         .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -244,8 +180,9 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
     }
 
 
-    @Test(dependsOnMethods = "uploadVideo")
+    @Test(dependsOnMethods = "uploadPdf")
     public void getAll() throws Exception {
+        Thread.sleep(5000);
         MvcResult createResult = this.mockMvc
                 .perform(get("/files")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
@@ -257,12 +194,12 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(fileEntryResults.size(), 1);
     }
 
-    @Test(dependsOnMethods = {"searchVideo", "downloadVideo", "getAll"}, alwaysRun = true)
+    @Test(dependsOnMethods = {"searchPdf", "getAll"})
     public void checkThumbnail() throws Exception {
         Thread.sleep(5000);
 
         MvcResult createResult = this.mockMvc
-                .perform(get("/thumbnails/public/download/" + videoUUID.toString())
+                .perform(get("/thumbnails/public/download/" + pdfUUID.toString())
                         .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
@@ -270,7 +207,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
         final byte[] thumbnail = createResult.getResponse().getContentAsByteArray();
         Assert.assertNotNull(thumbnail);
 
-        final File file = new File("/tmp/thumbnail.png");
+        final File file = new File("/tmp/thumbnail-pdf.png");
         file.deleteOnExit();
         try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(thumbnail);
@@ -279,25 +216,16 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
     }
 
 
-    @Test(dependsOnMethods = {"searchVideo", "downloadVideo", "getAll"}, alwaysRun = true)
-    public void deleteVideo() throws Exception {
+    @Test(dependsOnMethods = {"searchPdf", "getAll"}, alwaysRun = true)
+    public void deletePdf() throws Exception {
         this.mockMvc
-                .perform(delete("/files/" + videoUUID.toString())
+                .perform(delete("/files/" + pdfUUID.toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
                         .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isNoContent())
                 .andReturn();
-
-        Thread.sleep(20000);
-
-        //Cannot be downloaded anymore.
-        this.mockMvc
-                .perform(get("/stream/file-entry/uuid/" + videoUUID.toString())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
-                        .with(csrf()))
-                .andExpect(MockMvcResultMatchers.status().isNotFound())
-                .andReturn();
     }
+
 
     @AfterClass(alwaysRun = true)
     public void cleanUp() {

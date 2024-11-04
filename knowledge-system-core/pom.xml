@@ -26,6 +26,10 @@
             <artifactId>rest-server-definitions</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.biit</groupId>
             <artifactId>rest-server-dto</artifactId>
             <exclusions>

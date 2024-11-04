@@ -8,10 +8,12 @@
         <groups>
             <run>
                 <include name="fileEntry"/>
+                <include name="pdfEntry"/>
             </run>
         </groups>
         <classes>
             <class name="com.biit.ks.rest.test.api.FileEntryServicesTests"/>
+            <class name="com.biit.ks.rest.test.api.PdfEntryServicesTests"/>
         </classes>
     </test>
 </suite>
