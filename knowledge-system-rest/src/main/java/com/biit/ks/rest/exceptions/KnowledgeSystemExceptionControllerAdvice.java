@@ -1,5 +1,6 @@
 package com.biit.ks.rest.exceptions;
 
+import com.biit.ks.core.exceptions.FileAlreadyExistsException;
 import com.biit.ks.core.exceptions.FileHandlingException;
 import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.exceptions.SeaweedClientException;
@@ -54,5 +55,12 @@ public class KnowledgeSystemExceptionControllerAdvice extends ServerExceptionCon
         RestServerExceptionLogger.errorMessage(this.getClass().getName(), ex);
         return new ResponseEntity<>(new ErrorResponse("INTERNAL_SERVER_ERROR", "invalid_query", ex), HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(FileAlreadyExistsException.class)
+    public ResponseEntity<Object> fileAlreadyExistsException(Exception ex) {
+        RestServerExceptionLogger.errorMessage(this.getClass().getName(), ex);
+        return new ResponseEntity<>(new ErrorResponse("BAD_REQUEST", "file_already_exists", ex), HttpStatus.BAD_REQUEST);
+    }
+
 
 }
