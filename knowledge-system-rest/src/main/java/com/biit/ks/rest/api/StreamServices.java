@@ -47,15 +47,7 @@ public class StreamServices {
         String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
         path = StringUtils.removeStart(path, "/stream/path");
 
-        final long skip = getSkip(range);
-        final int size = getSize(range);
-        final ChunkData chunk = fileEntryController.downloadChunk(path, skip, size, false);
-
-        response.setHeader(CONTENT_TYPE, chunk.getMimeType());
-        response.setHeader(ACCEPT_RANGES, BYTES);
-        response.setHeader(CONTENT_LENGTH, String.valueOf(chunk.getData().length));
-        response.setHeader(CONTENT_RANGE, BYTES + " " + skip + "-" + (skip + chunk.getData().length - 1) + "/" + chunk.getFileSize());
-        return chunk.getData();
+        return getChunk(path, range, response, false);
     }
 
 
@@ -66,15 +58,7 @@ public class StreamServices {
     public byte[] streamFileEntry(@PathVariable("uuid") UUID uuid,
                                   final HttpServletResponse response, final HttpServletRequest request,
                                   @RequestHeader(value = "Range", required = false) final String range) {
-        final long skip = getSkip(range);
-        final int size = getSize(range);
-        final ChunkData chunk = fileEntryController.downloadChunk(uuid, skip, size, false);
-
-        response.setHeader(CONTENT_TYPE, chunk.getMimeType());
-        response.setHeader(ACCEPT_RANGES, BYTES);
-        response.setHeader(CONTENT_LENGTH, String.valueOf(chunk.getData().length));
-        response.setHeader(CONTENT_RANGE, BYTES + " " + skip + "-" + (skip + chunk.getData().length - 1) + "/" + chunk.getFileSize());
-        return chunk.getData();
+        return getChunk(uuid, range, response, false);
     }
 
 
@@ -83,13 +67,28 @@ public class StreamServices {
     @ResponseStatus(HttpStatus.PARTIAL_CONTENT)
     @ResponseBody
     public byte[] streamFileNamePublic(final HttpServletResponse response, final HttpServletRequest request,
-                                 @RequestHeader(value = "Range", required = false) final String range) {
+                                       @RequestHeader(value = "Range", required = false) final String range) {
         String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
         path = StringUtils.removeStart(path, "/stream/public/path");
 
+        return getChunk(path, range, response, true);
+    }
+
+
+    @Operation(summary = "Downloads a file.")
+    @GetMapping(value = "/public/file-entry/uuid/{uuid}")
+    @ResponseStatus(HttpStatus.PARTIAL_CONTENT)
+    @ResponseBody
+    public byte[] streamFileEntryPublic(@PathVariable("uuid") UUID uuid,
+                                        final HttpServletResponse response, final HttpServletRequest request,
+                                        @RequestHeader(value = "Range", required = false) final String range) {
+        return getChunk(uuid, range, response, true);
+    }
+
+    private byte[] getChunk(String path, String range, HttpServletResponse response, boolean checkIfPublic) {
         final long skip = getSkip(range);
         final int size = getSize(range);
-        final ChunkData chunk = fileEntryController.downloadChunk(path, skip, size, true);
+        final ChunkData chunk = fileEntryController.downloadChunk(path, skip, size, checkIfPublic);
 
         response.setHeader(CONTENT_TYPE, chunk.getMimeType());
         response.setHeader(ACCEPT_RANGES, BYTES);
@@ -99,16 +98,10 @@ public class StreamServices {
     }
 
 
-    @Operation(summary = "Downloads a file.")
-    @GetMapping(value = "/public/file-entry/uuid/{uuid}")
-    @ResponseStatus(HttpStatus.PARTIAL_CONTENT)
-    @ResponseBody
-    public byte[] streamFileEntryPublic(@PathVariable("uuid") UUID uuid,
-                                  final HttpServletResponse response, final HttpServletRequest request,
-                                  @RequestHeader(value = "Range", required = false) final String range) {
+    private byte[] getChunk(UUID uuid, String range, HttpServletResponse response, boolean checkIfPublic) {
         final long skip = getSkip(range);
         final int size = getSize(range);
-        final ChunkData chunk = fileEntryController.downloadChunk(uuid, skip, size, true);
+        final ChunkData chunk = fileEntryController.downloadChunk(uuid, skip, size, checkIfPublic);
 
         response.setHeader(CONTENT_TYPE, chunk.getMimeType());
         response.setHeader(ACCEPT_RANGES, BYTES);
