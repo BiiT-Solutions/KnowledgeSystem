@@ -4,6 +4,7 @@ import java.io.Serial;
 import java.util.UUID;
 
 public class FileEntryDTO extends CategorizedElementDTO<UUID> {
+
     @Serial
     private static final long serialVersionUID = 3144187148832541249L;
 

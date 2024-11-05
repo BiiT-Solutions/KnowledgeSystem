@@ -30,6 +30,7 @@ import seaweedfs.client.SeaweedInputStream;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -189,6 +190,9 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
         fileEntry.setFileName(file.getOriginalFilename());
         if (fileEntry.getUuid() == null) {
             fileEntry.setUuid(UUID.randomUUID());
+        }
+        if (fileEntry.getCreatedAt() == null) {
+            fileEntry.setCreatedAt(LocalDateTime.now());
         }
         final IAuthenticatedUser user = authenticatedUserProvider.findByUsername(createdBy).orElseThrow(() ->
                 new UserNotFoundException(this.getClass(), "No User with username '" + createdBy + "' found on the system."));

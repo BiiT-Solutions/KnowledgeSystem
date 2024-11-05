@@ -1,16 +1,21 @@
-package com.biit.ks.persistence.entities;
+package com.biit.ks.core.models;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public abstract class Element<KEY> {
+public abstract class ElementDTO<KEY> implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 5311584213803465346L;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String createdBy;
     private String updatedBy;
 
-    public Element() {
+    public ElementDTO() {
         setCreatedAt(LocalDateTime.now());
     }
 
@@ -58,7 +63,7 @@ public abstract class Element<KEY> {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final Element<?> element = (Element<?>) o;
+        final ElementDTO<?> element = (ElementDTO<?>) o;
         return Objects.equals(getId(), element.getId());
     }
 

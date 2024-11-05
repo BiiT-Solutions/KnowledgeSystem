@@ -4,6 +4,10 @@ import java.util.List;
 
 public abstract class CategorizedElement<ID> extends OpenSearchElement<ID> {
 
+    public CategorizedElement() {
+        super();
+    }
+
     private List<Categorization> categorizations;
 
     public List<Categorization> getCategorizations() {

@@ -1,7 +1,5 @@
 package com.biit.ks.core.models;
 
-import com.biit.server.controllers.models.ElementDTO;
-
 import java.io.Serial;
 
 public abstract class OpenSearchElementDTO<U> extends ElementDTO<U> {
