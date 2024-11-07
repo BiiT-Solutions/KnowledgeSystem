@@ -3,9 +3,7 @@ package com.biit.ks.core.controllers;
 import com.biit.ks.core.converters.FileEntryConverter;
 import com.biit.ks.core.converters.models.FileEntryConverterRequest;
 import com.biit.ks.core.exceptions.FileAlreadyExistsException;
-import com.biit.ks.core.exceptions.FileHandlingException;
 import com.biit.ks.core.exceptions.FileNotFoundException;
-import com.biit.ks.core.exceptions.SeaweedClientException;
 import com.biit.ks.core.files.MediaTypeCalculator;
 import com.biit.ks.core.models.ChunkData;
 import com.biit.ks.core.models.FileEntryDTO;
@@ -14,7 +12,6 @@ import com.biit.ks.core.seaweed.SeaweedClient;
 import com.biit.ks.core.seaweed.SeaweedConfigurator;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.FileEntry;
-import com.biit.ks.persistence.opensearch.exceptions.OpenSearchException;
 import com.biit.ks.persistence.repositories.FileEntryRepository;
 import com.biit.server.exceptions.UserNotFoundException;
 import com.biit.server.logger.DtoControllerLogger;
@@ -99,11 +96,13 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
         return downloadAsResource(fileEntry);
     }
 
+
     public Resource downloadAsResource(String filePath) {
         final FileEntry fileEntry = getProvider().findByFilePath(filePath)
                 .orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with path '" + filePath + "'."));
         return downloadAsResource(fileEntry);
     }
+
 
     public ChunkData downloadChunk(UUID uuid, long skip, int size, boolean checkIfPublic) {
         final FileEntry fileEntry = getProvider().get(uuid).orElseThrow(
@@ -112,9 +111,11 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
         return downloadChunk(fileEntry, skip, size, checkIfPublic);
     }
 
+
     private ChunkData downloadChunk(FileEntry fileEntry, long skip, int size, boolean checkIfPublic) {
         return downloadChunk(fileEntry.getCompleteFilePath(), skip, size, checkIfPublic);
     }
+
 
     public ChunkData downloadChunk(String filePath, long skip, int size, boolean checkIfPublic) {
         final FileEntry fileEntry = getProvider().findByFilePath(filePath)
@@ -142,37 +143,20 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
         }
     }
 
+
     public FileEntryDTO upload(MultipartFile file, FileEntryDTO fileEntryDTO, Boolean forceRewrite, String createdBy) {
         if (fileEntryDTO == null) {
             fileEntryDTO = new FileEntryDTO();
         }
         final FileEntry fileEntry = reverse(fileEntryDTO);
-        setFields(fileEntry, file, createdBy);
-        if (forceRewrite == null || !forceRewrite) {
-            //Check if the file already exists.
-            checkExistingFile(fileEntry);
-        }
-        try {
-            if (!fileEntry.getFilePath().startsWith(seaweedConfigurator.getUploadsPath())) {
-                throw new SeaweedClientException(this.getClass(), "Invalid file path '" + fileEntry.getFilePath()
-                        + "'. Must be stored on '" + seaweedConfigurator.getUploadsPath() + "'");
-            }
-            seaweedClient.addFile(fileEntry.getFullPath(), file);
-            //Save it on Opensearch
-            fileEntryProvider.save(fileEntry);
-            //Thumbnail generation.
-            new Thread(() -> {
-                updateThumbnail(fileEntry);
-            }).start();
-            return convert(fileEntry);
-        } catch (IOException e) {
-            throw new FileHandlingException(this.getClass(), e);
-        } catch (OpenSearchException e) {
-            //Cannot be stored on OpenSearch. Remove it from seaweed.
-            seaweedClient.removeFile(fileEntry.getFullPath());
-            throw new FileHandlingException(this.getClass(), e);
-        }
+        final FileEntry savedFileEntry = fileEntryProvider.save(file, fileEntry, forceRewrite, createdBy);
+        //Thumbnail generation.
+        new Thread(() -> {
+            updateThumbnail(savedFileEntry);
+        }).start();
+        return convert(savedFileEntry);
     }
+
 
     private void updateThumbnail(FileEntry fileEntry) {
         try {

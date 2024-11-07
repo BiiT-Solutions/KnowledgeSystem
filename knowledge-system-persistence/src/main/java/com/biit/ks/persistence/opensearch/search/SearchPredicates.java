@@ -7,7 +7,7 @@ import java.util.List;
 
 public abstract class SearchPredicates {
     private final List<Pair<String, String>> search;
-    //For searching on multiples fields.
+    //For searching one element on multiples fields.
     private final List<Pair<List<String>, String>> multiSearch;
     private final List<Range> ranges;
     private FuzzinessDefinition fuzzinessDefinition;

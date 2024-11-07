@@ -46,6 +46,10 @@
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="DAILY"/>
     </logger>
+    <logger name="com.biit.kafka.logger.EventsLogger" additivity="false" level="DEBUG">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="DAILY"/>
+    </logger>
     <logger name="com.biit.ks.logger.BasicLogging" additivity="false" level="DEBUG">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="DAILY"/>

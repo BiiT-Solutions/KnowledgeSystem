@@ -25,6 +25,11 @@
             <groupId>com.biit</groupId>
             <artifactId>rest-server-definitions</artifactId>
         </dependency>
+        <!-- Kafka -->
+        <dependency>
+            <groupId>com.biit</groupId>
+            <artifactId>kafka-client</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>

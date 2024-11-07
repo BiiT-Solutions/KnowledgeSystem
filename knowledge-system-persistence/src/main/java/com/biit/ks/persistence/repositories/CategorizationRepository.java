@@ -7,8 +7,8 @@ import com.biit.ks.persistence.opensearch.search.Fuzziness;
 import com.biit.ks.persistence.opensearch.search.FuzzinessDefinition;
 import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
-import org.opensearch.client.opensearch.core.SearchResponse;
 import org.apache.commons.lang3.tuple.Pair;
+import org.opensearch.client.opensearch.core.SearchResponse;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -38,6 +38,15 @@ public class CategorizationRepository extends OpenSearchElementRepository<Catego
             return Optional.empty();
         }
         return Optional.of(categorizations.get(categorizations.size() - 1));
+    }
+
+
+    public List<Categorization> get(List<String> names) {
+        final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();
+        names.forEach(name -> shouldHavePredicates.add(Pair.of("name", name)));
+        shouldHavePredicates.setMinimumShouldMatch(1);
+        final SearchResponse<Categorization> response = getOpenSearchClient().searchData(Categorization.class, getOpenSearchIndex(), shouldHavePredicates);
+        return getOpenSearchClient().convertResponse(response);
     }
 
 

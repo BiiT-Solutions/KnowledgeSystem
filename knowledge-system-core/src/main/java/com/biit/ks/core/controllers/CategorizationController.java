@@ -2,13 +2,11 @@ package com.biit.ks.core.controllers;
 
 import com.biit.ks.core.converters.CategorizationConverter;
 import com.biit.ks.core.converters.models.CategorizationConverterRequest;
-import com.biit.ks.core.exceptions.CategoryAlreadyExistsException;
 import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.models.CategorizationDTO;
 import com.biit.ks.core.providers.CategorizationProvider;
 import com.biit.ks.persistence.entities.Categorization;
 import com.biit.ks.persistence.repositories.CategorizationRepository;
-import com.biit.server.logger.DtoControllerLogger;
 import org.springframework.stereotype.Controller;
 
 import java.util.ArrayList;
@@ -38,16 +36,8 @@ public class CategorizationController extends OpenSearchElementController<Catego
 
     @Override
     public CategorizationDTO create(CategorizationDTO dto, String creatorName) {
-        if (dto.getCreatedBy() == null && creatorName != null) {
-            dto.setCreatedBy(creatorName);
-        }
-        if (get(dto.getName()) != null) {
-            throw new CategoryAlreadyExistsException(this.getClass(), "Already exists a category with name " + dto.getName());
-        }
         validate(dto);
-        final CategorizationDTO dtoStored = convert(getProvider().save(getConverter().reverse(dto)));
-        DtoControllerLogger.info(this.getClass(), "Entity '{}' created by '{}'.", dtoStored, creatorName);
-        return dtoStored;
+        return convert(getProvider().create(reverse(dto), creatorName));
     }
 
 
