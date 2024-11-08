@@ -71,22 +71,23 @@ public class EventController {
         try {
             final PdfFormPayload pdfFormPayload = event.getEntity(PdfFormPayload.class);
             final FileEntry fileEntry = fileEntryProvider.save(new CustomMultipartFile(pdfFormPayload.getPdfContent(),
-                    generateFileName(pdfFormPayload), PDF_CONTENT_TYPE), null, false, createdBy);
+                    generateFileName(pdfFormPayload, event.getCustomProperty(EventCustomProperties.FACT_TYPE)), PDF_CONTENT_TYPE), null, false, createdBy);
 
             //Set categories.
             fileEntry.setCategorizations(categorizations);
             fileEntryProvider.save(fileEntry);
 
-            EventsLogger.info(this.getClass(), "Document '{}' with version '{}' from '{}' stored. Categorized as '{}'!",
-                    pdfFormPayload.getFormName(), pdfFormPayload.getFormVersion(), createdBy, categorizations);
+            EventsLogger.info(this.getClass(), "Document '{}' with version '{}' type '{}' from '{}' stored. Categorized as '{}'!",
+                    pdfFormPayload.getFormName(), pdfFormPayload.getFormVersion(), event.getCustomProperty(EventCustomProperties.FACT_TYPE),
+                    createdBy, categorizations);
         } catch (Exception e) {
             EventsLogger.severe(this.getClass(), "Invalid event received!!\n" + event);
             EventsLogger.errorMessage(this.getClass(), e);
         }
     }
 
-    private String generateFileName(PdfFormPayload pdfFormPayload) {
-        return pdfFormPayload.getFormName() + "_v" + pdfFormPayload.getFormVersion() + "-" + pdfFormPayload.getCreatedBy() + "-"
+    private String generateFileName(PdfFormPayload pdfFormPayload, String eventType) {
+        return pdfFormPayload.getFormName() + "_v" + pdfFormPayload.getFormVersion() + "-" + eventType + "-" + pdfFormPayload.getCreatedBy() + "-"
                 + UUID.randomUUID() + ".pdf";
     }
 
