@@ -71,7 +71,7 @@ public class EventController {
         try {
             final PdfFormPayload pdfFormPayload = event.getEntity(PdfFormPayload.class);
             final FileEntry fileEntry = fileEntryProvider.save(new CustomMultipartFile(pdfFormPayload.getPdfContent(),
-                    generateFileName(pdfFormPayload, event.getCustomProperty(EventCustomProperties.FACT_TYPE)), PDF_CONTENT_TYPE), null, false, createdBy);
+                    generateFileName(pdfFormPayload, createdBy, event.getCustomProperty(EventCustomProperties.FACT_TYPE)), PDF_CONTENT_TYPE), null, false, createdBy);
 
             //Set categories.
             fileEntry.setCategorizations(categorizations);
@@ -86,9 +86,10 @@ public class EventController {
         }
     }
 
-    private String generateFileName(PdfFormPayload pdfFormPayload, String eventType) {
-        return pdfFormPayload.getFormName() + "_v" + pdfFormPayload.getFormVersion() + "-" + eventType + "-" + pdfFormPayload.getCreatedBy() + "-"
-                + UUID.randomUUID() + ".pdf";
+    private String generateFileName(PdfFormPayload pdfFormPayload, String createdBy, String eventType) {
+        return pdfFormPayload.getFormName() + "_v" + pdfFormPayload.getFormVersion() + "-" + eventType + "-"
+                + (pdfFormPayload.getCreatedBy() != null ? pdfFormPayload.getCreatedBy() : createdBy)
+                + "-" + UUID.randomUUID() + ".pdf";
     }
 
 
