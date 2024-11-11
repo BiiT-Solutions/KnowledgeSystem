@@ -71,7 +71,8 @@ public class EventController {
         try {
             final PdfFormPayload pdfFormPayload = event.getEntity(PdfFormPayload.class);
             final FileEntry fileEntry = fileEntryProvider.save(new CustomMultipartFile(pdfFormPayload.getPdfContent(),
-                    generateFileName(pdfFormPayload, createdBy, event.getCustomProperty(EventCustomProperties.FACT_TYPE)), PDF_CONTENT_TYPE), null, false, createdBy);
+                            generateFileName(pdfFormPayload, createdBy, event.getCustomProperty(EventCustomProperties.FACT_TYPE)), PDF_CONTENT_TYPE),
+                    null, false, createdBy);
 
             //Set categories.
             fileEntry.setCategorizations(categorizations);
