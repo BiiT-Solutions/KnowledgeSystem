@@ -4,5 +4,7 @@ public interface IOpenSearchConfigurator {
 
     String getOpenSearchFileIndex();
 
+    String getOpenSearchTextIndex();
+
     String getOpenSearchCategorizationsIndex();
 }

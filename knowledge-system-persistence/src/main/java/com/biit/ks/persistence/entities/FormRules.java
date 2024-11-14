@@ -4,21 +4,13 @@ public class FormRules extends CategorizedElement<Long> {
 
     private static final int MAX_JSON_LENGTH = 100000;
 
-
     private Long id;
-
-
-    private String name;
-
 
     private Integer version;
 
-
     private String organizationId;
 
-
     private String rules;
-
 
     private String metadata;
 
@@ -29,14 +21,6 @@ public class FormRules extends CategorizedElement<Long> {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public Integer getVersion() {

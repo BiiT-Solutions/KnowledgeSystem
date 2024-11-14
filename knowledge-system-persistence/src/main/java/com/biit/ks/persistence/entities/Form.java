@@ -6,20 +6,11 @@ public class Form extends CategorizedElement<Long> {
 
     private Long id;
 
-
-    private String name;
-
-
     private Integer version;
-
 
     private String organizationId;
 
-
     private String value;
-
-
-    private String description;
 
 
     public Form() {
@@ -44,13 +35,6 @@ public class Form extends CategorizedElement<Long> {
         this.organizationId = organizationId;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return this.name;
-    }
 
     public void setVersion(Integer version) {
         this.version = version;
@@ -66,14 +50,6 @@ public class Form extends CategorizedElement<Long> {
 
     public void setValue(String value) {
         this.value = value;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getDescription() {
-        return this.description;
     }
 
 }

@@ -76,7 +76,7 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
     @Override
     public Collection<FileEntryDTO> create(Collection<FileEntryDTO> fileEntryDTOS, String creatorName) {
         final List<FileEntryDTO> results = new ArrayList<>();
-        fileEntryDTOS.forEach(fileEntryDTO -> create(fileEntryDTO, creatorName));
+        fileEntryDTOS.forEach(fileEntryDTO -> results.add(create(fileEntryDTO, creatorName)));
         return results;
     }
 
@@ -113,7 +113,7 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
 
 
     private ChunkData downloadChunk(FileEntry fileEntry, long skip, int size, boolean checkIfPublic) {
-        return downloadChunk(fileEntry.getCompleteFilePath(), skip, size, checkIfPublic);
+        return downloadChunk(fileEntry.getFullPath(), skip, size, checkIfPublic);
     }
 
 

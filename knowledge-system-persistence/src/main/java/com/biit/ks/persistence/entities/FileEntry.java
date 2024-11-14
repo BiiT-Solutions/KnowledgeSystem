@@ -13,11 +13,8 @@ public class FileEntry extends CategorizedElement<UUID> {
     private UUID uuid;
     private String alias;
     private String filePath;
-    private String fileName;
     private String fileFormat;
     private String mimeType;
-    private String description;
-    private boolean isPublic = false;
     private String thumbnailUrl;
 
     public FileEntry() {
@@ -44,11 +41,11 @@ public class FileEntry extends CategorizedElement<UUID> {
     }
 
     public String getFileName() {
-        return fileName;
+        return getName();
     }
 
     public void setFileName(String fileName) {
-        this.fileName = fileName;
+        setName(fileName);
     }
 
     public String getFilePath() {
@@ -57,14 +54,6 @@ public class FileEntry extends CategorizedElement<UUID> {
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
-    }
-
-    @JsonIgnore
-    public String getCompleteFilePath() {
-        if (filePath != null) {
-            return filePath + File.separator + fileName;
-        }
-        return fileName;
     }
 
     public String getFileFormat() {
@@ -83,28 +72,12 @@ public class FileEntry extends CategorizedElement<UUID> {
         this.mimeType = mimeType;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public boolean isPublic() {
-        return isPublic;
-    }
-
-    public void setPublic(boolean isPublic) {
-        this.isPublic = isPublic;
-    }
-
     @JsonIgnore
     public String getFullPath() {
         if (filePath != null) {
-            return filePath + File.separator + fileName;
+            return filePath + File.separator + getFileName();
         }
-        return fileName;
+        return getFileName();
     }
 
     public String getAlias() {
@@ -128,7 +101,7 @@ public class FileEntry extends CategorizedElement<UUID> {
         return "FileEntry{"
                 + "uuid=" + uuid
                 + ", filePath='" + filePath + '\''
-                + ", fileName='" + fileName + '\''
+                + ", fileName='" + getFileName() + '\''
                 + '}';
     }
 }

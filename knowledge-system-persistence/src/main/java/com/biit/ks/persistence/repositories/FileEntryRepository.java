@@ -40,7 +40,7 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
         }
         final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.add("filePath", filePath);
-        mustHaveParameters.add("fileName", fileName);
+        mustHaveParameters.add("name", fileName);
         final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, getOpenSearchIndex(), mustHaveParameters);
         if (response == null || response.hits() == null || response.hits().hits().isEmpty() || response.hits().hits().get(0) == null
                 || response.hits().hits().get(0).source() == null) {
@@ -61,11 +61,12 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
     }
 
 
+    @Override
     public List<FileEntry> search(String query, Integer from, Integer size) {
         final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();
         shouldHavePredicates.add(Pair.of("alias", query));
         shouldHavePredicates.add(Pair.of("description", query));
-        shouldHavePredicates.add(Pair.of("fileName", query));
+        shouldHavePredicates.add(Pair.of("name", query));
         shouldHavePredicates.add(Pair.of("fileFormat", query));
         shouldHavePredicates.add(Pair.of("mimeType", query));
         shouldHavePredicates.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
@@ -73,6 +74,5 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
         final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, getOpenSearchIndex(),
                 shouldHavePredicates, new SortResultOptions("createdAt", SortOptionOrder.DESC), from, size);
         return getOpenSearchClient().convertResponse(response);
-
     }
 }

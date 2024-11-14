@@ -16,7 +16,6 @@ import org.testng.annotations.Test;
 import java.util.List;
 
 @SpringBootTest
-@ExtendWith(MockitoExtension.class)
 @Test(groups = {"fileEntryProvider"})
 public class FileEntryProviderTest extends AbstractTestNGSpringContextTests {
 

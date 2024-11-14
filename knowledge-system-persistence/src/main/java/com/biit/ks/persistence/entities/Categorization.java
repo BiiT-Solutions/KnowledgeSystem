@@ -5,7 +5,6 @@ import java.util.UUID;
 public class Categorization extends OpenSearchElement<UUID> {
 
     private UUID uuid;
-    private String name;
 
     public Categorization() {
         super();
@@ -14,7 +13,7 @@ public class Categorization extends OpenSearchElement<UUID> {
 
     public Categorization(String name) {
         this();
-        this.name = name;
+        setName(name);
     }
 
 
@@ -36,18 +35,10 @@ public class Categorization extends OpenSearchElement<UUID> {
         this.uuid = uuid;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     @Override
     public String toString() {
         return "Categorization{"
-                + "name='" + name + '\''
+                + "name='" + getName() + '\''
                 + '}';
     }
 }
