@@ -34,7 +34,7 @@ public class TextServices extends CategorizedElementServices<Text, TextDTO, Text
 
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Gets a Text.", security = @SecurityRequirement(name = "bearerAuth"))
-    @GetMapping(value = "/password/download/{uuid}/language/{language}", produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/basic-auth/download/{uuid}/language/{language}", produces = MediaType.TEXT_PLAIN_VALUE)
     public String getText(@PathVariable("uuid") UUID uuid, @PathVariable("language") String language, HttpServletResponse response) {
         final TextDTO text = getController().get(uuid);
         if (text != null) {
