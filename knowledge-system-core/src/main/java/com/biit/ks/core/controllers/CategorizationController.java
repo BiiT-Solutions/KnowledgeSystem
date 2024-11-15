@@ -27,7 +27,8 @@ public class CategorizationController extends OpenSearchElementController<Catego
     private final List<CategorizedElementProvider<? extends CategorizedElement<?>, ? extends CategorizedElementRepository<?>>> providersWithCategories;
 
     public CategorizationController(CategorizationProvider categorizationProvider, CategorizationConverter categorizationConverter,
-                                    List<CategorizedElementProvider<? extends CategorizedElement<?>, ? extends CategorizedElementRepository<?>>> providersWithCategories) {
+                                    List<CategorizedElementProvider<? extends CategorizedElement<?>, ? extends CategorizedElementRepository<?>>>
+                                            providersWithCategories) {
         super(categorizationProvider, categorizationConverter);
         this.categorizationProvider = categorizationProvider;
         this.providersWithCategories = providersWithCategories;
@@ -76,7 +77,8 @@ public class CategorizationController extends OpenSearchElementController<Catego
             for (Categorization categorization : categorizations) {
                 //Check if a category is not used.
                 boolean used = false;
-                for (CategorizedElementProvider<? extends CategorizedElement<?>, ? extends CategorizedElementRepository<?>> provider : providersWithCategories) {
+                for (CategorizedElementProvider<? extends CategorizedElement<?>, ? extends CategorizedElementRepository<?>> provider
+                        : providersWithCategories) {
                     if (!provider.searchByCategory(categorization, 0, 1).isEmpty()) {
                         used = true;
                         break;

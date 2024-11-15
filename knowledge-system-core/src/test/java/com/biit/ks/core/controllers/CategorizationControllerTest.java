@@ -84,7 +84,7 @@ public class CategorizationControllerTest extends AbstractTestNGSpringContextTes
 
 
     @AfterClass(alwaysRun = true)
-    public void deleteFiles() throws InterruptedException {
+    public void deleteFiles() {
         openSearchClient.deleteIndex(openSearchConfigurator.getOpenSearchFileIndex());
         openSearchClient.deleteIndex(openSearchConfigurator.getOpenSearchTextIndex());
         openSearchClient.deleteIndex(openSearchConfigurator.getOpenSearchCategorizationsIndex());
