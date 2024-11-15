@@ -18,6 +18,10 @@ public abstract class CategorizedElementRepository<E extends CategorizedElement<
         super(elementClass, openSearchClient);
     }
 
+    public List<E> searchByCategory(String categorization, Integer from, Integer size) {
+        return searchByCategories(List.of(categorization), QuantifiersOperator.ANY_OF, from, size);
+    }
+
 
     public List<E> searchByCategories(Collection<String> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
         final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();

@@ -5,8 +5,12 @@ import com.biit.ks.core.converters.models.CategorizationConverterRequest;
 import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.models.CategorizationDTO;
 import com.biit.ks.core.providers.CategorizationProvider;
+import com.biit.ks.core.providers.CategorizedElementProvider;
 import com.biit.ks.persistence.entities.Categorization;
+import com.biit.ks.persistence.entities.CategorizedElement;
 import com.biit.ks.persistence.repositories.CategorizationRepository;
+import com.biit.ks.persistence.repositories.CategorizedElementRepository;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 
 import java.util.ArrayList;
@@ -16,10 +20,17 @@ import java.util.List;
 @Controller
 public class CategorizationController extends OpenSearchElementController<Categorization, CategorizationDTO, CategorizationRepository,
         CategorizationProvider, CategorizationConverterRequest, CategorizationConverter> {
+    private static final int SIZE = 10;
 
+    private final CategorizationProvider categorizationProvider;
 
-    public CategorizationController(CategorizationProvider categorizationProvider, CategorizationConverter categorizationConverter) {
+    private final List<CategorizedElementProvider<? extends CategorizedElement<?>, ? extends CategorizedElementRepository<?>>> providersWithCategories;
+
+    public CategorizationController(CategorizationProvider categorizationProvider, CategorizationConverter categorizationConverter,
+                                    List<CategorizedElementProvider<? extends CategorizedElement<?>, ? extends CategorizedElementRepository<?>>> providersWithCategories) {
         super(categorizationProvider, categorizationConverter);
+        this.categorizationProvider = categorizationProvider;
+        this.providersWithCategories = providersWithCategories;
     }
 
 
@@ -54,5 +65,31 @@ public class CategorizationController extends OpenSearchElementController<Catego
                         "No category with name '" + categorization + "'."));
 
         return convert(fileEntry);
+    }
+
+
+    @Scheduled(cron = "@midnight")
+    public void deleteOrphanCategories() {
+        int loop = 0;
+        List<Categorization> categorizations = categorizationProvider.getAll(0, SIZE);
+        while (!categorizations.isEmpty()) {
+            for (Categorization categorization : categorizations) {
+                //Check if a category is not used.
+                boolean used = false;
+                for (CategorizedElementProvider<? extends CategorizedElement<?>, ? extends CategorizedElementRepository<?>> provider : providersWithCategories) {
+                    if (!provider.searchByCategory(categorization.getName(), 0, 1).isEmpty()) {
+                        used = true;
+                        break;
+                    }
+                }
+                if (used) {
+                    continue;
+                }
+                //Remove it.
+                categorizationProvider.delete(categorization);
+            }
+            loop++;
+            categorizations = categorizationProvider.getAll(loop * SIZE, SIZE);
+        }
     }
 }

@@ -21,6 +21,10 @@ public abstract class CategorizedElementProvider<E extends CategorizedElement<?>
         this.categorizedElementRepository = categorizedElementRepository;
     }
 
+    public List<E> searchByCategory(String categorization, Integer from, Integer size) {
+        return categorizedElementRepository.searchByCategory(categorization, from, size);
+    }
+
     public List<E> searchByCategories(Set<Categorization> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
         return categorizedElementRepository.searchByCategories(categorizations.stream().map(Categorization::getName).collect(Collectors.toSet()),
                 quantifiersOperator, from, size);

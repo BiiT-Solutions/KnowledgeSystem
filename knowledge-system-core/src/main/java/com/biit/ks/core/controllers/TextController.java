@@ -2,8 +2,10 @@ package com.biit.ks.core.controllers;
 
 import com.biit.ks.core.converters.TextConverter;
 import com.biit.ks.core.converters.models.TextConverterRequest;
+import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.models.TextDTO;
 import com.biit.ks.core.providers.TextProvider;
+import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.Text;
 import com.biit.ks.persistence.repositories.TextRepository;
 import com.biit.server.logger.DtoControllerLogger;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 
 @Controller
@@ -43,5 +46,17 @@ public class TextController extends CategorizedElementController<Text, TextDTO, 
         final List<TextDTO> results = new ArrayList<>();
         textDTOS.forEach(textDTO -> results.add(create(textDTO, creatorName)));
         return results;
+    }
+
+    public TextDTO getPublic(UUID uuid) {
+        final Text text = getProvider().get(uuid).orElseThrow(() -> new FileNotFoundException(this.getClass(), "No element with uuid '" + uuid + "'."));
+
+        if (!text.isPublic()) {
+            KnowledgeSystemLogger.warning(this.getClass(), "Trying to access to text '{}' using the public api. FileEntry is private!", uuid);
+            //Same error as before.
+            throw new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'.");
+        }
+
+        return convert(text);
     }
 }
