@@ -26,6 +26,6 @@ public abstract class CategorizedElementController<
     }
 
     public List<D> searchByCategories(Collection<String> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
-        return convertAll(getProvider().searchByCategories(categorizations, quantifiersOperator, from, size));
+        return convertAll(getProvider().searchByCategoryNames(categorizations, quantifiersOperator, from, size));
     }
 }

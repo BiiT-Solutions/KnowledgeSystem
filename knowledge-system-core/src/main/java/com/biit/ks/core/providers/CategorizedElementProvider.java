@@ -8,8 +8,6 @@ import com.biit.ks.persistence.repositories.CategorizedElementRepository;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public abstract class CategorizedElementProvider<E extends CategorizedElement<?>, R extends CategorizedElementRepository<E>>
         extends OpenSearchElementProvider<E, R> {
@@ -21,16 +19,19 @@ public abstract class CategorizedElementProvider<E extends CategorizedElement<?>
         this.categorizedElementRepository = categorizedElementRepository;
     }
 
-    public List<E> searchByCategory(String categorization, Integer from, Integer size) {
+    public List<E> searchByCategory(Categorization categorization, Integer from, Integer size) {
         return categorizedElementRepository.searchByCategory(categorization, from, size);
     }
 
-    public List<E> searchByCategories(Set<Categorization> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
-        return categorizedElementRepository.searchByCategories(categorizations.stream().map(Categorization::getName).collect(Collectors.toSet()),
-                quantifiersOperator, from, size);
+    public List<E> searchByCategory(String categorizationName, Integer from, Integer size) {
+        return categorizedElementRepository.searchByCategory(categorizationName, from, size);
     }
 
-    public List<E> searchByCategories(Collection<String> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
+    public List<E> searchByCategories(Collection<Categorization> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
         return categorizedElementRepository.searchByCategories(categorizations, quantifiersOperator, from, size);
+    }
+
+    public List<E> searchByCategoryNames(Collection<String> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
+        return categorizedElementRepository.searchByCategoryNames(categorizations, quantifiersOperator, from, size);
     }
 }

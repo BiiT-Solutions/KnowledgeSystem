@@ -77,7 +77,7 @@ public class CategorizationController extends OpenSearchElementController<Catego
                 //Check if a category is not used.
                 boolean used = false;
                 for (CategorizedElementProvider<? extends CategorizedElement<?>, ? extends CategorizedElementRepository<?>> provider : providersWithCategories) {
-                    if (!provider.searchByCategory(categorization.getName(), 0, 1).isEmpty()) {
+                    if (!provider.searchByCategory(categorization, 0, 1).isEmpty()) {
                         used = true;
                         break;
                     }

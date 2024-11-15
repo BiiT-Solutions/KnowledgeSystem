@@ -1,6 +1,8 @@
 package com.biit.ks.persistence.repositories;
 
+import com.biit.ks.persistence.entities.Categorization;
 import com.biit.ks.persistence.entities.CategorizedElement;
+import com.biit.ks.persistence.entities.OpenSearchElement;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
@@ -11,6 +13,7 @@ import org.opensearch.client.opensearch.core.SearchResponse;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class CategorizedElementRepository<E extends CategorizedElement<?>> extends OpenSearchElementRepository<E> {
 
@@ -18,18 +21,26 @@ public abstract class CategorizedElementRepository<E extends CategorizedElement<
         super(elementClass, openSearchClient);
     }
 
-    public List<E> searchByCategory(String categorization, Integer from, Integer size) {
+    public List<E> searchByCategory(Categorization categorization, Integer from, Integer size) {
         return searchByCategories(List.of(categorization), QuantifiersOperator.ANY_OF, from, size);
     }
 
+    public List<E> searchByCategory(String categorizationName, Integer from, Integer size) {
+        return searchByCategoryNames(List.of(categorizationName), QuantifiersOperator.ANY_OF, from, size);
+    }
 
-    public List<E> searchByCategories(Collection<String> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
+
+    public List<E> searchByCategories(Collection<Categorization> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
+        return searchByCategoryNames(categorizations.stream().map(OpenSearchElement::getName).collect(Collectors.toSet()), quantifiersOperator, from, size);
+    }
+
+    public List<E> searchByCategoryNames(Collection<String> categorizationsNames, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
         final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();
-        categorizations.forEach(categorization -> {
-            shouldHavePredicates.add(Pair.of("categorizations", categorization));
+        categorizationsNames.forEach(categorization -> {
+            shouldHavePredicates.add(Pair.of("categorizations.name", categorization));
         });
         if (quantifiersOperator == QuantifiersOperator.ALL_OF) {
-            shouldHavePredicates.setMinimumShouldMatch(categorizations.size());
+            shouldHavePredicates.setMinimumShouldMatch(categorizationsNames.size());
         } else {
             shouldHavePredicates.setMinimumShouldMatch(1);
         }

@@ -76,7 +76,7 @@ public class CategorizationControllerTest extends AbstractTestNGSpringContextTes
     }
 
 
-    @Test
+    @Test(dependsOnMethods = "checkCategorizationsStored")
     public void removeUnusedCategories() {
         categorizationController.deleteOrphanCategories();
         Assert.assertEquals(categorizationController.getAll(0, 100).size(), 2);
@@ -86,6 +86,8 @@ public class CategorizationControllerTest extends AbstractTestNGSpringContextTes
     @AfterClass(alwaysRun = true)
     public void deleteFiles() throws InterruptedException {
         openSearchClient.deleteIndex(openSearchConfigurator.getOpenSearchFileIndex());
+        openSearchClient.deleteIndex(openSearchConfigurator.getOpenSearchTextIndex());
+        openSearchClient.deleteIndex(openSearchConfigurator.getOpenSearchCategorizationsIndex());
     }
 
 
