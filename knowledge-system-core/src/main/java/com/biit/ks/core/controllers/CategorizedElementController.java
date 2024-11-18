@@ -2,7 +2,7 @@ package com.biit.ks.core.controllers;
 
 import com.biit.ks.core.converters.CategorizedElementConverter;
 import com.biit.ks.core.converters.models.CategorizedElementConverterRequest;
-import com.biit.ks.core.models.CategorizedElementDTO;
+import com.biit.ks.dto.CategorizedElementDTO;
 import com.biit.ks.core.providers.CategorizedElementProvider;
 import com.biit.ks.persistence.entities.CategorizedElement;
 import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;

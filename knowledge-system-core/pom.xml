@@ -22,6 +22,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.biit.ks</groupId>
+            <artifactId>knowledge-system-dto</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.biit</groupId>
             <artifactId>rest-server-definitions</artifactId>
         </dependency>

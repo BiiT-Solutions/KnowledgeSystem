@@ -3,7 +3,7 @@ package com.biit.ks.core.controllers;
 import com.biit.ks.core.converters.CategorizationConverter;
 import com.biit.ks.core.converters.models.CategorizationConverterRequest;
 import com.biit.ks.core.exceptions.FileNotFoundException;
-import com.biit.ks.core.models.CategorizationDTO;
+import com.biit.ks.dto.CategorizationDTO;
 import com.biit.ks.core.providers.CategorizationProvider;
 import com.biit.ks.core.providers.CategorizedElementProvider;
 import com.biit.ks.persistence.entities.Categorization;

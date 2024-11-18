@@ -4,7 +4,7 @@ import com.biit.ks.core.controllers.FileEntryController;
 import com.biit.ks.core.converters.FileEntryConverter;
 import com.biit.ks.core.converters.models.FileEntryConverterRequest;
 import com.biit.ks.core.exceptions.FileNotFoundException;
-import com.biit.ks.core.models.FileEntryDTO;
+import com.biit.ks.dto.FileEntryDTO;
 import com.biit.ks.core.providers.FileEntryProvider;
 import com.biit.ks.persistence.entities.FileEntry;
 import com.biit.ks.persistence.repositories.FileEntryRepository;

@@ -3,7 +3,7 @@ package com.biit.ks.core.controllers;
 import com.biit.ks.core.converters.TextConverter;
 import com.biit.ks.core.converters.models.TextConverterRequest;
 import com.biit.ks.core.exceptions.FileNotFoundException;
-import com.biit.ks.core.models.TextDTO;
+import com.biit.ks.dto.TextDTO;
 import com.biit.ks.core.providers.TextProvider;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.Text;

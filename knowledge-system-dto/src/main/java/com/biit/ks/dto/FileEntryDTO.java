@@ -1,4 +1,4 @@
-package com.biit.ks.core.models;
+package com.biit.ks.dto;
 
 import java.io.Serial;
 import java.util.UUID;

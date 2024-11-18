@@ -3,10 +3,10 @@ package com.biit.ks.rest.api;
 import com.biit.ks.core.controllers.TextController;
 import com.biit.ks.core.converters.TextConverter;
 import com.biit.ks.core.converters.models.TextConverterRequest;
-import com.biit.ks.core.models.TextDTO;
+import com.biit.ks.dto.TextDTO;
+import com.biit.ks.dto.TextLanguagesDTO;
 import com.biit.ks.core.providers.TextProvider;
 import com.biit.ks.persistence.entities.Text;
-import com.biit.ks.persistence.entities.TextLanguages;
 import com.biit.ks.persistence.repositories.TextRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -37,7 +37,7 @@ public class TextServices extends CategorizedElementServices<Text, TextDTO, Text
     public String getText(@PathVariable("uuid") UUID uuid, @PathVariable("language") String language, HttpServletResponse response) {
         final TextDTO text = getController().get(uuid);
         if (text != null) {
-            return text.getContent().get(TextLanguages.fromString(language));
+            return text.getContent().get(TextLanguagesDTO.fromString(language));
         }
         return null;
     }
@@ -49,7 +49,7 @@ public class TextServices extends CategorizedElementServices<Text, TextDTO, Text
     public String getPublicText(@PathVariable("uuid") UUID uuid, @PathVariable("language") String language, HttpServletResponse response) {
         final TextDTO text = getController().getPublic(uuid);
         if (text != null) {
-            return text.getContent().get(TextLanguages.fromString(language));
+            return text.getContent().get(TextLanguagesDTO.fromString(language));
         }
         return null;
     }

@@ -3,7 +3,7 @@ package com.biit.ks.rest.api;
 import com.biit.ks.core.controllers.OpenSearchElementController;
 import com.biit.ks.core.converters.OpenSearchElementConverter;
 import com.biit.ks.core.converters.models.OpenSearchElementConverterRequest;
-import com.biit.ks.core.models.OpenSearchElementDTO;
+import com.biit.ks.dto.OpenSearchElementDTO;
 import com.biit.ks.core.providers.OpenSearchElementProvider;
 import com.biit.ks.persistence.entities.OpenSearchElement;
 import com.biit.ks.persistence.repositories.OpenSearchElementRepository;

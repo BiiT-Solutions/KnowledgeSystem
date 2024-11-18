@@ -1,6 +1,5 @@
-package com.biit.ks.core.models;
+package com.biit.ks.dto;
 
-import com.biit.ks.persistence.entities.TextLanguages;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serial;
@@ -17,7 +16,7 @@ public class TextDTO extends CategorizedElementDTO<UUID> {
     private UUID uuid;
 
     //Content by language.
-    private Map<TextLanguages, String> content;
+    private Map<TextLanguagesDTO, String> content;
 
     public TextDTO() {
         super();
@@ -43,15 +42,15 @@ public class TextDTO extends CategorizedElementDTO<UUID> {
         this.uuid = uuid;
     }
 
-    public Map<TextLanguages, String> getContent() {
+    public Map<TextLanguagesDTO, String> getContent() {
         return content;
     }
 
-    public void setContent(Map<TextLanguages, String> content) {
+    public void setContent(Map<TextLanguagesDTO, String> content) {
         this.content = content;
     }
 
-    public void addContent(TextLanguages language, String content) {
+    public void addContent(TextLanguagesDTO language, String content) {
         if (this.content == null) {
             this.content = new HashMap<>();
         }

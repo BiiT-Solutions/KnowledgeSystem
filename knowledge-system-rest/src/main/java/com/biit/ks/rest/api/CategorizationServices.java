@@ -3,7 +3,7 @@ package com.biit.ks.rest.api;
 import com.biit.ks.core.controllers.CategorizationController;
 import com.biit.ks.core.converters.CategorizationConverter;
 import com.biit.ks.core.converters.models.CategorizationConverterRequest;
-import com.biit.ks.core.models.CategorizationDTO;
+import com.biit.ks.dto.CategorizationDTO;
 import com.biit.ks.core.providers.CategorizationProvider;
 import com.biit.ks.persistence.entities.Categorization;
 import com.biit.ks.persistence.repositories.CategorizationRepository;

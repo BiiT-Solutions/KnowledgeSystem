@@ -3,7 +3,7 @@ package com.biit.ks.core.controllers;
 import com.biit.ks.core.converters.OpenSearchElementConverter;
 import com.biit.ks.core.converters.models.OpenSearchElementConverterRequest;
 import com.biit.ks.core.exceptions.FileNotFoundException;
-import com.biit.ks.core.models.OpenSearchElementDTO;
+import com.biit.ks.dto.OpenSearchElementDTO;
 import com.biit.ks.core.providers.OpenSearchElementProvider;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.OpenSearchElement;

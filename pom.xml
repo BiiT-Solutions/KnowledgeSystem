@@ -16,8 +16,10 @@
     <modules>
         <module>knowledge-system-logger</module>
         <module>knowledge-system-persistence</module>
+        <module>knowledge-system-dto</module>
         <module>knowledge-system-core</module>
         <module>knowledge-system-rest</module>
+        <module>knowledge-system-client</module>
     </modules>
 
     <scm>

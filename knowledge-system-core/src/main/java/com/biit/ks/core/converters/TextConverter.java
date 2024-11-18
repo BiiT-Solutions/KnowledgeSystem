@@ -2,7 +2,7 @@ package com.biit.ks.core.converters;
 
 
 import com.biit.ks.core.converters.models.TextConverterRequest;
-import com.biit.ks.core.models.TextDTO;
+import com.biit.ks.dto.TextDTO;
 import com.biit.ks.persistence.entities.Text;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;

@@ -1,7 +1,7 @@
 package com.biit.ks.core.converters;
 
 import com.biit.ks.core.converters.models.CategorizedElementConverterRequest;
-import com.biit.ks.core.models.CategorizedElementDTO;
+import com.biit.ks.dto.CategorizedElementDTO;
 import com.biit.ks.persistence.entities.CategorizedElement;
 
 public abstract class CategorizedElementConverter<

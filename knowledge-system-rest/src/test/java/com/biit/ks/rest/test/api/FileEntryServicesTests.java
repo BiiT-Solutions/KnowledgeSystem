@@ -1,6 +1,6 @@
 package com.biit.ks.rest.test.api;
 
-import com.biit.ks.core.models.FileEntryDTO;
+import com.biit.ks.dto.FileEntryDTO;
 import com.biit.ks.core.seaweed.SeaweedClient;
 import com.biit.ks.core.seaweed.SeaweedConfigurator;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;

@@ -2,7 +2,7 @@ package com.biit.ks.core.converters;
 
 
 import com.biit.ks.core.converters.models.CategorizationConverterRequest;
-import com.biit.ks.core.models.CategorizationDTO;
+import com.biit.ks.dto.CategorizationDTO;
 import com.biit.ks.persistence.entities.Categorization;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
