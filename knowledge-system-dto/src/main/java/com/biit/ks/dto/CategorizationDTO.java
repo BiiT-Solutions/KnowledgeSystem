@@ -9,7 +9,6 @@ public class CategorizationDTO extends OpenSearchElementDTO<UUID> {
     private static final long serialVersionUID = -6257674089968981919L;
 
     private UUID uuid;
-    private String name;
 
     public CategorizationDTO() {
         super();
@@ -17,8 +16,7 @@ public class CategorizationDTO extends OpenSearchElementDTO<UUID> {
     }
 
     public CategorizationDTO(String name) {
-        this();
-        this.name = name;
+        super(name);
     }
 
     @Override
@@ -37,13 +35,5 @@ public class CategorizationDTO extends OpenSearchElementDTO<UUID> {
 
     public void setUuid(UUID uuid) {
         this.uuid = uuid;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 }

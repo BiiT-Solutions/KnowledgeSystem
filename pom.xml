@@ -19,7 +19,7 @@
         <module>knowledge-system-dto</module>
         <module>knowledge-system-core</module>
         <module>knowledge-system-rest</module>
-        <module>knowledge-system-client</module>
+        <module>knowledge-system-rest-client</module>
     </modules>
 
     <scm>

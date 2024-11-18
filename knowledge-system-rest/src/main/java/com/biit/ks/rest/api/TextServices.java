@@ -3,9 +3,9 @@ package com.biit.ks.rest.api;
 import com.biit.ks.core.controllers.TextController;
 import com.biit.ks.core.converters.TextConverter;
 import com.biit.ks.core.converters.models.TextConverterRequest;
+import com.biit.ks.core.providers.TextProvider;
 import com.biit.ks.dto.TextDTO;
 import com.biit.ks.dto.TextLanguagesDTO;
-import com.biit.ks.core.providers.TextProvider;
 import com.biit.ks.persistence.entities.Text;
 import com.biit.ks.persistence.repositories.TextRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,6 +41,19 @@ public class TextServices extends CategorizedElementServices<Text, TextDTO, Text
         }
         return null;
     }
+
+
+    @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
+    @Operation(summary = "Gets a Text using its name", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping(value = "/basic-auth/download/{name}/language/{language}", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String getText(@PathVariable("name") String name, @PathVariable("language") String language, HttpServletResponse response) {
+        final TextDTO text = getController().get(name);
+        if (text != null) {
+            return text.getContent().get(TextLanguagesDTO.fromString(language));
+        }
+        return null;
+    }
+
 
 
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")

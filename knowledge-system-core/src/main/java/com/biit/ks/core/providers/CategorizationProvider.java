@@ -1,7 +1,6 @@
 package com.biit.ks.core.providers;
 
 import com.biit.ks.core.exceptions.CategoryAlreadyExistsException;
-import com.biit.ks.core.providers.pools.OpenSearchElementPool;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.Categorization;
 import com.biit.ks.persistence.repositories.CategorizationRepository;
@@ -15,17 +14,22 @@ public class CategorizationProvider extends OpenSearchElementProvider<Categoriza
 
     private final CategorizationRepository categorizationRepository;
 
-    public CategorizationProvider(OpenSearchElementPool<Categorization> openSearchElementPool, CategorizationRepository categorizationRepository) {
-        super(openSearchElementPool, categorizationRepository);
+    public CategorizationProvider(CategorizationRepository categorizationRepository) {
+        super(categorizationRepository);
         this.categorizationRepository = categorizationRepository;
     }
 
-    public Optional<Categorization> get(String categorization) {
-        return categorizationRepository.get(categorization);
+    //Name is unique on categories
+    public Optional<Categorization> get(String name) {
+        final List<Categorization> categorizations = getRepository().get(name);
+        if (categorizations.isEmpty()) {
+            return Optional.empty();
+        }
+        return categorizations.stream().findFirst();
     }
 
     public List<Categorization> get(List<String> categorizations) {
-        return categorizationRepository.get(categorizations);
+        return getRepository().get(categorizations);
     }
 
     public Categorization create(String categorization, String creatorName) {

@@ -5,14 +5,12 @@ import com.biit.ks.persistence.entities.Categorization;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
 import com.biit.ks.persistence.opensearch.search.Fuzziness;
 import com.biit.ks.persistence.opensearch.search.FuzzinessDefinition;
-import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public class CategorizationRepository extends OpenSearchElementRepository<Categorization> {
@@ -27,17 +25,6 @@ public class CategorizationRepository extends OpenSearchElementRepository<Catego
     @Override
     public String getOpenSearchIndex() {
         return openSearchConfigurator.getOpenSearchCategorizationsIndex();
-    }
-
-    public Optional<Categorization> get(String name) {
-        final MustHavePredicates mustHavePredicates = new MustHavePredicates();
-        mustHavePredicates.add(Pair.of("name", name));
-        final SearchResponse<Categorization> response = getOpenSearchClient().searchData(Categorization.class, getOpenSearchIndex(), mustHavePredicates);
-        final List<Categorization> categorizations = getOpenSearchClient().convertResponse(response);
-        if (categorizations.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(categorizations.get(categorizations.size() - 1));
     }
 
 

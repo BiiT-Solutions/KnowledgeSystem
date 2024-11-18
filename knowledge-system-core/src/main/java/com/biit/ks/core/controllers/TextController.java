@@ -3,17 +3,20 @@ package com.biit.ks.core.controllers;
 import com.biit.ks.core.converters.TextConverter;
 import com.biit.ks.core.converters.models.TextConverterRequest;
 import com.biit.ks.core.exceptions.FileNotFoundException;
-import com.biit.ks.dto.TextDTO;
+import com.biit.ks.core.exceptions.TextAlreadyExistsException;
 import com.biit.ks.core.providers.TextProvider;
+import com.biit.ks.dto.TextDTO;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.Text;
 import com.biit.ks.persistence.repositories.TextRepository;
+import com.biit.server.exceptions.ValidateBadRequestException;
 import com.biit.server.logger.DtoControllerLogger;
 import org.springframework.stereotype.Controller;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 
@@ -58,5 +61,20 @@ public class TextController extends CategorizedElementController<Text, TextDTO, 
         }
 
         return convert(text);
+    }
+
+    public TextDTO get(String name) {
+        return convert(getProvider().get(name).orElseThrow(() -> new FileNotFoundException(this.getClass(), "No element with name '" + name + "'.")));
+    }
+
+
+    @Override
+    public void validate(TextDTO dto) throws ValidateBadRequestException {
+        if (dto.getName() != null) {
+            final Text existingText = getProvider().get(dto.getName()).orElse(null);
+            if (existingText != null && !Objects.equals(existingText.getId(), dto.getId())) {
+                throw new TextAlreadyExistsException(this.getClass(), "Already exists a text with name '" + dto.getName() + "'.");
+            }
+        }
     }
 }

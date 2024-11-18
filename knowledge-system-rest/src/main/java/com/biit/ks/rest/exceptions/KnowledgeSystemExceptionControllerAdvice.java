@@ -1,9 +1,11 @@
 package com.biit.ks.rest.exceptions;
 
+import com.biit.ks.core.exceptions.CategoryAlreadyExistsException;
 import com.biit.ks.core.exceptions.FileAlreadyExistsException;
 import com.biit.ks.core.exceptions.FileHandlingException;
 import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.exceptions.SeaweedClientException;
+import com.biit.ks.core.exceptions.TextAlreadyExistsException;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchException;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchInvalidSearchQueryException;
 import com.biit.server.exceptions.ErrorResponse;
@@ -60,6 +62,18 @@ public class KnowledgeSystemExceptionControllerAdvice extends ServerExceptionCon
     public ResponseEntity<Object> fileAlreadyExistsException(Exception ex) {
         RestServerExceptionLogger.errorMessage(this.getClass().getName(), ex);
         return new ResponseEntity<>(new ErrorResponse("BAD_REQUEST", "file_already_exists", ex), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CategoryAlreadyExistsException.class)
+    public ResponseEntity<Object> categoryAlreadyExistsException(Exception ex) {
+        RestServerExceptionLogger.errorMessage(this.getClass().getName(), ex);
+        return new ResponseEntity<>(new ErrorResponse("BAD_REQUEST", "category_already_exists", ex), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(TextAlreadyExistsException.class)
+    public ResponseEntity<Object> textAlreadyExistsException(Exception ex) {
+        RestServerExceptionLogger.errorMessage(this.getClass().getName(), ex);
+        return new ResponseEntity<>(new ErrorResponse("BAD_REQUEST", "text_already_exists_with_name", ex), HttpStatus.BAD_REQUEST);
     }
 
 

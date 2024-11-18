@@ -5,7 +5,6 @@ import com.biit.ks.core.exceptions.FileAlreadyExistsException;
 import com.biit.ks.core.exceptions.FileHandlingException;
 import com.biit.ks.core.exceptions.SeaweedClientException;
 import com.biit.ks.core.files.MediaTypeCalculator;
-import com.biit.ks.core.providers.pools.OpenSearchElementPool;
 import com.biit.ks.core.seaweed.SeaweedClient;
 import com.biit.ks.core.seaweed.SeaweedConfigurator;
 import com.biit.ks.persistence.entities.FileEntry;
@@ -34,10 +33,10 @@ public class FileEntryProvider extends CategorizedElementProvider<FileEntry, Fil
     private final IAuthenticatedUserProvider authenticatedUserProvider;
 
     @Autowired
-    public FileEntryProvider(OpenSearchElementPool<FileEntry> openSearchElementPool, FileEntryRepository fileEntryRepository,
+    public FileEntryProvider(FileEntryRepository fileEntryRepository,
                              SeaweedClient seaweedClient, SeaweedConfigurator seaweedConfigurator,
                              IAuthenticatedUserProvider authenticatedUserProvider) {
-        super(openSearchElementPool, fileEntryRepository);
+        super(fileEntryRepository);
         this.fileEntryRepository = fileEntryRepository;
         this.seaweedClient = seaweedClient;
         this.seaweedConfigurator = seaweedConfigurator;
@@ -97,16 +96,10 @@ public class FileEntryProvider extends CategorizedElementProvider<FileEntry, Fil
         if (filePath == null) {
             return Optional.empty();
         }
-        final FileEntry cached = getPool().getElement(filePath);
-        if (cached != null) {
-            return Optional.of(cached);
-        }
         final File f = new File(filePath);
         final String realFilePath = f.getParent();
         final String fileName = f.getName();
-        final Optional<FileEntry> saved = fileEntryRepository.findFileEntryByFilePathAndFileName(realFilePath, fileName);
-        saved.ifPresent(fileEntry -> getPool().addElement(fileEntry, filePath));
-        return saved;
+        return fileEntryRepository.findFileEntryByFilePathAndFileName(realFilePath, fileName);
     }
 
     public List<FileEntry> findFilesWithoutThumbnail() {

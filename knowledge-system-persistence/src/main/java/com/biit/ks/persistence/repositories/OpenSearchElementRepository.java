@@ -2,13 +2,16 @@ package com.biit.ks.persistence.repositories;
 
 import com.biit.ks.persistence.entities.OpenSearchElement;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
+import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
 import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
 import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import jakarta.annotation.PostConstruct;
+import org.apache.commons.lang3.tuple.Pair;
 import org.opensearch.client.opensearch._types.OpenSearchException;
 import org.opensearch.client.opensearch.core.GetResponse;
 import org.opensearch.client.opensearch.core.SearchResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -72,12 +75,23 @@ public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>
         if (uuid == null) {
             return Optional.empty();
         }
-        final GetResponse<E> response = openSearchClient.getData(elementClass, getOpenSearchIndex(), uuid.toString());
+        final GetResponse<E> response = openSearchClient.getData(getElementClass(), getOpenSearchIndex(), uuid.toString());
         if (response == null || response.source() == null) {
             return Optional.empty();
         }
         return Optional.of(response.source());
     }
+
+    public List<E> get(String name) {
+        if (name == null) {
+            return new ArrayList<>();
+        }
+        final MustHavePredicates mustHavePredicates = new MustHavePredicates();
+        mustHavePredicates.add(Pair.of("name", name));
+        final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), getOpenSearchIndex(), mustHavePredicates);
+        return getOpenSearchClient().convertResponse(response);
+    }
+
 
     public List<E> getAll(Integer from, Integer size) {
         final SearchResponse<E> response = getOpenSearchClient().getAll(getElementClass(), getOpenSearchIndex(),

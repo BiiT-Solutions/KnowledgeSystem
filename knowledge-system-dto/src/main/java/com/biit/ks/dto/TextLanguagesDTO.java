@@ -7,11 +7,18 @@ public enum TextLanguagesDTO {
     LA;
 
     public static TextLanguagesDTO fromString(String text) {
-        for (TextLanguagesDTO l : TextLanguagesDTO.values()) {
-            if (l.toString().equalsIgnoreCase(text)) {
-                return l;
+        for (TextLanguagesDTO textLanguagesDTO : TextLanguagesDTO.values()) {
+            if (textLanguagesDTO.toString().equalsIgnoreCase(text)) {
+                return textLanguagesDTO;
+            }
+            //For locales
+            if (text.contains("_") && textLanguagesDTO.toString().equalsIgnoreCase(text.split("_")[0])) {
+                return textLanguagesDTO;
+            }
+            if (text.contains("-") && textLanguagesDTO.toString().equalsIgnoreCase(text.split("-")[0])) {
+                return textLanguagesDTO;
             }
         }
-        return null;
+        return TextLanguagesDTO.EN;
     }
 }
