@@ -8,11 +8,11 @@
     <test name="KnowledgeSystem" enabled="true" preserve-order="true">
         <groups>
             <run>
-                <include name="clientTests"/>
+                <include name="textClientTests"/>
             </run>
         </groups>
         <classes>
-            <class name="com.biit.ks.client.ClientTests"/>
+            <class name="com.biit.ks.client.TextClientTests"/>
         </classes>
     </test>
 </suite>

@@ -19,8 +19,8 @@ import org.testng.annotations.Test;
 import java.util.Optional;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, classes = TestKnowledgeSystemServer.class)
-@Test(groups = {"clientTests"})
-public class ClientTests extends AbstractTestNGSpringContextTests {
+@Test(groups = {"textClientTests"})
+public class TextClientTests extends AbstractTestNGSpringContextTests {
 
     private final static String TEXT_NAME = "Text Name";
     private final static String TEXT_LA = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec tortor sem, pharetra vel ornare quis, cursus sed nibh.";
