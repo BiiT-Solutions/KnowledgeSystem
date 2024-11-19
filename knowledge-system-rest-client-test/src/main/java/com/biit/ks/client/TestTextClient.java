@@ -1,4 +1,4 @@
-package com.biit.client;
+package com.biit.ks.client;
 
 
 import com.biit.ks.dto.TextDTO;
