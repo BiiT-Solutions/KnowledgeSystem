@@ -3,6 +3,7 @@ package com.biit.ks.client;
 import com.biit.ks.client.exceptions.InvalidConfigurationException;
 import com.biit.ks.dto.TextDTO;
 import com.biit.ks.logger.KnowledgeSystemLogger;
+import com.biit.ks.models.ITextClient;
 import com.biit.rest.exceptions.EmptyResultException;
 import com.biit.rest.exceptions.InvalidResponseException;
 import com.biit.server.client.SecurityClient;
@@ -20,7 +21,7 @@ import java.util.UUID;
 @Service
 @Order(2)
 @Qualifier("textClient")
-public class TextClient {
+public class TextClient implements ITextClient {
 
     private final TextUrlConstructor textUrlConstructor;
 
@@ -35,6 +36,7 @@ public class TextClient {
     }
 
 
+    @Override
     public Optional<TextDTO> get(UUID uuid) {
         try {
             try (Response response = securityClient.get(textUrlConstructor.getKnowledgeSystemServerUrl(),
@@ -54,7 +56,7 @@ public class TextClient {
         }
     }
 
-
+    @Override
     public Optional<String> get(UUID uuid, String language) {
         try {
             try (Response response = securityClient.get(textUrlConstructor.getKnowledgeSystemServerUrl(),
@@ -72,7 +74,7 @@ public class TextClient {
         }
     }
 
-
+    @Override
     public Optional<String> get(String textName, String language) {
         try {
             try (Response response = securityClient.get(textUrlConstructor.getKnowledgeSystemServerUrl(),

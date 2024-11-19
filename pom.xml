@@ -20,6 +20,7 @@
         <module>knowledge-system-core</module>
         <module>knowledge-system-rest</module>
         <module>knowledge-system-rest-client</module>
+        <module>knowledge-system-rest-client-test</module>
     </modules>
 
     <scm>
