@@ -33,7 +33,7 @@ import java.util.UUID;
 public class ThumbnailController {
     private static final int MIN_THUMBNAIL_SIZE = 200;
     private static final int PDF_DPI = 24;
-    private static final String THUMBNAIL_SERVICE_URL = "/thumbnails/public/download/";
+    private static final String THUMBNAIL_SERVICE_URL = "/thumbnails/public/downloads/";
 
     private final SeaweedClient seaweedClient;
     private final SeaweedConfigurator seaweedConfigurator;

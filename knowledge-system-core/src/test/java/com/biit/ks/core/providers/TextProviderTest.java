@@ -19,7 +19,7 @@ import java.util.List;
 @Test(groups = {"fileEntryProvider"})
 public class TextProviderTest extends AbstractTestNGSpringContextTests {
 
-    private final static String TEXT_AL = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec tortor sem, pharetra vel ornare quis, cursus sed nibh.";
+    private final static String TEXT_LA = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec tortor sem, pharetra vel ornare quis, cursus sed nibh.";
     private final static String TEXT_ES = "El cliente es muy importante, el cliente será seguido por el cliente. Hasta el torturador, la aljaba o el adorno, el curso pero el nibh.";
 
     @Autowired
@@ -42,7 +42,7 @@ public class TextProviderTest extends AbstractTestNGSpringContextTests {
         text = new Text();
         text.setName("test");
         text.setDescription("description");
-        text.addContent(TextLanguages.LA, TEXT_AL);
+        text.addContent(TextLanguages.LA, TEXT_LA);
         text.addContent(TextLanguages.ES, TEXT_ES);
         textProvider.save(text);
     }

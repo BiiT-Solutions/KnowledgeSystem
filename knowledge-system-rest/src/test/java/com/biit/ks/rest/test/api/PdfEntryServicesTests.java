@@ -199,7 +199,7 @@ public class PdfEntryServicesTests extends AbstractTestNGSpringContextTests {
         Thread.sleep(5000);
 
         MvcResult createResult = this.mockMvc
-                .perform(get("/thumbnails/public/download/" + pdfUUID.toString())
+                .perform(get("/thumbnails/public/downloads/" + pdfUUID.toString())
                         .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();

@@ -45,10 +45,10 @@ public abstract class OpenSearchElementService<
 
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Gets an entity.", security = {@SecurityRequirement(name = "bearerAuth")})
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.CREATED)
     @GetMapping(value = {"/{uuid}"}, produces = {"application/json"})
-    public void get(@PathVariable("uuid") UUID uuid, Authentication authentication, HttpServletRequest request) {
-        this.getController().get(uuid);
+    public D get(@PathVariable("uuid") UUID uuid, Authentication authentication, HttpServletRequest request) {
+        return this.getController().get(uuid);
     }
 
 

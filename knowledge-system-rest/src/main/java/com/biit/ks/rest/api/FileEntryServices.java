@@ -75,7 +75,7 @@ public class FileEntryServices extends CategorizedElementServices<FileEntry, Fil
 
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Downloads a file.", security = @SecurityRequirement(name = "bearerAuth"))
-    @GetMapping(value = "/download/{uuid}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @GetMapping(value = "/downloads/{uuid}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<Resource> download(@PathVariable("uuid") UUID uuid, Authentication authentication, HttpServletResponse response) {
         final Resource file = getController().downloadAsResource(uuid, false, authentication.getName());
 
@@ -88,7 +88,7 @@ public class FileEntryServices extends CategorizedElementServices<FileEntry, Fil
 
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Downloads a file.", security = @SecurityRequirement(name = "bearerAuth"))
-    @GetMapping(value = "/public/download/{uuid}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @GetMapping(value = "/public/downloads/{uuid}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<Resource> downloadPublic(@PathVariable("uuid") UUID uuid, HttpServletResponse response) {
         final Resource file = getController().downloadAsResource(uuid, true, "public");
 
@@ -101,7 +101,7 @@ public class FileEntryServices extends CategorizedElementServices<FileEntry, Fil
 
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Downloads a file.", security = @SecurityRequirement(name = "bearerAuth"))
-    @GetMapping(value = "/download/{filename:.+}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @GetMapping(value = "/downloads/{filename:.+}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResponseBody
     public ResponseEntity<Resource> download(@PathVariable String filename, HttpServletResponse response) {
         final Resource file = getController().downloadAsResource(filename);

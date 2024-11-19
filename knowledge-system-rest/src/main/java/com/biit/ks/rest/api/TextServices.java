@@ -30,10 +30,9 @@ public class TextServices extends CategorizedElementServices<Text, TextDTO, Text
         super(textController);
     }
 
-
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Gets a Text.", security = @SecurityRequirement(name = "bearerAuth"))
-    @GetMapping(value = "/basic-auth/download/{uuid}/language/{language}", produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/downloads/{uuid}/languages/{language}", produces = MediaType.TEXT_PLAIN_VALUE)
     public String getText(@PathVariable("uuid") UUID uuid, @PathVariable("language") String language, HttpServletResponse response) {
         final TextDTO text = getController().get(uuid);
         if (text != null) {
@@ -44,8 +43,31 @@ public class TextServices extends CategorizedElementServices<Text, TextDTO, Text
 
 
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
-    @Operation(summary = "Gets a Text using its name", security = @SecurityRequirement(name = "bearerAuth"))
-    @GetMapping(value = "/basic-auth/download/{name}/language/{language}", produces = MediaType.TEXT_PLAIN_VALUE)
+    @Operation(summary = "Gets a Text.", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping(value = "/basic-auth/downloads/{uuid}/languages/{language}", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String getTextBasicAuth(@PathVariable("uuid") UUID uuid, @PathVariable("language") String language, HttpServletResponse response) {
+        final TextDTO text = getController().get(uuid);
+        if (text != null) {
+            return text.getContent().get(TextLanguagesDTO.fromString(language));
+        }
+        return null;
+    }
+
+
+    @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
+    @Operation(summary = "Gets a Text using its name.", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping(value = "/basic-auth/downloads/name/{name}/languages/{language}", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String getTextBasicAuth(@PathVariable("name") String name, @PathVariable("language") String language, HttpServletResponse response) {
+        final TextDTO text = getController().get(name);
+        if (text != null) {
+            return text.getContent().get(TextLanguagesDTO.fromString(language));
+        }
+        return null;
+    }
+
+    @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
+    @Operation(summary = "Gets a Text using its name.", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping(value = "/downloads/name/{name}/languages/{language}", produces = MediaType.TEXT_PLAIN_VALUE)
     public String getText(@PathVariable("name") String name, @PathVariable("language") String language, HttpServletResponse response) {
         final TextDTO text = getController().get(name);
         if (text != null) {
@@ -58,7 +80,7 @@ public class TextServices extends CategorizedElementServices<Text, TextDTO, Text
 
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Gets a Text.", security = @SecurityRequirement(name = "bearerAuth"))
-    @GetMapping(value = "/public/download/{uuid}/language/{language}", produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/public/downloads/{uuid}/languages/{language}", produces = MediaType.TEXT_PLAIN_VALUE)
     public String getPublicText(@PathVariable("uuid") UUID uuid, @PathVariable("language") String language, HttpServletResponse response) {
         final TextDTO text = getController().getPublic(uuid);
         if (text != null) {

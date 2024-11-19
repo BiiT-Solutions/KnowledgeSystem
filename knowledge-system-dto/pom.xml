@@ -20,6 +20,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.biit</groupId>
+            <artifactId>rest-server-dto</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <scope>compile</scope>

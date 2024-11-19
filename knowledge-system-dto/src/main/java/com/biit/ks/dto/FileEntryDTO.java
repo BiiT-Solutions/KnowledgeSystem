@@ -88,7 +88,7 @@ public class FileEntryDTO extends CategorizedElementDTO<UUID> {
         if (!isPublic()) {
             return null;
         }
-        return "/files/public/download/" + uuid.toString();
+        return "/files/public/downloads/" + uuid.toString();
     }
 
     public String getAlias() {

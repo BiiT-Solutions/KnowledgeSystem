@@ -24,7 +24,7 @@ public class ThumbnailServices {
 
 
     @Operation(summary = "Downloads a thumbnail.")
-    @GetMapping(value = "/public/download/{uuid}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @GetMapping(value = "/public/downloads/{uuid}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResponseBody
     public byte[] download(@PathVariable UUID uuid, HttpServletResponse response) {
         return thumbnailController.getThumbnail(uuid);

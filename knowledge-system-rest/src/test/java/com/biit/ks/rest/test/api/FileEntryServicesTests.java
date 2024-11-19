@@ -262,7 +262,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
         Thread.sleep(5000);
 
         MvcResult createResult = this.mockMvc
-                .perform(get("/thumbnails/public/download/" + videoUUID.toString())
+                .perform(get("/thumbnails/public/downloads/" + videoUUID.toString())
                         .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
