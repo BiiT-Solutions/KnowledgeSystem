@@ -46,7 +46,7 @@ public class TestTextClient implements ITextClient {
     @Override
     public Optional<String> get(String textName, String language) {
         if (content != null && Objects.equals(content.getName(), textName)) {
-            if (content.getContent() != null && content.getContent().get(TextLanguagesDTO.fromString(language)) != null) {
+            if (content.getContent() != null || content.getContent().get(TextLanguagesDTO.fromString(language)) != null) {
                 KnowledgeSystemLogger.warning(this.getClass(), "No content available for test for language '{}'. Content: {} ", language, content);
             } else {
                 return Optional.of(content.getContent().get(TextLanguagesDTO.fromString(language)));
