@@ -3,6 +3,7 @@ package com.biit.ks.client;
 
 import com.biit.ks.dto.TextDTO;
 import com.biit.ks.dto.TextLanguagesDTO;
+import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.models.ITextClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
@@ -44,8 +45,12 @@ public class TestTextClient implements ITextClient {
 
     @Override
     public Optional<String> get(String textName, String language) {
-        if (content != null && Objects.equals(content.getName(), textName) && content.getContent().get(TextLanguagesDTO.fromString(language)) != null) {
-            return Optional.of(content.getContent().get(TextLanguagesDTO.fromString(language)));
+        if (content != null && Objects.equals(content.getName(), textName)) {
+            if (content.getContent() != null && content.getContent().get(TextLanguagesDTO.fromString(language)) != null) {
+                KnowledgeSystemLogger.warning(this.getClass(), "No content available for test for language '{}'. Content: {} ", language, content);
+            } else {
+                return Optional.of(content.getContent().get(TextLanguagesDTO.fromString(language)));
+            }
         }
         return Optional.empty();
     }
