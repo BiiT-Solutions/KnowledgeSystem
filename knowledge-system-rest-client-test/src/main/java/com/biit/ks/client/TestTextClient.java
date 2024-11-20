@@ -44,7 +44,7 @@ public class TestTextClient implements ITextClient {
 
     @Override
     public Optional<String> get(String textName, String language) {
-        if (content != null && Objects.equals(content.getName(), textName)) {
+        if (content != null && Objects.equals(content.getName(), textName) && content.getContent().get(TextLanguagesDTO.fromString(language)) != null) {
             return Optional.of(content.getContent().get(TextLanguagesDTO.fromString(language)));
         }
         return Optional.empty();
