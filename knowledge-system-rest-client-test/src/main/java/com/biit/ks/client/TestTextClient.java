@@ -27,6 +27,10 @@ public class TestTextClient implements ITextClient {
         this.content = content;
     }
 
+    public TextDTO get() {
+        return content;
+    }
+
     @Override
     public Optional<TextDTO> get(UUID uuid) {
         if (content != null && Objects.equals(content.getId(), uuid)) {
