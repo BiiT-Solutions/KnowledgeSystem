@@ -15,6 +15,10 @@ import java.util.Map;
 @Component
 public class TextConverter extends CategorizedElementConverter<Text, TextDTO, TextConverterRequest> {
 
+    protected TextConverter(CategorizationConverter categorizationConverter) {
+        super(categorizationConverter);
+    }
+
     @Override
     protected TextDTO convertElement(TextConverterRequest from) {
         if (from == null) {
@@ -26,6 +30,7 @@ public class TextConverter extends CategorizedElementConverter<Text, TextDTO, Te
         final Map<TextLanguagesDTO, String> content = new HashMap<>();
         from.getEntity().getContent().forEach((key, value) -> content.put(TextLanguagesDTO.fromString(key.name()), value));
         textDTO.setContent(content);
+        copyCategorizations(from.getEntity(), textDTO);
         return textDTO;
     }
 
@@ -39,6 +44,7 @@ public class TextConverter extends CategorizedElementConverter<Text, TextDTO, Te
         final Map<TextLanguages, String> content = new HashMap<>();
         to.getContent().forEach((key, value) -> content.put(TextLanguages.fromString(key.name()), value));
         text.setContent(content);
+        copyCategorizations(to, text);
         return text;
     }
 }
