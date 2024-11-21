@@ -1,6 +1,5 @@
 package com.biit.ks.persistence.opensearch;
 
-import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.logger.OpenSearchLogger;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchConnectionException;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchIndexMissingException;
@@ -13,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.annotation.PreDestroy;
+import org.apache.http.ConnectionClosedException;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -58,6 +58,7 @@ import org.opensearch.client.opensearch.indices.PutIndicesSettingsResponse;
 import org.opensearch.client.transport.OpenSearchTransport;
 import org.opensearch.client.transport.rest_client.RestClientTransport;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -71,12 +72,25 @@ import java.util.List;
 public class OpenSearchClient {
 
     private static final int MAX_SEARCH_RESULTS = 100;
+    private static final int MAX_CONNECTION_RETRIES = 10;
     private static final int DEFAULT_OPENSEARCH_PORT = 9200;
+    private static final int MAX_CONNECTIONS = 10;
     private static final String DEFAULT_EXPAND_REPLICAS = "0-all";
 
-    private final RestClient restClient;
+    private RestClient restClient;
 
-    private final org.opensearch.client.opensearch.OpenSearchClient client;
+    private org.opensearch.client.opensearch.OpenSearchClient client;
+
+    private final String scheme;
+    private final String server;
+    private final String pathPrefix;
+    private final String serverPort;
+    private final String user;
+    private final String password;
+    private final boolean skipSslCheck;
+
+    private int connectionsRetried = 0;
+
 
     public OpenSearchClient(@Value("${opensearch.scheme}") String scheme,
                             @Value("${opensearch.server}") String server,
@@ -87,6 +101,13 @@ public class OpenSearchClient {
                             @Value("${opensearch.truststore.path:#{null}}") String truststorePath,
                             @Value("${opensearch.truststore.password:#{null}}") String truststorePassword,
                             @Value("${opensearch.insecure.skip.verify:#{false}}") boolean skipSslCheck) {
+        this.scheme = scheme;
+        this.server = server;
+        this.pathPrefix = pathPrefix;
+        this.serverPort = serverPort;
+        this.user = user;
+        this.password = password;
+        this.skipSslCheck = skipSslCheck;
 
         if (truststorePath != null && !truststorePath.isBlank() && !skipSslCheck) {
             //Include lestencrypt root certificate 'isrgrootx1.der'
@@ -100,7 +121,11 @@ public class OpenSearchClient {
                 OpenSearchLogger.severe(this.getClass(), "Certificates not found at '{}'.", truststorePath);
             }
         }
+        connect();
+    }
 
+
+    private void connect() {
         int convertedPort;
         if (serverPort != null) {
             try {
@@ -122,7 +147,8 @@ public class OpenSearchClient {
         //Initialize the client with SSL and TLS enabled
         final RestClientBuilder restClientBuilder = RestClient.builder(host).
                 setHttpClientConfigCallback(httpClientBuilder ->
-                        httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider));
+                        httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)
+                                .setMaxConnTotal(MAX_CONNECTIONS));
 
         if (pathPrefix != null && !pathPrefix.isBlank()) {
             restClientBuilder.setPathPrefix(pathPrefix);
@@ -155,13 +181,34 @@ public class OpenSearchClient {
         }
     }
 
+
+    public boolean reconnect() {
+        try {
+            if (connectionsRetried < MAX_CONNECTION_RETRIES) {
+                connectionsRetried++;
+                close();
+                connect();
+                return true;
+            }
+        } catch (Exception e) {
+            OpenSearchLogger.errorMessage(this.getClass(), e);
+        }
+        return false;
+    }
+
+    @Scheduled(cron = "@midnight")
+    public void cleanUpConnectionsCounter() {
+        connectionsRetried = 0;
+    }
+
+
     public void refreshIndex() {
         try {
-            KnowledgeSystemLogger.debug(this.getClass(), "Refreshing index...");
+            OpenSearchLogger.debug(this.getClass(), "Refreshing index...");
             client.indices().refresh();
         } catch (IOException e) {
-            KnowledgeSystemLogger.severe(this.getClass(), "Failed to refresh index!");
-            KnowledgeSystemLogger.errorMessage(this.getClass(), e);
+            OpenSearchLogger.severe(this.getClass(), "Failed to refresh index!");
+            OpenSearchLogger.errorMessage(this.getClass(), e);
         }
     }
 
@@ -179,6 +226,12 @@ public class OpenSearchClient {
             final PutIndicesSettingsRequest putIndicesSettingsRequest = new PutIndicesSettingsRequest.Builder().index(indexName)
                     .settings(indexSettings).build();
             return client.indices().putSettings(putIndicesSettingsRequest);
+        } catch (ConnectionClosedException e) {
+            OpenSearchLogger.warning(this.getClass(), "Opensearch client gets error message: {}", e.getMessage());
+            if (reconnect()) {
+                return createIndex(indexName);
+            }
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         }
@@ -188,7 +241,7 @@ public class OpenSearchClient {
     public DeleteIndexResponse deleteIndex(String indexName) {
         try {
             final DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest.Builder().index(indexName).build();
-            KnowledgeSystemLogger.warning(this.getClass(), "Deleting index '{}'", indexName);
+            OpenSearchLogger.warning(this.getClass(), "Deleting index '{}'", indexName);
             return client.indices().delete(deleteIndexRequest);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
@@ -221,6 +274,12 @@ public class OpenSearchClient {
             //final GetRequest getRequest = new GetRequest(indexName, id);
             final GetRequest getRequest = new GetRequest.Builder().index(indexName).id(id).build();
             return client.get(getRequest, dataClass);
+        } catch (ConnectionClosedException e) {
+            OpenSearchLogger.warning(this.getClass(), "Opensearch client gets error message: {}", e.getMessage());
+            if (reconnect()) {
+                return getData(dataClass, indexName, id);
+            }
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         } catch (OpenSearchException e) {
@@ -236,6 +295,12 @@ public class OpenSearchClient {
         try {
             final UpdateRequest<I, I> indexRequest = new UpdateRequest.Builder<I, I>().index(indexName).id(id).doc(data).build();
             return client.update(indexRequest, dataClass);
+        } catch (ConnectionClosedException e) {
+            OpenSearchLogger.warning(this.getClass(), "Opensearch client gets error message: {}", e.getMessage());
+            if (reconnect()) {
+                return updateData(dataClass, data, indexName, id);
+            }
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         } catch (OpenSearchException e) {
@@ -254,6 +319,12 @@ public class OpenSearchClient {
                 return searchResponse.hits().hits().get(0).source();
             }
             return null;
+        } catch (ConnectionClosedException e) {
+            OpenSearchLogger.warning(this.getClass(), "Opensearch client gets error message: {}", e.getMessage());
+            if (reconnect()) {
+                return getElement(indexDataClass, indexName);
+            }
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         } catch (OpenSearchException e) {
@@ -288,6 +359,12 @@ public class OpenSearchClient {
                 OpenSearchLogger.debug(this.getClass(), searchResponse.hits().hits().get(i).source() + "");
             }
             return searchResponse;
+        } catch (ConnectionClosedException e) {
+            OpenSearchLogger.warning(this.getClass(), "Opensearch client gets error message: {}", e.getMessage());
+            if (reconnect()) {
+                return searchData(indexDataClass, indexName, sortOptions, from, size);
+            }
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         } catch (OpenSearchException e) {
@@ -310,6 +387,12 @@ public class OpenSearchClient {
                 OpenSearchLogger.debug(this.getClass(), searchResponse.hits().hits().get(i).source() + "");
             }
             return searchResponse;
+        } catch (ConnectionClosedException e) {
+            OpenSearchLogger.warning(this.getClass(), "Opensearch client gets error message: {}", e.getMessage());
+            if (reconnect()) {
+                return searchData(dataClass, request);
+            }
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         } catch (OpenSearchException e) {
@@ -347,6 +430,12 @@ public class OpenSearchClient {
                 }
                 return s;
             }, dataClass);
+        } catch (ConnectionClosedException e) {
+            OpenSearchLogger.warning(this.getClass(), "Opensearch client gets error message: {}", e.getMessage());
+            if (reconnect()) {
+                return searchData(dataClass, indexName, query, sortOptions, from, size);
+            }
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         } catch (OpenSearchException e) {
@@ -369,6 +458,12 @@ public class OpenSearchClient {
                 countQuery.index(indexName);
             }
             return client.count(countQuery.build());
+        } catch (ConnectionClosedException e) {
+            OpenSearchLogger.warning(this.getClass(), "Opensearch client gets error message: {}", e.getMessage());
+            if (reconnect()) {
+                return countData(indexName, query);
+            }
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         } catch (OpenSearchException e) {
@@ -391,6 +486,12 @@ public class OpenSearchClient {
                 deleteQuery.index(indexName);
             }
             return client.deleteByQuery(deleteQuery.build());
+        } catch (ConnectionClosedException e) {
+            OpenSearchLogger.warning(this.getClass(), "Opensearch client gets error message: {}", e.getMessage());
+            if (reconnect()) {
+                return deleteData(indexName, query);
+            }
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         } catch (OpenSearchException e) {
@@ -444,6 +545,12 @@ public class OpenSearchClient {
                 }
                 return s;
             }, dataClass);
+        } catch (ConnectionClosedException e) {
+            OpenSearchLogger.warning(this.getClass(), "Opensearch client gets error message: {}", e.getMessage());
+            if (reconnect()) {
+                return searchData(dataClass, indexName, field, query, sortOptions, from, size);
+            }
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         } catch (OpenSearchException e) {
@@ -463,6 +570,12 @@ public class OpenSearchClient {
     public DeleteResponse deleteData(String indexName, String id) {
         try {
             return client.delete(b -> b.index(indexName).id(id));
+        } catch (ConnectionClosedException e) {
+            OpenSearchLogger.warning(this.getClass(), "Opensearch client gets error message: {}", e.getMessage());
+            if (reconnect()) {
+                return deleteData(indexName, id);
+            }
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new OpenSearchConnectionException(this.getClass(), e);
         } catch (OpenSearchException e) {
