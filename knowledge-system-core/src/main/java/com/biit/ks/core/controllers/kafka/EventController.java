@@ -8,6 +8,8 @@ import com.biit.ks.core.controllers.kafka.converter.PdfFormPayload;
 import com.biit.ks.core.exceptions.CategoryAlreadyExistsException;
 import com.biit.ks.core.providers.CategorizationProvider;
 import com.biit.ks.core.providers.FileEntryProvider;
+import com.biit.ks.core.providers.ThumbnailProvider;
+import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.Categorization;
 import com.biit.ks.persistence.entities.FileEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -33,12 +36,15 @@ public class EventController {
 
     private final FileEntryProvider fileEntryProvider;
     private final CategorizationProvider categorizationProvider;
+    private final ThumbnailProvider thumbnailProvider;
+
     private List<Categorization> categorizations;
 
     public EventController(@Autowired(required = false) EventListener eventListener, FileEntryProvider fileEntryProvider,
-                           CategorizationProvider categorizationProvider) {
+                           CategorizationProvider categorizationProvider, ThumbnailProvider thumbnailProvider) {
         this.fileEntryProvider = fileEntryProvider;
         this.categorizationProvider = categorizationProvider;
+        this.thumbnailProvider = thumbnailProvider;
         //Listen to a topic
         if (eventListener != null) {
             eventListener.addListener((event, offset, groupId, key, partition, topic, timeStamp) ->
@@ -70,17 +76,29 @@ public class EventController {
 
         try {
             final PdfFormPayload pdfFormPayload = event.getEntity(PdfFormPayload.class);
-            final FileEntry fileEntry = fileEntryProvider.save(new CustomMultipartFile(pdfFormPayload.getPdfContent(),
+            FileEntry fileEntry = fileEntryProvider.save(new CustomMultipartFile(pdfFormPayload.getPdfContent(),
                             generateFileName(pdfFormPayload, createdBy, event.getCustomProperty(EventCustomProperties.FACT_TYPE)), PDF_CONTENT_TYPE),
                     null, false, createdBy);
 
             //Set categories.
             fileEntry.setCategorizations(categorizations);
-            fileEntryProvider.save(fileEntry);
+            fileEntry = fileEntryProvider.save(fileEntry);
 
             EventsLogger.info(this.getClass(), "Document '{}' with version '{}' type '{}' from '{}' stored. Categorized as '{}'!",
                     pdfFormPayload.getFormName(), pdfFormPayload.getFormVersion(), event.getCustomProperty(EventCustomProperties.FACT_TYPE),
                     createdBy, categorizations);
+
+            //Create thumbnail.
+            try {
+                thumbnailProvider.setThumbnail(fileEntry);
+                EventsLogger.info(this.getClass(), "Thumbnail for '{}' with version '{}' from '{}' created.",
+                        pdfFormPayload.getFormName(), pdfFormPayload.getFormVersion(), createdBy);
+            } catch (IOException e) {
+                KnowledgeSystemLogger.errorMessage(this.getClass(), e);
+                fileEntry.setThumbnailUrl(null);
+            }
+
+
         } catch (Exception e) {
             EventsLogger.severe(this.getClass(), "Invalid event received!!\n" + event);
             EventsLogger.errorMessage(this.getClass(), e);

@@ -17,9 +17,12 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.DispatcherServlet;
 
+
+@EnableScheduling
 //Avoid Swagger redirecting https to http
 @OpenAPIDefinition(servers = {@Server(url = "${server.servlet.context-path}", description = "Default Server URL")})
 @SpringBootApplication

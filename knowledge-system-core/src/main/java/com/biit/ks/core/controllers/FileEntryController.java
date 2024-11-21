@@ -7,6 +7,7 @@ import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.files.MediaTypeCalculator;
 import com.biit.ks.core.models.ChunkData;
 import com.biit.ks.core.providers.FileEntryProvider;
+import com.biit.ks.core.providers.ThumbnailProvider;
 import com.biit.ks.core.seaweed.SeaweedClient;
 import com.biit.ks.core.seaweed.SeaweedConfigurator;
 import com.biit.ks.dto.FileEntryDTO;
@@ -37,24 +38,25 @@ import java.util.UUID;
 public class FileEntryController extends CategorizedElementController<FileEntry, FileEntryDTO, FileEntryRepository,
         FileEntryProvider, FileEntryConverterRequest, FileEntryConverter> {
 
+    private static final int SIZE = 10;
 
     private final SeaweedClient seaweedClient;
     private final IAuthenticatedUserProvider authenticatedUserProvider;
     private final FileEntryProvider fileEntryProvider;
     private final SeaweedConfigurator seaweedConfigurator;
-    private final ThumbnailController thumbnailController;
+    private final ThumbnailProvider thumbnailProvider;
 
 
     @Autowired
     protected FileEntryController(FileEntryProvider provider, SeaweedClient seaweedClient,
                                   IAuthenticatedUserProvider authenticatedUserProvider, FileEntryProvider fileEntryProvider,
-                                  FileEntryConverter converter, SeaweedConfigurator seaweedConfigurator, ThumbnailController thumbnailController) {
+                                  FileEntryConverter converter, SeaweedConfigurator seaweedConfigurator, ThumbnailProvider thumbnailProvider) {
         super(provider, converter);
         this.seaweedClient = seaweedClient;
         this.authenticatedUserProvider = authenticatedUserProvider;
         this.fileEntryProvider = fileEntryProvider;
         this.seaweedConfigurator = seaweedConfigurator;
-        this.thumbnailController = thumbnailController;
+        this.thumbnailProvider = thumbnailProvider;
     }
 
     @Override
@@ -160,7 +162,7 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
 
     private void updateThumbnail(FileEntry fileEntry) {
         try {
-            thumbnailController.setThumbnail(fileEntry);
+            thumbnailProvider.setThumbnail(fileEntry);
         } catch (IOException e) {
             KnowledgeSystemLogger.errorMessage(this.getClass(), e);
             fileEntry.setThumbnailUrl(null);
@@ -198,5 +200,16 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
         fileEntries.forEach(
                 this::updateThumbnail
         );
+    }
+
+    public void updateAllThumbnails() {
+        int loop = 0;
+        List<FileEntry> fileEntries = fileEntryProvider.getAll(0, SIZE);
+        while (!fileEntries.isEmpty()) {
+            KnowledgeSystemLogger.info(this.getClass(), "Regenerating thumbnail for '{}' files.", fileEntries.size());
+            fileEntries.forEach(this::updateThumbnail);
+            loop++;
+            fileEntries = fileEntryProvider.getAll(loop * SIZE, SIZE);
+        }
     }
 }

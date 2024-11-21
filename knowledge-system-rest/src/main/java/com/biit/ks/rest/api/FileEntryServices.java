@@ -4,8 +4,9 @@ import com.biit.ks.core.controllers.FileEntryController;
 import com.biit.ks.core.converters.FileEntryConverter;
 import com.biit.ks.core.converters.models.FileEntryConverterRequest;
 import com.biit.ks.core.exceptions.FileNotFoundException;
-import com.biit.ks.dto.FileEntryDTO;
 import com.biit.ks.core.providers.FileEntryProvider;
+import com.biit.ks.dto.FileEntryDTO;
+import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.FileEntry;
 import com.biit.ks.persistence.repositories.FileEntryRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -114,6 +117,23 @@ public class FileEntryServices extends CategorizedElementServices<FileEntry, Fil
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
 
         return ResponseEntity.ok().body(file);
+    }
+
+
+    @Operation(summary = "Force an update for all missing thumbnails.")
+    @GetMapping(value = "/thumbnails/update")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void updateAll(@RequestParam(name = "force", required = false) Optional<Boolean> forceRewrite,
+                          Authentication authentication) {
+        if (forceRewrite.isPresent() && forceRewrite.get()) {
+            KnowledgeSystemLogger.info(this.getClass(), "User '{}' is forcing a complete thumbnail regeneration.",
+                    authentication.getName());
+            getController().updateAllThumbnails();
+        } else {
+            KnowledgeSystemLogger.info(this.getClass(), "User '{}' is forcing a thumbnail generation.",
+                    authentication.getName());
+            getController().updateThumbnails();
+        }
     }
 
 

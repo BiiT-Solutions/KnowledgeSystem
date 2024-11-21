@@ -1,6 +1,6 @@
 package com.biit.ks.rest.api;
 
-import com.biit.ks.core.controllers.ThumbnailController;
+import com.biit.ks.core.providers.ThumbnailProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
@@ -15,11 +15,11 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/thumbnails")
 public class ThumbnailServices {
-    private final ThumbnailController thumbnailController;
+    private final ThumbnailProvider thumbnailProvider;
 
 
-    public ThumbnailServices(final ThumbnailController thumbnailController) {
-        this.thumbnailController = thumbnailController;
+    public ThumbnailServices(final ThumbnailProvider thumbnailProvider) {
+        this.thumbnailProvider = thumbnailProvider;
     }
 
 
@@ -27,7 +27,7 @@ public class ThumbnailServices {
     @GetMapping(value = "/public/downloads/{uuid}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResponseBody
     public byte[] download(@PathVariable UUID uuid, HttpServletResponse response) {
-        return thumbnailController.getThumbnail(uuid);
+        return thumbnailProvider.getThumbnail(uuid);
     }
 
 }

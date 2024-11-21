@@ -1,4 +1,4 @@
-package com.biit.ks.core.controllers;
+package com.biit.ks.core.providers;
 
 import com.biit.ks.core.exceptions.SeaweedClientException;
 import com.biit.ks.core.files.MimeTypeToFFmpeg;
@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Component
-public class ThumbnailController {
+public class ThumbnailProvider {
     private static final int MIN_THUMBNAIL_SIZE = 200;
     private static final int PDF_DPI = 24;
     private static final String THUMBNAIL_SERVICE_URL = "/thumbnails/public/downloads/";
@@ -38,7 +38,7 @@ public class ThumbnailController {
     private final SeaweedClient seaweedClient;
     private final SeaweedConfigurator seaweedConfigurator;
 
-    public ThumbnailController(SeaweedClient seaweedClient, SeaweedConfigurator seaweedConfigurator) {
+    public ThumbnailProvider(SeaweedClient seaweedClient, SeaweedConfigurator seaweedConfigurator) {
         this.seaweedClient = seaweedClient;
         this.seaweedConfigurator = seaweedConfigurator;
         FFmpegLogCallback.set();
