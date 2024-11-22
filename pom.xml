@@ -4,7 +4,7 @@
     <artifactId>knowledge-system</artifactId>
     <name>Knowledge System</name>
     <groupId>com.biit.ks</groupId>
-    <version>1.2.9-SNAPSHOT</version>
+    <version>1.2.9</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -27,7 +27,7 @@
     <scm>
         <connection>scm:git:git.biit-solutions.com:Java/KnowledgeSystem.git</connection>
         <developerConnection>scm:git:git.biit-solutions.com:Java/KnowledgeSystem.git</developerConnection>
-        <tag>Knowledge System</tag>
+        <tag>knowledge-system-1.2.9</tag>
     </scm>
 
     <distributionManagement>
