@@ -451,6 +451,7 @@ public class OpenSearchClient {
         }
     }
 
+
     public CountResponse countData(String indexName, Query query) {
         try {
             final CountRequest.Builder countQuery = new CountRequest.Builder().query(query);
@@ -517,6 +518,11 @@ public class OpenSearchClient {
         }
         return output;
     }
+
+    public long convertResponse(CountResponse countResponse) {
+        return countResponse.count();
+    }
+
 
     /**
      * Searches a document in Opensearch using the query builder.
@@ -633,13 +639,26 @@ public class OpenSearchClient {
                 searchQuery.getFrom(), searchQuery.getSize());
     }
 
+
+    public <I> CountResponse countData(Class<I> dataClass, String indexName, SearchPredicates searchPredicates) {
+        return countData(indexName, new SearchQuery<>(dataClass, searchPredicates));
+    }
+
+
     public <I> CountResponse countData(String indexName, SearchQuery<I> searchQuery) {
         return countData(indexName, createQuery(searchQuery));
     }
 
+
     public <I> DeleteByQueryResponse deleteData(String indexName, SearchQuery<I> searchQuery) {
         return deleteData(indexName, createQuery(searchQuery));
     }
+
+
+    public <I> DeleteByQueryResponse deleteData(Class<I> dataClass, String indexName, SearchPredicates searchPredicates) {
+        return deleteData(indexName, new SearchQuery<>(dataClass, searchPredicates));
+    }
+
 
     private <I> Query createQuery(SearchQuery<I> searchQuery) {
         final List<Query> mustHaveQueries = createQuery(searchQuery.getMustHaveValues());

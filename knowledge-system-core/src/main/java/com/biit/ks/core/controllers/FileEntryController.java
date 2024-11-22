@@ -38,7 +38,7 @@ import java.util.UUID;
 public class FileEntryController extends CategorizedElementController<FileEntry, FileEntryDTO, FileEntryRepository,
         FileEntryProvider, FileEntryConverterRequest, FileEntryConverter> {
 
-    private static final int SIZE = 10;
+    private static final int SIZE = 100;
 
     private final SeaweedClient seaweedClient;
     private final IAuthenticatedUserProvider authenticatedUserProvider;
@@ -59,10 +59,12 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
         this.thumbnailProvider = thumbnailProvider;
     }
 
+
     @Override
     protected FileEntryConverterRequest createConverterRequest(FileEntry fileEntry) {
         return new FileEntryConverterRequest(fileEntry);
     }
+
 
     @Override
     public FileEntryDTO create(FileEntryDTO dto, String creatorName) {
@@ -74,6 +76,7 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
         DtoControllerLogger.info(this.getClass(), "Entity '{}' created by '{}'.", dtoStored, creatorName);
         return dtoStored;
     }
+
 
     @Override
     public Collection<FileEntryDTO> create(Collection<FileEntryDTO> fileEntryDTOS, String creatorName) {
@@ -211,5 +214,20 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
             loop++;
             fileEntries = fileEntryProvider.getAll(loop * SIZE, SIZE);
         }
+    }
+
+
+    public int deleteByAlias(String alias, String deleteBy) {
+        KnowledgeSystemLogger.warning(this.getClass(), "User '{}' deletes files with alias '{}'.", deleteBy, alias);
+        KnowledgeSystemLogger.warning(this.getClass(), "Files to be deleted are '{}'.", fileEntryProvider.countFileEntryByAlias(alias));
+        List<FileEntry> fileEntries = fileEntryProvider.findByAlias(alias, 0, SIZE);
+        int counter = fileEntries.size();
+        while (!fileEntries.isEmpty()) {
+            fileEntries.forEach(fileEntryProvider::delete);
+            //As are deleted, no need to increase starting point.
+            fileEntries = fileEntryProvider.findByAlias(alias, 0, SIZE);
+            counter += fileEntries.size();
+        }
+        return counter;
     }
 }

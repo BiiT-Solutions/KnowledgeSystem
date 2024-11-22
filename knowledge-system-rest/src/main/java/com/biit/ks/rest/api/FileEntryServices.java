@@ -21,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -120,7 +121,8 @@ public class FileEntryServices extends CategorizedElementServices<FileEntry, Fil
     }
 
 
-    @Operation(summary = "Force an update for all missing thumbnails.")
+    @PreAuthorize("hasAnyAuthority(@securityService.editorPrivilege, @securityService.adminPrivilege)")
+    @Operation(summary = "Force an update for all missing thumbnails.", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping(value = "/thumbnails/update")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void updateAll(@RequestParam(name = "force", required = false) Optional<Boolean> forceRewrite,
@@ -134,6 +136,14 @@ public class FileEntryServices extends CategorizedElementServices<FileEntry, Fil
                     authentication.getName());
             getController().updateThumbnails();
         }
+    }
+
+    @PreAuthorize("hasAnyAuthority(@securityService.adminPrivilege)")
+    @Operation(summary = "Deletes a file entry.", security = {@SecurityRequirement(name = "bearerAuth")})
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping(value = {"/delete/alias/{alias}"}, produces = {"application/json"})
+    public int delete(@PathVariable("alias") String alias, Authentication authentication, HttpServletRequest request) {
+        return this.getController().deleteByAlias(alias, authentication.getName());
     }
 
 

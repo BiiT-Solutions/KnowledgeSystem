@@ -10,6 +10,7 @@ import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
 import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import org.apache.commons.lang3.tuple.Pair;
+import org.opensearch.client.opensearch.core.CountResponse;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.springframework.stereotype.Repository;
 
@@ -49,6 +50,7 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
         return Optional.of(response.hits().hits().get(0).source());
     }
 
+
     public List<FileEntry> findFileEntriesWithThumbnailIsNull() {
         final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.add("thumbnailUrl", null);
@@ -73,6 +75,38 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
         shouldHavePredicates.setMinimumShouldMatch(1);
         final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, getOpenSearchIndex(),
                 shouldHavePredicates, new SortResultOptions("createdAt", SortOptionOrder.DESC), from, size);
+        return getOpenSearchClient().convertResponse(response);
+    }
+
+    public void deleteByAlias(String alias) {
+        final MustHavePredicates mustHavePredicates = new MustHavePredicates();
+        mustHavePredicates.add(Pair.of("alias", alias));
+        getOpenSearchClient().deleteData(FileEntry.class, getOpenSearchIndex(), mustHavePredicates);
+    }
+
+
+    public List<FileEntry> findFileEntryByAlias(String alias, Integer from, Integer size) {
+        if (alias == null) {
+            return new ArrayList<>();
+        }
+        final MustHavePredicates mustHaveParameters = new MustHavePredicates();
+        mustHaveParameters.add("alias", alias);
+        final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, getOpenSearchIndex(), mustHaveParameters, from, size);
+        if (response == null || response.hits() == null || response.hits().hits().isEmpty() || response.hits().hits().get(0) == null
+                || response.hits().hits().get(0).source() == null) {
+            return new ArrayList<>();
+        }
+        return getOpenSearchClient().convertResponse(response);
+    }
+
+
+   public long countFileEntryByAlias(String alias) {
+        if (alias == null) {
+            return 0;
+        }
+        final MustHavePredicates mustHaveParameters = new MustHavePredicates();
+        mustHaveParameters.add("alias", alias);
+        final CountResponse response = getOpenSearchClient().countData(FileEntry.class, getOpenSearchIndex(), mustHaveParameters);
         return getOpenSearchClient().convertResponse(response);
     }
 }
