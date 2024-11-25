@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Primary
 @Service("securityService")
-public class KnowledgeSystemSecurityService extends SecurityService {
+public class KnowledgeSystemSecurityServices extends SecurityService {
 
     private static final String VIEWER = "KNOWLEDGESYSTEM_VIEWER";
     private static final String ADMIN = "KNOWLEDGESYSTEM_ADMIN";

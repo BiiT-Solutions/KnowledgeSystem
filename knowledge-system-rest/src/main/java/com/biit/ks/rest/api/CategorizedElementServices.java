@@ -28,7 +28,7 @@ public abstract class CategorizedElementServices<
         Rq extends CategorizedElementConverterRequest<E>,
         Cv extends CategorizedElementConverter<E, D, Rq>,
         C extends CategorizedElementController<E, D, R, P, Rq, Cv>>
-        extends OpenSearchElementService<E, D, R, P, Rq, Cv, C> {
+        extends OpenSearchElementServices<E, D, R, P, Rq, Cv, C> {
 
     protected CategorizedElementServices(C controller) {
         super(controller);

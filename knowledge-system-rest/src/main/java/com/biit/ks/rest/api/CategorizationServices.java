@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/categorizations")
-public class CategorizationServices extends OpenSearchElementService<Categorization, CategorizationDTO, CategorizationRepository,
+public class CategorizationServices extends OpenSearchElementServices<Categorization, CategorizationDTO, CategorizationRepository,
         CategorizationProvider, CategorizationConverterRequest, CategorizationConverter, CategorizationController> {
 
 

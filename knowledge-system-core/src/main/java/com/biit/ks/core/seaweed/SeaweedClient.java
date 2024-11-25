@@ -232,4 +232,15 @@ public class SeaweedClient {
         return byteArray;
     }
 
+
+    public void cleanFolder(String folderPath) {
+        filerClient.rm(folderPath, true, true);
+    }
+
+    public void wipeOut() {
+        filerClient.listEntries("/").forEach(entry -> {
+            cleanFolder("/" + entry.getName());
+        });
+    }
+
 }

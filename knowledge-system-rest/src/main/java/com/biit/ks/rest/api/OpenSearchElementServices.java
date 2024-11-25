@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.util.List;
 import java.util.UUID;
 
-public abstract class OpenSearchElementService<
+public abstract class OpenSearchElementServices<
         E extends OpenSearchElement<?>,
         D extends OpenSearchElementDTO<?>,
         R extends OpenSearchElementRepository<E>,
@@ -38,7 +38,7 @@ public abstract class OpenSearchElementService<
         C extends OpenSearchElementController<E, D, R, P, Rq, Cv>>
         extends SimpleServices<E, D, P, Rq, Cv, C> {
 
-    protected OpenSearchElementService(C controller) {
+    protected OpenSearchElementServices(C controller) {
         super(controller);
     }
 

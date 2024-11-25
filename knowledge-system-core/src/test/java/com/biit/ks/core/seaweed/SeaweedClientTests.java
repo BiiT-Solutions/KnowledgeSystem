@@ -73,7 +73,8 @@ public class SeaweedClientTests extends AbstractTestNGSpringContextTests {
 
     @AfterClass(alwaysRun = true)
     public void deleteFolder() {
-        seaweedClient.deleteFolder(seaweedConfigurator.getUploadsPath());
+        //seaweedClient.deleteFolder(seaweedConfigurator.getUploadsPath());
+        seaweedClient.wipeOut();
     }
 
 }
