@@ -4,6 +4,8 @@ import com.biit.ks.persistence.repositories.IOpenSearchConfigurator;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Primary
 @Component
 public class OpenSearchTestConfigurator implements IOpenSearchConfigurator {
@@ -27,5 +29,10 @@ public class OpenSearchTestConfigurator implements IOpenSearchConfigurator {
     @Override
     public String getOpenSearchCategorizationsIndex() {
         return OPENSEARCH_CATEGORIZATIONS_INDEX;
+    }
+
+    @Override
+    public List<String> getAllOpenSearchIndexes() {
+        return List.of(getOpenSearchFileIndex(), getOpenSearchTextIndex(), getOpenSearchCategorizationsIndex());
     }
 }

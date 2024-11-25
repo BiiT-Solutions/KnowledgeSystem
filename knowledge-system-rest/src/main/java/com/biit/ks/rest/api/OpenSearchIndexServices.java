@@ -1,6 +1,7 @@
 package com.biit.ks.rest.api;
 
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
+import com.biit.ks.persistence.repositories.IOpenSearchConfigurator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,24 +20,36 @@ import org.springframework.web.bind.annotation.RestController;
 public class OpenSearchIndexServices {
 
     private final OpenSearchClient openSearchClient;
+    private final IOpenSearchConfigurator openSearchConfigurator;
 
-    public OpenSearchIndexServices(OpenSearchClient openSearchClient) {
+    public OpenSearchIndexServices(OpenSearchClient openSearchClient, IOpenSearchConfigurator openSearchConfigurator) {
         this.openSearchClient = openSearchClient;
+        this.openSearchConfigurator = openSearchConfigurator;
     }
 
     @PreAuthorize("hasAnyAuthority(@securityService.adminPrivilege)")
     @Operation(summary = "Deletes an index by name.", security = {@SecurityRequirement(name = "bearerAuth")})
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping(value = {"/{name}"}, produces = {"application/json"})
+    @DeleteMapping(value = {"/{name}"})
     public void delete(@PathVariable("name") String name, Authentication authentication, HttpServletRequest request) {
         openSearchClient.deleteIndex(name);
     }
 
+
     @PreAuthorize("hasAnyAuthority(@securityService.adminPrivilege)")
     @Operation(summary = "Creates an index by name.", security = {@SecurityRequirement(name = "bearerAuth")})
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(value = {"/{name}"}, produces = {"application/json"})
+    @PostMapping(value = {"/{name}"})
     public void create(@PathVariable("name") String name, Authentication authentication, HttpServletRequest request) {
         openSearchClient.createIndex(name);
+    }
+
+
+    @PreAuthorize("hasAnyAuthority(@securityService.adminPrivilege)")
+    @Operation(summary = "Deletes all indexes. Do not use this on production!", security = {@SecurityRequirement(name = "bearerAuth")})
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping(value = {""})
+    public void deleteAll(Authentication authentication, HttpServletRequest request) {
+        openSearchConfigurator.getAllOpenSearchIndexes().parallelStream().forEach(openSearchClient::deleteIndex);
     }
 }
