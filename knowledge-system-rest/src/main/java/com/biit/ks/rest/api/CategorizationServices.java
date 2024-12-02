@@ -31,7 +31,7 @@ public class CategorizationServices extends OpenSearchElementServices<Categoriza
 
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Creates a category.", security = @SecurityRequirement(name = "bearerAuth"))
-    @PutMapping(value = "/{categorization}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{categorization}", produces = MediaType.APPLICATION_JSON_VALUE)
     public CategorizationDTO create(@PathVariable("categorization") String categorization, Authentication authentication, HttpServletResponse response) {
         return getController().create(categorization, authentication.getName());
     }
