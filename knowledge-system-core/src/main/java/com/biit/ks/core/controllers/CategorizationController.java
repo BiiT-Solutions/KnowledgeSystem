@@ -60,12 +60,12 @@ public class CategorizationController extends OpenSearchElementController<Catego
         return results;
     }
 
-    public CategorizationDTO get(String categorization) {
-        final Categorization fileEntry =
-                getProvider().get(categorization).orElseThrow(() -> new FileNotFoundException(this.getClass(),
-                        "No category with name '" + categorization + "'."));
+    public CategorizationDTO get(String categorizationName) {
+        final Categorization categorization =
+                getProvider().get(categorizationName).orElseThrow(() -> new FileNotFoundException(this.getClass(),
+                        "No category with name '" + categorizationName + "'."));
 
-        return convert(fileEntry);
+        return convert(categorization);
     }
 
 

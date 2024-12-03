@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +32,15 @@ public class CategorizationServices extends OpenSearchElementServices<Categoriza
 
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
     @Operation(summary = "Creates a category.", security = @SecurityRequirement(name = "bearerAuth"))
-    @PutMapping(value = "/{categorization}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/name/{categorization}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CategorizationDTO get(@PathVariable("categorization") String categorization, Authentication authentication, HttpServletResponse response) {
+        return getController().get(categorization);
+    }
+
+
+    @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
+    @Operation(summary = "Creates a category.", security = @SecurityRequirement(name = "bearerAuth"))
+    @PutMapping(value = "/name/{categorization}", produces = MediaType.APPLICATION_JSON_VALUE)
     public CategorizationDTO create(@PathVariable("categorization") String categorization, Authentication authentication, HttpServletResponse response) {
         return getController().create(categorization, authentication.getName());
     }
