@@ -11,7 +11,6 @@ public class FileEntryDTO extends CategorizedElementDTO<UUID> {
     private UUID uuid;
     private String alias;
     private String filePath;
-    private String name;
     private String fileFormat;
     private String mimeType;
     private String description;
@@ -34,14 +33,6 @@ public class FileEntryDTO extends CategorizedElementDTO<UUID> {
 
     public void setUuid(UUID uuid) {
         this.uuid = uuid;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getFilePath() {
@@ -111,7 +102,7 @@ public class FileEntryDTO extends CategorizedElementDTO<UUID> {
     public String toString() {
         return "FileEntryDTO{"
                 + "filePath='" + filePath + '\''
-                + ", fileName='" + name + '\''
+                + ", fileName='" + getName() + '\''
                 + '}';
     }
 }
