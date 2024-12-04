@@ -7,8 +7,6 @@ import com.biit.ks.persistence.entities.FileEntry;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-
 @Component
 public class FileEntryConverter extends CategorizedElementConverter<FileEntry, FileEntryDTO, FileEntryConverterRequest> {
 
