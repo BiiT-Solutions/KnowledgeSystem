@@ -13,8 +13,6 @@ public class FileEntryDTO extends CategorizedElementDTO<UUID> {
     private String filePath;
     private String fileFormat;
     private String mimeType;
-    private String description;
-    private boolean isPublic = false;
     private String thumbnailUrl;
 
     @Override
@@ -57,22 +55,6 @@ public class FileEntryDTO extends CategorizedElementDTO<UUID> {
 
     public void setMimeType(String mimeType) {
         this.mimeType = mimeType;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public boolean isPublic() {
-        return isPublic;
-    }
-
-    public void setPublic(boolean aPublic) {
-        isPublic = aPublic;
     }
 
     public String getPublicUrl() {
