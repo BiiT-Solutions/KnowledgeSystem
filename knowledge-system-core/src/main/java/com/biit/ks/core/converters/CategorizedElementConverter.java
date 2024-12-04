@@ -20,7 +20,7 @@ public abstract class CategorizedElementConverter<
     }
 
     public void copyCategorizations(E from, D to) {
-        from.setCategorizations(new ArrayList<>());
+        to.setCategorizations(new ArrayList<>());
         if (from.getCategorizations() != null) {
             from.getCategorizations().forEach(categorization -> to.getCategorizations().add(
                     categorizationConverter.convert(new CategorizationConverterRequest(categorization))));
@@ -29,7 +29,7 @@ public abstract class CategorizedElementConverter<
 
 
     public void copyCategorizations(D from, E to) {
-        to.setCategorizations(new ArrayList<>());
+        from.setCategorizations(new ArrayList<>());
         if (from.getCategorizations() != null) {
             from.getCategorizations().forEach(categorizationDTO -> to.getCategorizations().add(
                     categorizationConverter.reverse(categorizationDTO)));

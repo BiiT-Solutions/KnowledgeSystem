@@ -24,7 +24,6 @@ public class FileEntryConverter extends CategorizedElementConverter<FileEntry, F
         }
         final FileEntryDTO fileEntryDTO = new FileEntryDTO();
         BeanUtils.copyProperties(from.getEntity(), fileEntryDTO);
-        fileEntryDTO.setCategorizations(new ArrayList<>());
         copyCategorizations(from.getEntity(), fileEntryDTO);
         return fileEntryDTO;
     }
@@ -37,7 +36,6 @@ public class FileEntryConverter extends CategorizedElementConverter<FileEntry, F
         }
         final FileEntry fileEntry = new FileEntry();
         BeanUtils.copyProperties(to, fileEntry);
-        fileEntry.setCategorizations(new ArrayList<>());
         copyCategorizations(to, fileEntry);
         return fileEntry;
     }
