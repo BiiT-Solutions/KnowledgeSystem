@@ -1,8 +1,12 @@
 package com.biit.ks.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSetter;
+
 import java.io.Serial;
 import java.util.UUID;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class FileEntryDTO extends CategorizedElementDTO<UUID> {
 
     @Serial
@@ -57,7 +61,11 @@ public class FileEntryDTO extends CategorizedElementDTO<UUID> {
         this.mimeType = mimeType;
     }
 
+    @JsonSetter("publicUrl")
     public String getPublicUrl() {
+        if (getUuid() == null) {
+            return null;
+        }
         return "/files/public/downloads/" + uuid.toString();
     }
 
