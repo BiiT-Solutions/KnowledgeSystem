@@ -702,6 +702,18 @@ public class OpenSearchClient {
                         searchQuery.add(nullParameter._toQuery());
                     }
                 });
+                searchParameter.getCategories().forEach(category -> {
+                    if (category.getRight() != null) {
+                        final MatchQuery.Builder builder = new MatchQuery.Builder().field(category.getLeft())
+                                .query(FieldValue.of(category.getRight()));
+                        searchQuery.add(builder.build()._toQuery());
+                    } else {
+                        //Search by field that is null.
+                        final BoolQuery nullParameter = new BoolQuery.Builder().mustNot(new ExistsQuery.Builder()
+                                .field(category.getLeft()).build()._toQuery()).build();
+                        searchQuery.add(nullParameter._toQuery());
+                    }
+                });
                 searchParameter.getMultiSearch().forEach(listStringPair -> {
                     final MultiMatchQuery.Builder builder = new MultiMatchQuery.Builder().fields(listStringPair.getLeft())
                             .query(listStringPair.getRight());

@@ -3,10 +3,11 @@ package com.biit.ks.core.controllers;
 import com.biit.ks.core.converters.OpenSearchElementConverter;
 import com.biit.ks.core.converters.models.OpenSearchElementConverterRequest;
 import com.biit.ks.core.exceptions.FileNotFoundException;
-import com.biit.ks.dto.OpenSearchElementDTO;
 import com.biit.ks.core.providers.OpenSearchElementProvider;
+import com.biit.ks.dto.OpenSearchElementDTO;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.OpenSearchElement;
+import com.biit.ks.persistence.opensearch.search.SimpleSearch;
 import com.biit.ks.persistence.repositories.OpenSearchElementRepository;
 import com.biit.server.controller.SimpleController;
 
@@ -26,6 +27,13 @@ public abstract class OpenSearchElementController<
     protected OpenSearchElementController(P provider, Cv converter) {
         super(provider, converter);
     }
+
+
+    public List<D> search(SimpleSearch searchQuery, Integer from, Integer size) {
+        final List<E> results = getProvider().search(searchQuery, from, size);
+        return convertAll(results);
+    }
+
 
     public List<D> search(String searchQuery, Integer from, Integer size) {
         final List<E> results = getProvider().search(searchQuery, from, size);

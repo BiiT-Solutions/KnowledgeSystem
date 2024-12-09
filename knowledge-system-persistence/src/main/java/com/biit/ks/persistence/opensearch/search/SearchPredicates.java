@@ -7,6 +7,8 @@ import java.util.List;
 
 public abstract class SearchPredicates {
     private final List<Pair<String, String>> search;
+    //Categories are always an exact match.
+    private final List<Pair<String, String>> categories;
     //For searching one element on multiples fields.
     private final List<Pair<List<String>, String>> multiSearch;
     private final List<Range> ranges;
@@ -14,6 +16,7 @@ public abstract class SearchPredicates {
 
     public SearchPredicates() {
         this.search = new ArrayList<>();
+        this.categories = new ArrayList<>();
         this.multiSearch = new ArrayList<>();
         this.ranges = new ArrayList<>();
     }
@@ -28,6 +31,10 @@ public abstract class SearchPredicates {
 
     public void add(Pair<String, String> pair) {
         search.add(pair);
+    }
+
+    public void addCategory(Pair<String, String> pair) {
+        categories.add(pair);
     }
 
     public void add(String parameter, String value) {
@@ -48,6 +55,10 @@ public abstract class SearchPredicates {
 
     public void addRange(String parameter, Object from, Object to) {
         ranges.add(new Range(parameter, from, to));
+    }
+
+    public List<Pair<String, String>> getCategories() {
+        return categories;
     }
 
     public FuzzinessDefinition getFuzzinessDefinition() {

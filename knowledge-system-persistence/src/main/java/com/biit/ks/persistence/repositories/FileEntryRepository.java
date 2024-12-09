@@ -7,6 +7,7 @@ import com.biit.ks.persistence.opensearch.search.Fuzziness;
 import com.biit.ks.persistence.opensearch.search.FuzzinessDefinition;
 import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
+import com.biit.ks.persistence.opensearch.search.SimpleSearch;
 import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
 import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import org.apache.commons.lang3.tuple.Pair;
@@ -100,7 +101,7 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
     }
 
 
-   public long countFileEntryByAlias(String alias) {
+    public long countFileEntryByAlias(String alias) {
         if (alias == null) {
             return 0;
         }
@@ -108,5 +109,17 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
         mustHaveParameters.add("alias", alias);
         final CountResponse response = getOpenSearchClient().countData(FileEntry.class, getOpenSearchIndex(), mustHaveParameters);
         return getOpenSearchClient().convertResponse(response);
+    }
+
+    @Override
+    protected ShouldHavePredicates convertSearch(SimpleSearch searchQuery) {
+        final ShouldHavePredicates shouldHavePredicates = super.convertSearch(searchQuery);
+        if (searchQuery.getContent() != null && !searchQuery.getContent().isBlank()) {
+            shouldHavePredicates.add(Pair.of("alias", searchQuery.getContent()));
+        }
+        if (searchQuery.getType() != null && !searchQuery.getType().isBlank()) {
+            shouldHavePredicates.add("mimeType", searchQuery.getType());
+        }
+        return shouldHavePredicates;
     }
 }

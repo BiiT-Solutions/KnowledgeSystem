@@ -5,6 +5,7 @@ import com.biit.ks.persistence.entities.CategorizedElement;
 import com.biit.ks.persistence.entities.OpenSearchElement;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
+import com.biit.ks.persistence.opensearch.search.SimpleSearch;
 import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
 import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;
@@ -36,9 +37,8 @@ public abstract class CategorizedElementRepository<E extends CategorizedElement<
 
     public List<E> searchByCategoryNames(Collection<String> categorizationsNames, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
         final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();
-        categorizationsNames.forEach(categorization -> {
-            shouldHavePredicates.add(Pair.of("categorizations.name", categorization));
-        });
+        categorizationsNames.forEach(categorization ->
+                shouldHavePredicates.addCategory(Pair.of("categorizations.name", categorization)));
         if (quantifiersOperator == QuantifiersOperator.ALL_OF) {
             shouldHavePredicates.setMinimumShouldMatch(categorizationsNames.size());
         } else {
@@ -47,6 +47,16 @@ public abstract class CategorizedElementRepository<E extends CategorizedElement<
         final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), getOpenSearchIndex(), shouldHavePredicates,
                 new SortResultOptions("createdAt", SortOptionOrder.DESC), from, size);
         return getOpenSearchClient().convertResponse(response);
+    }
 
+
+    @Override
+    protected ShouldHavePredicates convertSearch(SimpleSearch searchQuery) {
+        final ShouldHavePredicates shouldHavePredicates = super.convertSearch(searchQuery);
+        if (searchQuery.getKeywords() != null && !searchQuery.getKeywords().isEmpty()) {
+            searchQuery.getKeywords().forEach(keywords ->
+                    shouldHavePredicates.addCategory(Pair.of("categorizations.name", keywords)));
+        }
+        return shouldHavePredicates;
     }
 }

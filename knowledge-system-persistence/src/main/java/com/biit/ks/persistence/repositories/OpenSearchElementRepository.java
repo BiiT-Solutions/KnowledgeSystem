@@ -2,7 +2,12 @@ package com.biit.ks.persistence.repositories;
 
 import com.biit.ks.persistence.entities.OpenSearchElement;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
+import com.biit.ks.persistence.opensearch.search.Fuzziness;
+import com.biit.ks.persistence.opensearch.search.FuzzinessDefinition;
 import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
+import com.biit.ks.persistence.opensearch.search.SearchPredicates;
+import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
+import com.biit.ks.persistence.opensearch.search.SimpleSearch;
 import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
 import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import jakarta.annotation.PostConstruct;
@@ -119,5 +124,42 @@ public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>
         }
     }
 
+
     public abstract List<E> search(String query, Integer from, Integer size);
+
+    public List<E> search(SearchPredicates search) {
+        final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), getOpenSearchIndex(), search);
+        return getOpenSearchClient().convertResponse(response);
+    }
+
+
+    protected ShouldHavePredicates convertSearch(SimpleSearch searchQuery) {
+        final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();
+        if (searchQuery.getContent() != null && !searchQuery.getContent().isBlank()) {
+            shouldHavePredicates.add(Pair.of("name", searchQuery.getContent()));
+            shouldHavePredicates.add(Pair.of("description", searchQuery.getContent()));
+        }
+        if (searchQuery.getOwner() != null && !searchQuery.getOwner().isBlank()) {
+            shouldHavePredicates.add(Pair.of("createdBy", searchQuery.getOwner()));
+        }
+        if (searchQuery.getFrom() != null || searchQuery.getTo() != null) {
+            shouldHavePredicates.addRange("createdAt", searchQuery.getFrom(), searchQuery.getTo());
+        }
+        shouldHavePredicates.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
+        shouldHavePredicates.setMinimumShouldMatch(searchQuery.getRequiredQueries());
+        return shouldHavePredicates;
+    }
+
+
+    public List<E> search(SimpleSearch searchQuery, Integer from, Integer size) {
+        if (searchQuery == null) {
+            return new ArrayList<>();
+        }
+        final ShouldHavePredicates shouldHavePredicates = convertSearch(searchQuery);
+        if (shouldHavePredicates.getSearch().isEmpty() && shouldHavePredicates.getRanges().isEmpty() && shouldHavePredicates.getCategories().isEmpty()) {
+            return new ArrayList<>();
+        }
+        final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), getOpenSearchIndex(), shouldHavePredicates, from, size);
+        return getOpenSearchClient().convertResponse(response);
+    }
 }

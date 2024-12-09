@@ -1,6 +1,8 @@
 package com.biit.ks.core.providers;
 
 import com.biit.ks.persistence.entities.OpenSearchElement;
+import com.biit.ks.persistence.opensearch.search.SearchPredicates;
+import com.biit.ks.persistence.opensearch.search.SimpleSearch;
 import com.biit.ks.persistence.repositories.OpenSearchElementRepository;
 
 import java.util.List;
@@ -11,8 +13,19 @@ public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends
 
     private final R openSearchElementRepository;
 
+
     public OpenSearchElementProvider(R openSearchElementRepository) {
         this.openSearchElementRepository = openSearchElementRepository;
+    }
+
+
+    public List<E> search(SearchPredicates searchPredicates) {
+        return openSearchElementRepository.search(searchPredicates);
+    }
+
+
+    public List<E> search(SimpleSearch searchQuery, Integer from, Integer size) {
+        return openSearchElementRepository.search(searchQuery, from, size);
     }
 
 

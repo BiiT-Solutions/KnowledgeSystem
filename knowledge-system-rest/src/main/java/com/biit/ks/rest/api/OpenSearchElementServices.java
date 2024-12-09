@@ -3,9 +3,10 @@ package com.biit.ks.rest.api;
 import com.biit.ks.core.controllers.OpenSearchElementController;
 import com.biit.ks.core.converters.OpenSearchElementConverter;
 import com.biit.ks.core.converters.models.OpenSearchElementConverterRequest;
-import com.biit.ks.dto.OpenSearchElementDTO;
 import com.biit.ks.core.providers.OpenSearchElementProvider;
+import com.biit.ks.dto.OpenSearchElementDTO;
 import com.biit.ks.persistence.entities.OpenSearchElement;
+import com.biit.ks.persistence.opensearch.search.SimpleSearch;
 import com.biit.ks.persistence.repositories.OpenSearchElementRepository;
 import com.biit.server.rest.SimpleServices;
 import io.swagger.v3.oas.annotations.Operation;
@@ -79,6 +80,17 @@ public abstract class OpenSearchElementServices<
                           @RequestParam(name = "size", required = false) Integer size,
                           HttpServletResponse response) {
         return getController().search(query.replace("query:", ""), from, size);
+    }
+
+    @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
+    @Operation(summary = "Search for an element.", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public List<D> search(@RequestBody SimpleSearch query,
+                          @RequestParam(name = "from", required = false) Integer from,
+                          @RequestParam(name = "size", required = false) Integer size,
+                          HttpServletResponse response) {
+        return getController().search(query, from, size);
     }
 
 
