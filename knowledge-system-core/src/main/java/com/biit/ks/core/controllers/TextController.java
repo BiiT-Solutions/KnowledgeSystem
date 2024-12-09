@@ -8,6 +8,7 @@ import com.biit.ks.core.providers.TextProvider;
 import com.biit.ks.dto.TextDTO;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.Text;
+import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
 import com.biit.ks.persistence.repositories.TextRepository;
 import com.biit.server.exceptions.ValidateBadRequestException;
 import com.biit.server.logger.DtoControllerLogger;
@@ -51,28 +52,28 @@ public class TextController extends CategorizedElementController<Text, TextDTO, 
         return results;
     }
 
-    public TextDTO getPublic(UUID uuid) {
-        final Text text = getProvider().get(uuid).orElseThrow(() -> new FileNotFoundException(this.getClass(), "No element with uuid '" + uuid + "'."));
+    public ResponseWrapper<TextDTO> getPublic(UUID uuid) {
+        final ResponseWrapper<Text> text = getProvider().get(uuid);
 
-        if (!text.isPublic()) {
+        if (!text.getFirst().isPublic()) {
             KnowledgeSystemLogger.warning(this.getClass(), "Trying to access to text '{}' using the public api. FileEntry is private!", uuid);
             //Same error as before.
             throw new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'.");
         }
 
-        return convert(text);
+        return convertAll(text);
     }
 
-    public TextDTO get(String name) {
-        return convert(getProvider().get(name).orElseThrow(() -> new FileNotFoundException(this.getClass(), "No element with name '" + name + "'.")));
+    public ResponseWrapper<TextDTO> get(String name) {
+        return convert(getProvider().get(name));
     }
 
 
     @Override
     public void validate(TextDTO dto) throws ValidateBadRequestException {
         if (dto.getName() != null) {
-            final Text existingText = getProvider().get(dto.getName()).orElse(null);
-            if (existingText != null && !Objects.equals(existingText.getId(), dto.getId())) {
+            final ResponseWrapper<Text> existingText = getProvider().get(dto.getName());
+            if (!existingText.isEmpty() && !Objects.equals(existingText.getFirst().getId(), dto.getId())) {
                 throw new TextAlreadyExistsException(this.getClass(), "Already exists a text with name '" + dto.getName() + "'.");
             }
         }

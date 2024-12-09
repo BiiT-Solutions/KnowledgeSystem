@@ -91,32 +91,32 @@ public class FrontendSearchTest extends AbstractTestNGSpringContextTests {
 
     @Test
     public void searchByContent() {
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("FileTest", null, null, null, null, null), 0, 100).size(), 4);
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("FilaTast", null, null, null, null, null), 0, 100).size(), 4);
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("FullTast", null, null, null, null, null), 0, 100).size(), 0);
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("File", null, null, null, null, null), 0, 100).size(), 4);
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("Fila3", null, null, null, null, null), 0, 100).size(), 1);
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("leTest", null, null, null, null, null), 0, 100).size(), 4);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("FileTest", null, null, null, null, null), 0, 100).getTotalElements(), 4);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("FilaTast", null, null, null, null, null), 0, 100).getTotalElements(), 4);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("FullTast", null, null, null, null, null), 0, 100).getTotalElements(), 0);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("File", null, null, null, null, null), 0, 100).getTotalElements(), 4);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("Fila3", null, null, null, null, null), 0, 100).getTotalElements(), 1);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("leTest", null, null, null, null, null), 0, 100).getTotalElements(), 4);
     }
 
     @Test
     public void searchByDate() {
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, LocalDateTime.now().minusMinutes(30), null, null), 0, 100).size(), 4);
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, LocalDateTime.now().minusMinutes(15), null, null), 0, 100).size(), 3);
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, LocalDateTime.now().minusMinutes(6), null, null), 0, 100).size(), 2);
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, LocalDateTime.now().plusMinutes(5), null, null), 0, 100).size(), 0);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, LocalDateTime.now().minusMinutes(30), null, null), 0, 100).getTotalElements(), 4);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, LocalDateTime.now().minusMinutes(15), null, null), 0, 100).getTotalElements(), 3);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, LocalDateTime.now().minusMinutes(6), null, null), 0, 100).getTotalElements(), 2);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, LocalDateTime.now().plusMinutes(5), null, null), 0, 100).getTotalElements(), 0);
 
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, LocalDateTime.now().minusMinutes(30), LocalDateTime.now(), null), 0, 100).size(), 3);
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, LocalDateTime.now().minusMinutes(30), LocalDateTime.now().minusMinutes(11), null), 0, 100).size(), 1);
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, LocalDateTime.now().minusMinutes(30), LocalDateTime.now().minusMinutes(1), null), 0, 100).size(), 2);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, LocalDateTime.now().minusMinutes(30), LocalDateTime.now(), null), 0, 100).getTotalElements(), 3);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, LocalDateTime.now().minusMinutes(30), LocalDateTime.now().minusMinutes(11), null), 0, 100).getTotalElements(), 1);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, LocalDateTime.now().minusMinutes(30), LocalDateTime.now().minusMinutes(1), null), 0, 100).getTotalElements(), 2);
     }
 
 
     @Test
     public void searchByKeywords() {
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, null, null, List.of("Category1")), 0, 100).size(), 3);
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, null, null, List.of("Category2")), 0, 100).size(), 2);
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, null, null, List.of("Category2", "Category3")), 0, 100).size(), 1);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, null, null, List.of("Category1")), 0, 100).getTotalElements(), 3);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, null, null, List.of("Category2")), 0, 100).getTotalElements(), 2);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch(null, null, null, null, null, List.of("Category2", "Category3")), 0, 100).getTotalElements(), 1);
     }
 
 

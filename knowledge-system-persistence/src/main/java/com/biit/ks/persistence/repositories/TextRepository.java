@@ -5,6 +5,7 @@ import com.biit.ks.persistence.entities.TextLanguages;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
 import com.biit.ks.persistence.opensearch.search.Fuzziness;
 import com.biit.ks.persistence.opensearch.search.FuzzinessDefinition;
+import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
 import com.biit.ks.persistence.opensearch.search.SearchPredicates;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
@@ -12,8 +13,6 @@ import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public class TextRepository extends CategorizedElementRepository<Text> {
@@ -31,7 +30,7 @@ public class TextRepository extends CategorizedElementRepository<Text> {
     }
 
 
-    public List<Text> search(String query, TextLanguages language, Integer from, Integer size) {
+    public ResponseWrapper<Text> search(String query, TextLanguages language, Integer from, Integer size) {
         final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();
         shouldHavePredicates.add(Pair.of("description", query));
         shouldHavePredicates.add(Pair.of("name", query));

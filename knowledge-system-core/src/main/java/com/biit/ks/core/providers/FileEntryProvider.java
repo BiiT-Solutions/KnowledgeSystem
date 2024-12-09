@@ -3,13 +3,13 @@ package com.biit.ks.core.providers;
 
 import com.biit.ks.core.exceptions.FileAlreadyExistsException;
 import com.biit.ks.core.exceptions.FileHandlingException;
-import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.exceptions.SeaweedClientException;
 import com.biit.ks.core.files.MediaTypeCalculator;
 import com.biit.ks.core.seaweed.SeaweedClient;
 import com.biit.ks.core.seaweed.SeaweedConfigurator;
 import com.biit.ks.persistence.entities.FileEntry;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchException;
+import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
 import com.biit.ks.persistence.repositories.FileEntryRepository;
 import com.biit.server.exceptions.UserNotFoundException;
 import com.biit.server.security.IAuthenticatedUser;
@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -84,8 +83,8 @@ public class FileEntryProvider extends CategorizedElementProvider<FileEntry, Fil
 
     @Override
     public void delete(UUID uuid) {
-        final FileEntry fileEntry = get(uuid).orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'."));
-        delete(fileEntry);
+        final ResponseWrapper<FileEntry> fileEntry = get(uuid);
+        delete(fileEntry.getFirst());
     }
 
 
@@ -123,14 +122,14 @@ public class FileEntryProvider extends CategorizedElementProvider<FileEntry, Fil
     }
 
 
-    public List<FileEntry> findFilesWithoutThumbnail() {
+    public ResponseWrapper<FileEntry> findFilesWithoutThumbnail() {
         return getRepository().findFileEntriesWithThumbnailIsNull();
     }
 
 
-    public List<FileEntry> findByAlias(String alias, Integer from, Integer size) {
+    public ResponseWrapper<FileEntry> findByAlias(String alias, Integer from, Integer size) {
         if (alias == null) {
-            return new ArrayList<>();
+            return new ResponseWrapper<>(new ArrayList<>());
         }
         return getRepository().findFileEntryByAlias(alias, from, size);
     }

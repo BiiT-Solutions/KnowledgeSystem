@@ -72,14 +72,14 @@ public class CategorizationControllerTest extends AbstractTestNGSpringContextTes
 
     @Test
     public void checkCategorizationsStored() {
-        Assert.assertEquals(categorizationController.getAll(0, 100).size(), CATEGORIES.length);
+        Assert.assertEquals(categorizationController.getAll(0, 100).getTotalElements(), CATEGORIES.length);
     }
 
 
     @Test(dependsOnMethods = "checkCategorizationsStored")
     public void removeUnusedCategories() {
         categorizationController.deleteOrphanCategories();
-        Assert.assertEquals(categorizationController.getAll(0, 100).size(), 2);
+        Assert.assertEquals(categorizationController.getAll(0, 100).getTotalElements(), 2);
     }
 
 

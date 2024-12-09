@@ -2,11 +2,12 @@ package com.biit.ks.persistence.opensearch.search;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Iterator;
+import java.util.function.Consumer;
 
 public class ResponseWrapper<T> {
-    private Collection<T> data;
-    private long count = 0;
+    private final Collection<T> data;
+    private long totalElements;
 
     public ResponseWrapper() {
         this(new ArrayList<>());
@@ -14,27 +15,44 @@ public class ResponseWrapper<T> {
 
     public ResponseWrapper(Collection<T> data) {
         this.data = data;
-        this.count = data.size();
+        this.totalElements = data.size();
     }
 
     public ResponseWrapper(T data) {
         this();
         this.data.add(data);
+        if (data == null) {
+            totalElements = 0;
+        } else {
+            totalElements = 1;
+        }
     }
 
     public Collection<T> getData() {
         return data;
     }
 
-    public void setData(List<T> data) {
-        this.data = data;
+    public T getFirst() {
+        final Iterator<T> iterator = getData().iterator();
+        if (iterator.hasNext()) {
+            return iterator.next();
+        }
+        return null;
     }
 
-    public long getCount() {
-        return count;
+    public long getTotalElements() {
+        return totalElements;
     }
 
-    public void setCount(long count) {
-        this.count = count;
+    public void setTotalElements(long totalElements) {
+        this.totalElements = totalElements;
+    }
+
+    public boolean isEmpty() {
+        return data == null || data.isEmpty();
+    }
+
+    public void forEach(Consumer<? super T> action) {
+        data.forEach(action);
     }
 }

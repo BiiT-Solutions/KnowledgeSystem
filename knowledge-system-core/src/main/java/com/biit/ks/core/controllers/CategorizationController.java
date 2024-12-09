@@ -2,12 +2,12 @@ package com.biit.ks.core.controllers;
 
 import com.biit.ks.core.converters.CategorizationConverter;
 import com.biit.ks.core.converters.models.CategorizationConverterRequest;
-import com.biit.ks.core.exceptions.FileNotFoundException;
-import com.biit.ks.dto.CategorizationDTO;
 import com.biit.ks.core.providers.CategorizationProvider;
 import com.biit.ks.core.providers.CategorizedElementProvider;
+import com.biit.ks.dto.CategorizationDTO;
 import com.biit.ks.persistence.entities.Categorization;
 import com.biit.ks.persistence.entities.CategorizedElement;
+import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
 import com.biit.ks.persistence.repositories.CategorizationRepository;
 import com.biit.ks.persistence.repositories.CategorizedElementRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -49,7 +49,7 @@ public class CategorizationController extends OpenSearchElementController<Catego
     @Override
     public CategorizationDTO create(CategorizationDTO dto, String creatorName) {
         validate(dto);
-        return convert(getProvider().create(reverse(dto), creatorName));
+        return convert(getProvider().create(reverse(dto), creatorName).getFirst());
     }
 
 
@@ -60,26 +60,24 @@ public class CategorizationController extends OpenSearchElementController<Catego
         return results;
     }
 
-    public CategorizationDTO get(String categorizationName) {
-        final Categorization categorization =
-                getProvider().get(categorizationName).orElseThrow(() -> new FileNotFoundException(this.getClass(),
-                        "No category with name '" + categorizationName + "'."));
+    public ResponseWrapper<CategorizationDTO> get(String categorizationName) {
+        final ResponseWrapper<Categorization> categorization = getProvider().get(categorizationName);
 
-        return convert(categorization);
+        return convertAll(categorization);
     }
 
 
     @Scheduled(cron = "@midnight")
     public void deleteOrphanCategories() {
         int loop = 0;
-        List<Categorization> categorizations = categorizationProvider.getAll(0, SIZE);
-        while (!categorizations.isEmpty()) {
-            for (Categorization categorization : categorizations) {
+        ResponseWrapper<Categorization> categorizations = categorizationProvider.getAll(0, SIZE);
+        while (!categorizations.getData().isEmpty()) {
+            for (Categorization categorization : categorizations.getData()) {
                 //Check if a category is not used.
                 boolean used = false;
                 for (CategorizedElementProvider<? extends CategorizedElement<?>, ? extends CategorizedElementRepository<?>> provider
                         : providersWithCategories) {
-                    if (!provider.searchByCategory(categorization, 0, 1).isEmpty()) {
+                    if (!provider.searchByCategory(categorization, 0, 1).getData().isEmpty()) {
                         used = true;
                         break;
                     }

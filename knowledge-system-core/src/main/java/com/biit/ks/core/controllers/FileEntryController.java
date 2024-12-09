@@ -13,6 +13,7 @@ import com.biit.ks.core.seaweed.SeaweedConfigurator;
 import com.biit.ks.dto.FileEntryDTO;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.FileEntry;
+import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
 import com.biit.ks.persistence.repositories.FileEntryRepository;
 import com.biit.server.exceptions.UserNotFoundException;
 import com.biit.server.logger.DtoControllerLogger;
@@ -87,10 +88,9 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
 
 
     public Resource downloadAsResource(UUID uuid, boolean checkIfPublic, String username) {
-        final FileEntry fileEntry =
-                getProvider().get(uuid).orElseThrow(() -> new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'."));
+        final ResponseWrapper<FileEntry> fileEntry = getProvider().get(uuid);
 
-        if (checkIfPublic && !fileEntry.isPublic()) {
+        if (checkIfPublic && !fileEntry.getFirst().isPublic()) {
             KnowledgeSystemLogger.warning(this.getClass(), "Trying to access to file '{}' using the public api. FileEntry is private!", uuid);
             //Same error as before.
             throw new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'.");
@@ -98,7 +98,7 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
 
         KnowledgeSystemLogger.debug(this.getClass(), "User '{}' is downloading file '{}'.", username, uuid);
 
-        return downloadAsResource(fileEntry);
+        return downloadAsResource(fileEntry.getFirst());
     }
 
 
@@ -110,10 +110,8 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
 
 
     public ChunkData downloadChunk(UUID uuid, long skip, int size, boolean checkIfPublic) {
-        final FileEntry fileEntry = getProvider().get(uuid).orElseThrow(
-                () -> new FileNotFoundException(this.getClass(), "No file with uuid '" + uuid + "'."));
-
-        return downloadChunk(fileEntry, skip, size, checkIfPublic);
+        final ResponseWrapper<FileEntry> fileEntry = getProvider().get(uuid);
+        return downloadChunk(fileEntry.getFirst(), skip, size, checkIfPublic);
     }
 
 
@@ -198,19 +196,17 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
 
     @Scheduled(cron = "@midnight")
     public void updateThumbnails() {
-        final List<FileEntry> fileEntries = fileEntryProvider.findFilesWithoutThumbnail();
-        KnowledgeSystemLogger.info(this.getClass(), "Found '{}' files that have a missing thumbnail.", fileEntries.size());
-        fileEntries.forEach(
-                this::updateThumbnail
-        );
+        final ResponseWrapper<FileEntry> fileEntries = fileEntryProvider.findFilesWithoutThumbnail();
+        KnowledgeSystemLogger.info(this.getClass(), "Found '{}' files that have a missing thumbnail.", fileEntries.getTotalElements());
+        fileEntries.getData().forEach(this::updateThumbnail);
     }
 
     public void updateAllThumbnails() {
         int loop = 0;
-        List<FileEntry> fileEntries = fileEntryProvider.getAll(0, SIZE);
-        while (!fileEntries.isEmpty()) {
-            KnowledgeSystemLogger.info(this.getClass(), "Regenerating thumbnail for '{}' files.", fileEntries.size());
-            fileEntries.forEach(this::updateThumbnail);
+        ResponseWrapper<FileEntry> fileEntries = fileEntryProvider.getAll(0, SIZE);
+        while (!fileEntries.getData().isEmpty()) {
+            KnowledgeSystemLogger.info(this.getClass(), "Regenerating thumbnail for '{}' files.", fileEntries.getData().size());
+            fileEntries.getData().forEach(this::updateThumbnail);
             loop++;
             fileEntries = fileEntryProvider.getAll(loop * SIZE, SIZE);
         }
@@ -220,13 +216,13 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
     public int deleteByAlias(String alias, String deleteBy) {
         KnowledgeSystemLogger.warning(this.getClass(), "User '{}' deletes files with alias '{}'.", deleteBy, alias);
         KnowledgeSystemLogger.warning(this.getClass(), "Files to be deleted are '{}'.", fileEntryProvider.countFileEntryByAlias(alias));
-        List<FileEntry> fileEntries = fileEntryProvider.findByAlias(alias, 0, SIZE);
-        int counter = fileEntries.size();
+        ResponseWrapper<FileEntry> fileEntries = fileEntryProvider.findByAlias(alias, 0, SIZE);
+        int counter = fileEntries.getData().size();
         while (!fileEntries.isEmpty()) {
-            fileEntries.forEach(fileEntryProvider::delete);
+            fileEntries.getData().forEach(fileEntryProvider::delete);
             //As are deleted, no need to increase starting point.
             fileEntries = fileEntryProvider.findByAlias(alias, 0, SIZE);
-            counter += fileEntries.size();
+            counter += fileEntries.getData().size();
         }
         return counter;
     }

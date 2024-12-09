@@ -20,6 +20,7 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
@@ -61,7 +62,7 @@ public class EventController {
                 //Already exists.
             }
         }
-        categorizations = categorizationProvider.get(Arrays.asList(DOCUMENT_CATEGORIES));
+        categorizations = new ArrayList<>(categorizationProvider.get(Arrays.asList(DOCUMENT_CATEGORIES)).getData());
     }
 
 

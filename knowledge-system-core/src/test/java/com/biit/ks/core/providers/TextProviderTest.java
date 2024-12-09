@@ -4,6 +4,7 @@ package com.biit.ks.core.providers;
 import com.biit.ks.persistence.entities.Text;
 import com.biit.ks.persistence.entities.TextLanguages;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
+import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
 import com.biit.ks.persistence.repositories.IOpenSearchConfigurator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,8 +13,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import java.util.List;
 
 @SpringBootTest
 @Test(groups = {"fileEntryProvider"})
@@ -49,39 +48,39 @@ public class TextProviderTest extends AbstractTestNGSpringContextTests {
 
     @Test
     public void searchTextByUUID() {
-        Assert.assertTrue(textProvider.get(text.getUuid()).isPresent());
+        Assert.assertFalse(textProvider.get(text.getUuid()).isEmpty());
     }
 
 
     @Test
     public void searchTextByContentAnyLanguage() {
-        final List<Text> textEntries = textProvider.search("Lorem Donec sem tortor", 0, 100);
-        Assert.assertEquals(textEntries.size(), 1);
+        final ResponseWrapper<Text> textEntries = textProvider.search("Lorem Donec sem tortor", 0, 100);
+        Assert.assertEquals(textEntries.getTotalElements(), 1);
     }
 
 
     @Test
     public void searchTextByContentInLatin() {
-        final List<Text> textEntries = textProvider.search("Lorem Donec sem tortor", TextLanguages.LA, 0, 100);
-        Assert.assertEquals(textEntries.size(), 1);
+        final ResponseWrapper<Text> textEntries = textProvider.search("Lorem Donec sem tortor", TextLanguages.LA, 0, 100);
+        Assert.assertEquals(textEntries.getTotalElements(), 1);
     }
 
 
     @Test
     public void searchTextByContentInSpanishWrong() {
-        final List<Text> textEntries = textProvider.search("Lorem Donec sem tortor", TextLanguages.ES, 0, 100);
-        Assert.assertEquals(textEntries.size(), 0);
+        final ResponseWrapper<Text> textEntries = textProvider.search("Lorem Donec sem tortor", TextLanguages.ES, 0, 100);
+        Assert.assertEquals(textEntries.getTotalElements(), 0);
     }
 
     @Test
     public void searchTextByContentInSpanishCorrect() {
-        final List<Text> textEntries = textProvider.search("cliente torturador", TextLanguages.ES, 0, 100);
-        Assert.assertEquals(textEntries.size(), 1);
+        final ResponseWrapper<Text> textEntries = textProvider.search("cliente torturador", TextLanguages.ES, 0, 100);
+        Assert.assertEquals(textEntries.getTotalElements(), 1);
     }
 
 
     @AfterClass(alwaysRun = true)
-    public void deleteFiles() throws InterruptedException {
+    public void deleteFiles() {
         textProvider.getAll(0, 100).forEach(fileEntry -> textProvider.delete(fileEntry));
         textProvider.delete(text);
         openSearchClient.deleteIndex(openSearchConfigurator.getOpenSearchFileIndex());

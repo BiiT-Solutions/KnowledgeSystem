@@ -5,6 +5,7 @@ import com.biit.ks.persistence.opensearch.exceptions.OpenSearchConnectionExcepti
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchIndexMissingException;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchInvalidSearchQueryException;
 import com.biit.ks.persistence.opensearch.search.IntervalsSearch;
+import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
 import com.biit.ks.persistence.opensearch.search.SearchPredicates;
 import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;
@@ -512,14 +513,18 @@ public class OpenSearchClient {
     }
 
 
-    public <I> List<I> convertResponse(SearchResponse<I> searchResponse) {
+    public <I> ResponseWrapper<I> convertResponse(SearchResponse<I> searchResponse) {
         final List<I> output = new ArrayList<>();
         if (searchResponse != null && searchResponse.hits() != null && searchResponse.hits().hits() != null) {
             for (int i = 0; i < searchResponse.hits().hits().size(); i++) {
                 output.add(searchResponse.hits().hits().get(i).source());
             }
         }
-        return output;
+        final ResponseWrapper<I> responseWrapper = new ResponseWrapper<>(output);
+        if (searchResponse != null && searchResponse.hits() != null) {
+            responseWrapper.setTotalElements(searchResponse.hits().total().value());
+        }
+        return responseWrapper;
     }
 
     public long convertResponse(CountResponse countResponse) {

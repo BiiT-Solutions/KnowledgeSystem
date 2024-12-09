@@ -65,7 +65,7 @@ public class FileEntryServices extends CategorizedElementServices<FileEntry, Fil
     @Operation(summary = "Downloads a file metadata.", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping(value = "/uuid/{uuid}", produces = MediaType.APPLICATION_JSON_VALUE)
     public FileEntryDTO downloadMetadata(@PathVariable("uuid") UUID uuid, Authentication authentication, HttpServletResponse response) {
-        return getController().get(uuid);
+        return getResponseFirstData(getController().get(uuid), response);
     }
 
 

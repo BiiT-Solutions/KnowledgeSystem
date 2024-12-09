@@ -1,12 +1,12 @@
 package com.biit.ks.core.providers;
 
+import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.persistence.entities.OpenSearchElement;
+import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
 import com.biit.ks.persistence.opensearch.search.SearchPredicates;
 import com.biit.ks.persistence.opensearch.search.SimpleSearch;
 import com.biit.ks.persistence.repositories.OpenSearchElementRepository;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends OpenSearchElementRepository<E>> {
@@ -19,12 +19,12 @@ public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends
     }
 
 
-    public List<E> search(SearchPredicates searchPredicates) {
+    public ResponseWrapper<E> search(SearchPredicates searchPredicates) {
         return getRepository().search(searchPredicates);
     }
 
 
-    public List<E> search(SimpleSearch searchQuery, Integer from, Integer size) {
+    public ResponseWrapper<E> search(SimpleSearch searchQuery, Integer from, Integer size) {
         return getRepository().search(searchQuery, from, size);
     }
 
@@ -36,7 +36,6 @@ public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends
     public E save(E element) {
         return getRepository().save(element);
     }
-
 
     public E update(E element) {
         return getRepository().update(element);
@@ -53,7 +52,7 @@ public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends
     }
 
 
-    public List<E> search(String value, Integer from, Integer size) {
+    public ResponseWrapper<E> search(String value, Integer from, Integer size) {
         return getRepository().search(value, from, size);
     }
 
@@ -70,14 +69,15 @@ public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends
     }
 
 
-    public Optional<E> get(UUID uuid) {
+    public ResponseWrapper<E> get(UUID uuid) {
         if (uuid == null) {
-            return Optional.empty();
+            return new ResponseWrapper<>();
         }
-        return getRepository().get(uuid);
+        return new ResponseWrapper<>(getRepository().get(uuid)
+                .orElseThrow(() -> new FileNotFoundException(this.getClass(), "No element with uuid '" + uuid + "'.")));
     }
 
-    public List<E> getAll(Integer from, Integer size) {
+    public ResponseWrapper<E> getAll(Integer from, Integer size) {
         return getRepository().getAll(from, size);
     }
 }

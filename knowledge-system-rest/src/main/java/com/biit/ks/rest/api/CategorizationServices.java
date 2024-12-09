@@ -3,8 +3,8 @@ package com.biit.ks.rest.api;
 import com.biit.ks.core.controllers.CategorizationController;
 import com.biit.ks.core.converters.CategorizationConverter;
 import com.biit.ks.core.converters.models.CategorizationConverterRequest;
-import com.biit.ks.dto.CategorizationDTO;
 import com.biit.ks.core.providers.CategorizationProvider;
+import com.biit.ks.dto.CategorizationDTO;
 import com.biit.ks.persistence.entities.Categorization;
 import com.biit.ks.persistence.repositories.CategorizationRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,7 +34,7 @@ public class CategorizationServices extends OpenSearchElementServices<Categoriza
     @Operation(summary = "Creates a category.", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping(value = "/name/{categorization}", produces = MediaType.APPLICATION_JSON_VALUE)
     public CategorizationDTO get(@PathVariable("categorization") String categorization, Authentication authentication, HttpServletResponse response) {
-        return getController().get(categorization);
+        return getResponseFirstData(getController().get(categorization), response);
     }
 
 

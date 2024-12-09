@@ -4,6 +4,7 @@ import com.biit.ks.persistence.entities.Categorization;
 import com.biit.ks.persistence.entities.CategorizedElement;
 import com.biit.ks.persistence.entities.OpenSearchElement;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
+import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import com.biit.ks.persistence.opensearch.search.SimpleSearch;
 import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
@@ -23,20 +24,22 @@ public abstract class CategorizedElementRepository<E extends CategorizedElement<
         super(elementClass, openSearchClient);
     }
 
-    public List<E> searchByCategory(Categorization categorization, Integer from, Integer size) {
+    public ResponseWrapper<E> searchByCategory(Categorization categorization, Integer from, Integer size) {
         return searchByCategories(List.of(categorization), QuantifiersOperator.ANY_OF, from, size);
     }
 
-    public List<E> searchByCategory(String categorizationName, Integer from, Integer size) {
+    public ResponseWrapper<E> searchByCategory(String categorizationName, Integer from, Integer size) {
         return searchByCategoryNames(List.of(categorizationName), QuantifiersOperator.ANY_OF, from, size);
     }
 
 
-    public List<E> searchByCategories(Collection<Categorization> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
+    public ResponseWrapper<E> searchByCategories(Collection<Categorization> categorizations, QuantifiersOperator quantifiersOperator,
+                                                 Integer from, Integer size) {
         return searchByCategoryNames(categorizations.stream().map(OpenSearchElement::getName).collect(Collectors.toSet()), quantifiersOperator, from, size);
     }
 
-    public List<E> searchByCategoryNames(Collection<String> categorizationsNames, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
+    public ResponseWrapper<E> searchByCategoryNames(Collection<String> categorizationsNames, QuantifiersOperator quantifiersOperator,
+                                                    Integer from, Integer size) {
         final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();
         categorizationsNames.forEach(categorization ->
                 shouldHavePredicates.addCategory(Pair.of("categorizations.name", categorization)));

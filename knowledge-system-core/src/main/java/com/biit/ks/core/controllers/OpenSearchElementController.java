@@ -2,18 +2,18 @@ package com.biit.ks.core.controllers;
 
 import com.biit.ks.core.converters.OpenSearchElementConverter;
 import com.biit.ks.core.converters.models.OpenSearchElementConverterRequest;
-import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.core.providers.OpenSearchElementProvider;
 import com.biit.ks.dto.OpenSearchElementDTO;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.OpenSearchElement;
+import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
 import com.biit.ks.persistence.opensearch.search.SimpleSearch;
 import com.biit.ks.persistence.repositories.OpenSearchElementRepository;
 import com.biit.server.controller.SimpleController;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public abstract class OpenSearchElementController<
         E extends OpenSearchElement<?>,
@@ -29,14 +29,27 @@ public abstract class OpenSearchElementController<
     }
 
 
-    public List<D> search(SimpleSearch searchQuery, Integer from, Integer size) {
-        final List<E> results = getProvider().search(searchQuery, from, size);
+    protected ResponseWrapper<D> convert(ResponseWrapper<E> entities) {
+        return convertAll(entities);
+    }
+
+
+    protected ResponseWrapper<D> convertAll(ResponseWrapper<E> entities) {
+        final ResponseWrapper<D> response = new ResponseWrapper<>(this.getConverter().convertAll(
+                entities.getData().stream().map(this::createConverterRequest).collect(Collectors.toList())));
+        response.setTotalElements(entities.getTotalElements());
+        return response;
+    }
+
+
+    public ResponseWrapper<D> search(SimpleSearch searchQuery, Integer from, Integer size) {
+        final ResponseWrapper<E> results = getProvider().search(searchQuery, from, size);
         return convertAll(results);
     }
 
 
-    public List<D> search(String value, Integer from, Integer size) {
-        final List<E> results = getProvider().search(value, from, size);
+    public ResponseWrapper<D> search(String value, Integer from, Integer size) {
+        final ResponseWrapper<E> results = getProvider().search(value, from, size);
         return convertAll(results);
     }
 
@@ -50,10 +63,9 @@ public abstract class OpenSearchElementController<
     }
 
 
-    public D get(UUID uuid) {
-        final E fileEntry =
-                getProvider().get(uuid).orElseThrow(() -> new FileNotFoundException(this.getClass(), "No element with uuid '" + uuid + "'."));
-        return convert(fileEntry);
+    public ResponseWrapper<D> get(UUID uuid) {
+        final ResponseWrapper<E> fileEntry = getProvider().get(uuid);
+        return convertAll(fileEntry);
     }
 
 
@@ -64,8 +76,8 @@ public abstract class OpenSearchElementController<
         return data;
     }
 
-    public List<D> getAll(Integer from, Integer size) {
-        final List<E> results = getProvider().getAll(from, size);
+    public ResponseWrapper<D> getAll(Integer from, Integer size) {
+        final ResponseWrapper<E> results = getProvider().getAll(from, size);
         return convertAll(results);
     }
 

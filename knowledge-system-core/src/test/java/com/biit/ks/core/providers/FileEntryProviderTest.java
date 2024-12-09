@@ -2,7 +2,7 @@ package com.biit.ks.core.providers;
 
 import com.biit.ks.persistence.entities.FileEntry;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
-import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
+import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import com.biit.ks.persistence.opensearch.search.SimpleSearch;
 import com.biit.ks.persistence.repositories.IOpenSearchConfigurator;
@@ -15,7 +15,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @SpringBootTest
 @Test(groups = {"fileEntryProvider"})
@@ -74,55 +73,56 @@ public class FileEntryProviderTest extends AbstractTestNGSpringContextTests {
 
     @Test
     public void searchFileEntryByName() {
-        final List<FileEntry> fileEntries = fileEntryProvider.findByAlias("FileTest", 0, 10);
-        Assert.assertEquals(fileEntries.size(), 4);
+        final ResponseWrapper<FileEntry> fileEntries = fileEntryProvider.findByAlias("FileTest", 0, 10);
+        Assert.assertEquals(fileEntries.getTotalElements(), 4);
     }
 
 
     @Test
     public void searchFileEntryWithoutThumbnails() {
-        final List<FileEntry> fileEntries = fileEntryProvider.findFilesWithoutThumbnail();
-        Assert.assertEquals(fileEntries.size(), 2);
+        final ResponseWrapper<FileEntry> fileEntries = fileEntryProvider.findFilesWithoutThumbnail();
+        Assert.assertEquals(fileEntries.getTotalElements(), 2);
     }
 
     @Test
     public void searchFileBySimpleSearch() {
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("FileTest", null, null, null, null, null), 0, 100).size(), 4);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("FileTest", null, null, null, null, null), 0, 100).getTotalElements(), 4);
     }
 
     @Test
     public void searchFileBySimpleSearchOneValue() {
-        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("FileTest", null, null, null, null, null), 0, 1).size(), 1);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("FileTest", null, null, null, null, null), 0, 1).getData().size(), 1);
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("FileTest", null, null, null, null, null), 0, 1).getTotalElements(), 4);
     }
 
     @Test
     public void searchFileEntryByDate() {
         ShouldHavePredicates search = new ShouldHavePredicates();
         search.addRange("createdAt", LocalDateTime.now().minusMinutes(200), null);
-        List<FileEntry> fileEntries = fileEntryProvider.search(search);
-        Assert.assertEquals(fileEntries.size(), 4);
+        ResponseWrapper<FileEntry> fileEntries = fileEntryProvider.search(search);
+        Assert.assertEquals(fileEntries.getTotalElements(), 4);
 
         search = new ShouldHavePredicates();
         search.addRange("createdAt", LocalDateTime.now().minusMinutes(65), null);
         fileEntries = fileEntryProvider.search(search);
-        Assert.assertEquals(fileEntries.size(), 3);
+        Assert.assertEquals(fileEntries.getTotalElements(), 3);
 
         search = new ShouldHavePredicates();
         search.addRange("createdAt", LocalDateTime.now().minusMinutes(1), null);
         fileEntries = fileEntryProvider.search(search);
-        Assert.assertEquals(fileEntries.size(), 1);
+        Assert.assertEquals(fileEntries.getTotalElements(), 1);
 
         search = new ShouldHavePredicates();
         search.addRange("createdAt", LocalDateTime.now().plusMinutes(1), null);
         fileEntries = fileEntryProvider.search(search);
-        Assert.assertEquals(fileEntries.size(), 0);
+        Assert.assertEquals(fileEntries.getTotalElements(), 0);
     }
 
 
     @AfterClass(alwaysRun = true)
     public void deleteFiles() {
 
-        fileEntryProvider.getAll(0, 100).forEach(fileEntry -> fileEntryProvider.delete(fileEntry));
+        fileEntryProvider.getAll(0, 100).getData().forEach(fileEntry -> fileEntryProvider.delete(fileEntry));
 
         fileEntryProvider.delete(fileEntry1);
         fileEntryProvider.delete(fileEntry2);
