@@ -6,10 +6,9 @@ import com.biit.ks.persistence.opensearch.OpenSearchClient;
 import com.biit.ks.persistence.opensearch.search.Fuzziness;
 import com.biit.ks.persistence.opensearch.search.FuzzinessDefinition;
 import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
+import com.biit.ks.persistence.opensearch.search.SearchPredicates;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import com.biit.ks.persistence.opensearch.search.SimpleSearch;
-import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
-import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opensearch.client.opensearch.core.CountResponse;
 import org.opensearch.client.opensearch.core.SearchResponse;
@@ -65,18 +64,16 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
 
 
     @Override
-    public List<FileEntry> search(String query, Integer from, Integer size) {
+    public SearchPredicates searchByValuePredicate(String value, Integer from, Integer size) {
         final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();
-        shouldHavePredicates.add(Pair.of("alias", query));
-        shouldHavePredicates.add(Pair.of("description", query));
-        shouldHavePredicates.add(Pair.of("name", query));
-        shouldHavePredicates.add(Pair.of("fileFormat", query));
-        shouldHavePredicates.add(Pair.of("mimeType", query));
+        shouldHavePredicates.add(Pair.of("alias", value));
+        shouldHavePredicates.add(Pair.of("description", value));
+        shouldHavePredicates.add(Pair.of("name", value));
+        shouldHavePredicates.add(Pair.of("fileFormat", value));
+        shouldHavePredicates.add(Pair.of("mimeType", value));
         shouldHavePredicates.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
         shouldHavePredicates.setMinimumShouldMatch(1);
-        final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, getOpenSearchIndex(),
-                shouldHavePredicates, new SortResultOptions("createdAt", SortOptionOrder.DESC), from, size);
-        return getOpenSearchClient().convertResponse(response);
+        return shouldHavePredicates;
     }
 
     public void deleteByAlias(String alias) {

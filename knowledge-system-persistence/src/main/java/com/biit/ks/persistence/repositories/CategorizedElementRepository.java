@@ -10,6 +10,7 @@ import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
 import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;
 import org.apache.commons.lang3.tuple.Pair;
+import org.opensearch.client.opensearch.core.CountResponse;
 import org.opensearch.client.opensearch.core.SearchResponse;
 
 import java.util.Collection;
@@ -46,6 +47,20 @@ public abstract class CategorizedElementRepository<E extends CategorizedElement<
         }
         final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), getOpenSearchIndex(), shouldHavePredicates,
                 new SortResultOptions("createdAt", SortOptionOrder.DESC), from, size);
+        return getOpenSearchClient().convertResponse(response);
+    }
+
+
+    public long countByCategoryNames(Collection<String> categorizationsNames, QuantifiersOperator quantifiersOperator) {
+        final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();
+        categorizationsNames.forEach(categorization ->
+                shouldHavePredicates.addCategory(Pair.of("categorizations.name", categorization)));
+        if (quantifiersOperator == QuantifiersOperator.ALL_OF) {
+            shouldHavePredicates.setMinimumShouldMatch(categorizationsNames.size());
+        } else {
+            shouldHavePredicates.setMinimumShouldMatch(1);
+        }
+        final CountResponse response = getOpenSearchClient().countData(getElementClass(), getOpenSearchIndex(), shouldHavePredicates);
         return getOpenSearchClient().convertResponse(response);
     }
 

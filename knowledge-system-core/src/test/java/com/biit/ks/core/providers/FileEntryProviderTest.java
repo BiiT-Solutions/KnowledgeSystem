@@ -91,6 +91,11 @@ public class FileEntryProviderTest extends AbstractTestNGSpringContextTests {
     }
 
     @Test
+    public void searchFileBySimpleSearchOneValue() {
+        Assert.assertEquals(fileEntryProvider.search(new SimpleSearch("FileTest", null, null, null, null, null), 0, 1).size(), 1);
+    }
+
+    @Test
     public void searchFileEntryByDate() {
         ShouldHavePredicates search = new ShouldHavePredicates();
         search.addRange("createdAt", LocalDateTime.now().minusMinutes(200), null);

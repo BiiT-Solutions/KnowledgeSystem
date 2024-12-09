@@ -3,14 +3,15 @@ package com.biit.ks.rest.api;
 import com.biit.ks.core.controllers.CategorizedElementController;
 import com.biit.ks.core.converters.CategorizedElementConverter;
 import com.biit.ks.core.converters.models.CategorizedElementConverterRequest;
-import com.biit.ks.dto.CategorizedElementDTO;
 import com.biit.ks.core.providers.CategorizedElementProvider;
+import com.biit.ks.dto.CategorizedElementDTO;
 import com.biit.ks.persistence.entities.CategorizedElement;
 import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;
 import com.biit.ks.persistence.repositories.CategorizedElementRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -30,6 +31,9 @@ public abstract class CategorizedElementServices<
         C extends CategorizedElementController<E, D, R, P, Rq, Cv>>
         extends OpenSearchElementServices<E, D, R, P, Rq, Cv, C> {
 
+    @Value("${include.total.elements.header:false}")
+    private boolean addTotalElementHeader;
+
     protected CategorizedElementServices(C controller) {
         super(controller);
     }
@@ -42,7 +46,12 @@ public abstract class CategorizedElementServices<
                                         @RequestParam(name = "quantifier", required = false) QuantifiersOperator quantifiersOperator,
                                         @RequestParam(name = "from", required = false) Integer from,
                                         @RequestParam(name = "size", required = false) Integer size,
+                                        @RequestParam(name = "includeTotalElementsHeader", required = false, defaultValue = "false")
+                                        boolean includeTotalElementsHeader,
                                         Authentication authentication, HttpServletResponse response) {
+        if (addTotalElementHeader || includeTotalElementsHeader) {
+            response.addHeader(TOTAL_ELEMENT_HEADER, String.valueOf(getController().countByCategories(Arrays.asList(category), quantifiersOperator)));
+        }
         return getController().searchByCategories(Arrays.asList(category), quantifiersOperator, from, size);
     }
 }

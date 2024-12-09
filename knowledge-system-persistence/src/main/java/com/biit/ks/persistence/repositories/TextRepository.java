@@ -5,6 +5,7 @@ import com.biit.ks.persistence.entities.TextLanguages;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
 import com.biit.ks.persistence.opensearch.search.Fuzziness;
 import com.biit.ks.persistence.opensearch.search.FuzzinessDefinition;
+import com.biit.ks.persistence.opensearch.search.SearchPredicates;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import com.biit.ks.persistence.opensearch.search.SortOptionOrder;
 import com.biit.ks.persistence.opensearch.search.SortResultOptions;
@@ -44,18 +45,16 @@ public class TextRepository extends CategorizedElementRepository<Text> {
 
     @Override
 
-    public List<Text> search(String query, Integer from, Integer size) {
+    public SearchPredicates searchByValuePredicate(String value, Integer from, Integer size) {
         final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();
-        shouldHavePredicates.add(Pair.of("description", query));
-        shouldHavePredicates.add(Pair.of("name", query));
+        shouldHavePredicates.add(Pair.of("description", value));
+        shouldHavePredicates.add(Pair.of("name", value));
         //Add any language here.
         for (TextLanguages language : TextLanguages.values()) {
-            shouldHavePredicates.add(Pair.of("content." + language.name(), query));
+            shouldHavePredicates.add(Pair.of("content." + language.name(), value));
         }
         shouldHavePredicates.setFuzzinessDefinition(new FuzzinessDefinition(Fuzziness.AUTO));
         shouldHavePredicates.setMinimumShouldMatch(1);
-        final SearchResponse<Text> response = getOpenSearchClient().searchData(Text.class, getOpenSearchIndex(),
-                shouldHavePredicates, new SortResultOptions("createdAt", SortOptionOrder.DESC), from, size);
-        return getOpenSearchClient().convertResponse(response);
+        return shouldHavePredicates;
     }
 }

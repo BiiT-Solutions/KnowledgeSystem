@@ -35,10 +35,20 @@ public abstract class OpenSearchElementController<
     }
 
 
-    public List<D> search(String searchQuery, Integer from, Integer size) {
-        final List<E> results = getProvider().search(searchQuery, from, size);
+    public List<D> search(String value, Integer from, Integer size) {
+        final List<E> results = getProvider().search(value, from, size);
         return convertAll(results);
     }
+
+    public long count(SimpleSearch searchQuery) {
+        return getProvider().count(searchQuery);
+    }
+
+
+    public long count(String value) {
+        return getProvider().count(value);
+    }
+
 
     public D get(UUID uuid) {
         final E fileEntry =
@@ -57,6 +67,10 @@ public abstract class OpenSearchElementController<
     public List<D> getAll(Integer from, Integer size) {
         final List<E> results = getProvider().getAll(from, size);
         return convertAll(results);
+    }
+
+    public long count() {
+        return getProvider().count();
     }
 
 

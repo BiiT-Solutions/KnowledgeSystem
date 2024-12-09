@@ -33,4 +33,8 @@ public abstract class CategorizedElementProvider<E extends CategorizedElement<?>
     public List<E> searchByCategoryNames(Collection<String> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
         return categorizedElementRepository.searchByCategoryNames(categorizations, quantifiersOperator, from, size);
     }
+
+    public long countByCategoryNames(Collection<String> categorizations, QuantifiersOperator quantifiersOperator) {
+        return categorizedElementRepository.countByCategoryNames(categorizations, quantifiersOperator);
+    }
 }

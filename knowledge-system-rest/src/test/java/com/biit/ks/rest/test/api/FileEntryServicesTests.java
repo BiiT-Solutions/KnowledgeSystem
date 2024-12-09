@@ -1,10 +1,11 @@
 package com.biit.ks.rest.test.api;
 
-import com.biit.ks.dto.FileEntryDTO;
 import com.biit.ks.core.seaweed.SeaweedClient;
 import com.biit.ks.core.seaweed.SeaweedConfigurator;
+import com.biit.ks.dto.FileEntryDTO;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
 import com.biit.ks.persistence.repositories.IOpenSearchConfigurator;
+import com.biit.ks.rest.api.OpenSearchElementServices;
 import com.biit.server.security.model.AuthRequest;
 import com.biit.usermanager.client.providers.AuthenticatedUserProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -233,7 +234,7 @@ public class FileEntryServicesTests extends AbstractTestNGSpringContextTests {
     @Test(dependsOnMethods = "uploadVideo")
     public void searchVideo() throws Exception {
         MvcResult createResult = this.mockMvc
-                .perform(get("/files/search/query:myVideo")
+                .perform(get("/files/search/value:myVideo")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
                         .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk())

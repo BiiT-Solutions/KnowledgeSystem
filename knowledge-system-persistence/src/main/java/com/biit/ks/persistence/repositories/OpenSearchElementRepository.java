@@ -13,6 +13,7 @@ import com.biit.ks.persistence.opensearch.search.SortResultOptions;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opensearch.client.opensearch._types.OpenSearchException;
+import org.opensearch.client.opensearch.core.CountResponse;
 import org.opensearch.client.opensearch.core.GetResponse;
 import org.opensearch.client.opensearch.core.SearchResponse;
 
@@ -125,7 +126,26 @@ public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>
     }
 
 
-    public abstract List<E> search(String query, Integer from, Integer size);
+    public abstract SearchPredicates searchByValuePredicate(String value, Integer from, Integer size);
+
+
+    public List<E> search(String value, Integer from, Integer size) {
+        final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), getOpenSearchIndex(),
+                searchByValuePredicate(value, from, size), new SortResultOptions("createdAt", SortOptionOrder.DESC), from, size);
+        return getOpenSearchClient().convertResponse(response);
+    }
+
+
+    public long count(String value) {
+        final CountResponse response = getOpenSearchClient().countData(getElementClass(), getOpenSearchIndex(), searchByValuePredicate(value, null, null));
+        return getOpenSearchClient().convertResponse(response);
+    }
+
+    public long count() {
+        final CountResponse response = getOpenSearchClient().countData(getOpenSearchIndex());
+        return getOpenSearchClient().convertResponse(response);
+    }
+
 
     public List<E> search(SearchPredicates search) {
         final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), getOpenSearchIndex(), search);
@@ -161,5 +181,17 @@ public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>
         }
         final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), getOpenSearchIndex(), shouldHavePredicates, from, size);
         return getOpenSearchClient().convertResponse(response);
+    }
+
+
+    public long count(SimpleSearch searchQuery) {
+        if (searchQuery == null) {
+            return 0;
+        }
+        final ShouldHavePredicates shouldHavePredicates = convertSearch(searchQuery);
+        if (shouldHavePredicates.getSearch().isEmpty() && shouldHavePredicates.getRanges().isEmpty() && shouldHavePredicates.getCategories().isEmpty()) {
+            return 0;
+        }
+        return getOpenSearchClient().convertResponse(getOpenSearchClient().countData(getElementClass(), getOpenSearchIndex(), shouldHavePredicates));
     }
 }

@@ -169,7 +169,7 @@ public class PdfEntryServicesTests extends AbstractTestNGSpringContextTests {
     @Test(dependsOnMethods = "uploadPdf")
     public void searchPdf() throws Exception {
         MvcResult createResult = this.mockMvc
-                .perform(get("/files/search/query:myPdf")
+                .perform(get("/files/search/value:myPdf")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
                         .with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk())

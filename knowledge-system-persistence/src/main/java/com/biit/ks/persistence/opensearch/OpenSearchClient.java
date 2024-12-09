@@ -454,6 +454,9 @@ public class OpenSearchClient {
 
     public CountResponse countData(String indexName, Query query) {
         try {
+            if (query == null) {
+                return countData(indexName);
+            }
             final CountRequest.Builder countQuery = new CountRequest.Builder().query(query);
             if (indexName != null) {
                 countQuery.index(indexName);
@@ -608,6 +611,33 @@ public class OpenSearchClient {
         return searchData(indexDataClass, indexName,
                 sortResultOptions != null && sortResultOptions.getField() != null ? sortResultOptions.convert() : null,
                 from, size);
+    }
+
+    public CountResponse countData(String indexName) {
+        try {
+            final CountRequest.Builder countQuery = new CountRequest.Builder();
+            if (indexName != null) {
+                countQuery.index(indexName);
+            }
+            return client.count(countQuery.build());
+        } catch (ConnectionClosedException e) {
+            OpenSearchLogger.warning(this.getClass(), "Opensearch client gets error message: {}", e.getMessage());
+            if (reconnect()) {
+                return countData(indexName);
+            }
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        } catch (OpenSearchException e) {
+            OpenSearchLogger.severe(this.getClass(), "Count failed.");
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchIndexMissingException(this.getClass(), e);
+            }
+            if (e.getMessage().contains("index_not_found_exception")) {
+                throw new OpenSearchInvalidSearchQueryException(this.getClass(), e);
+            }
+            throw new OpenSearchConnectionException(this.getClass(), e);
+        }
     }
 
     public <I> SearchResponse<I> searchData(Class<I> dataClass, String indexName, SearchPredicates searchPredicates) {

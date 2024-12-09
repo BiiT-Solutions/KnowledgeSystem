@@ -20,12 +20,12 @@ public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends
 
 
     public List<E> search(SearchPredicates searchPredicates) {
-        return openSearchElementRepository.search(searchPredicates);
+        return getRepository().search(searchPredicates);
     }
 
 
     public List<E> search(SimpleSearch searchQuery, Integer from, Integer size) {
-        return openSearchElementRepository.search(searchQuery, from, size);
+        return getRepository().search(searchQuery, from, size);
     }
 
 
@@ -53,8 +53,20 @@ public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends
     }
 
 
-    public List<E> search(String searchQuery, Integer from, Integer size) {
-        return getRepository().search(searchQuery, from, size);
+    public List<E> search(String value, Integer from, Integer size) {
+        return getRepository().search(value, from, size);
+    }
+
+    public long count() {
+        return getRepository().count();
+    }
+
+    public long count(String value) {
+        return getRepository().count(value);
+    }
+
+    public long count(SimpleSearch simpleSearch) {
+        return getRepository().count(simpleSearch);
     }
 
 
