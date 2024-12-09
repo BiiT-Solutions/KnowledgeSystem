@@ -72,7 +72,7 @@ public abstract class OpenSearchElementServices<
 
 
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
-    @Operation(summary = "Search for an element.", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Search for elements.", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping(value = "/search/{query:.+}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public List<D> search(@PathVariable String query,
@@ -83,8 +83,8 @@ public abstract class OpenSearchElementServices<
     }
 
     @PreAuthorize("hasAnyAuthority(@securityService.viewerPrivilege, @securityService.editorPrivilege, @securityService.adminPrivilege)")
-    @Operation(summary = "Search for an element.", security = @SecurityRequirement(name = "bearerAuth"))
-    @PostMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Search for a elements using a simple structure.", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public List<D> search(@RequestBody SimpleSearch query,
                           @RequestParam(name = "from", required = false) Integer from,
