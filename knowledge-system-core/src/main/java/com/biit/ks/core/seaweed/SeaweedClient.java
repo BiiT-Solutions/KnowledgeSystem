@@ -217,6 +217,10 @@ public class SeaweedClient {
 
 
     public byte[] getBytes(String folderPath, String entryName) throws IOException {
+        if (entryName == null) {
+            SeaweedLogger.warning(this.getClass(), "Provided entryname is null.");
+            return null;
+        }
         final File tempFile = File.createTempFile(entryName, ".seaweed");
         tempFile.deleteOnExit();
         getFile(folderPath + File.separator + entryName, tempFile);
