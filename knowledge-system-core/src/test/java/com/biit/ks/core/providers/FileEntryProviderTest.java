@@ -2,7 +2,7 @@ package com.biit.ks.core.providers;
 
 import com.biit.ks.persistence.entities.FileEntry;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
-import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
+import com.biit.ks.persistence.opensearch.search.SearchWrapper;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import com.biit.ks.persistence.opensearch.search.SimpleSearch;
 import com.biit.ks.persistence.repositories.IOpenSearchConfigurator;
@@ -73,14 +73,14 @@ public class FileEntryProviderTest extends AbstractTestNGSpringContextTests {
 
     @Test
     public void searchFileEntryByName() {
-        final ResponseWrapper<FileEntry> fileEntries = fileEntryProvider.findByAlias("FileTest", 0, 10);
+        final SearchWrapper<FileEntry> fileEntries = fileEntryProvider.findByAlias("FileTest", 0, 10);
         Assert.assertEquals(fileEntries.getTotalElements(), 4);
     }
 
 
     @Test
     public void searchFileEntryWithoutThumbnails() {
-        final ResponseWrapper<FileEntry> fileEntries = fileEntryProvider.findFilesWithoutThumbnail();
+        final SearchWrapper<FileEntry> fileEntries = fileEntryProvider.findFilesWithoutThumbnail();
         Assert.assertEquals(fileEntries.getTotalElements(), 2);
     }
 
@@ -99,7 +99,7 @@ public class FileEntryProviderTest extends AbstractTestNGSpringContextTests {
     public void searchFileEntryByDate() {
         ShouldHavePredicates search = new ShouldHavePredicates();
         search.addRange("createdAt", LocalDateTime.now().minusMinutes(200), null);
-        ResponseWrapper<FileEntry> fileEntries = fileEntryProvider.search(search);
+        SearchWrapper<FileEntry> fileEntries = fileEntryProvider.search(search);
         Assert.assertEquals(fileEntries.getTotalElements(), 4);
 
         search = new ShouldHavePredicates();

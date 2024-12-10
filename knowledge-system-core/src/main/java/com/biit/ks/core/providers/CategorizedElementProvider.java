@@ -2,7 +2,7 @@ package com.biit.ks.core.providers;
 
 import com.biit.ks.persistence.entities.Categorization;
 import com.biit.ks.persistence.entities.CategorizedElement;
-import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
+import com.biit.ks.persistence.opensearch.search.SearchWrapper;
 import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;
 import com.biit.ks.persistence.repositories.CategorizedElementRepository;
 
@@ -18,20 +18,20 @@ public abstract class CategorizedElementProvider<E extends CategorizedElement<?>
         this.categorizedElementRepository = categorizedElementRepository;
     }
 
-    public ResponseWrapper<E> searchByCategory(Categorization categorization, Integer from, Integer size) {
+    public SearchWrapper<E> searchByCategory(Categorization categorization, Integer from, Integer size) {
         return categorizedElementRepository.searchByCategory(categorization, from, size);
     }
 
-    public ResponseWrapper<E> searchByCategory(String categorizationName, Integer from, Integer size) {
+    public SearchWrapper<E> searchByCategory(String categorizationName, Integer from, Integer size) {
         return categorizedElementRepository.searchByCategory(categorizationName, from, size);
     }
 
-    public ResponseWrapper<E> searchByCategories(Collection<Categorization> categorizations, QuantifiersOperator quantifiersOperator,
-                                                 Integer from, Integer size) {
+    public SearchWrapper<E> searchByCategories(Collection<Categorization> categorizations, QuantifiersOperator quantifiersOperator,
+                                               Integer from, Integer size) {
         return categorizedElementRepository.searchByCategories(categorizations, quantifiersOperator, from, size);
     }
 
-    public ResponseWrapper<E> searchByCategoryNames(Collection<String> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
+    public SearchWrapper<E> searchByCategoryNames(Collection<String> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
         return categorizedElementRepository.searchByCategoryNames(categorizations, quantifiersOperator, from, size);
     }
 

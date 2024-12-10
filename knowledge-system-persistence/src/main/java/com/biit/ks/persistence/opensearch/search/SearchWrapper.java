@@ -5,20 +5,20 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
-public class ResponseWrapper<T> {
+public class SearchWrapper<T> {
     private final Collection<T> data;
     private long totalElements;
 
-    public ResponseWrapper() {
+    public SearchWrapper() {
         this(new ArrayList<>());
     }
 
-    public ResponseWrapper(Collection<T> data) {
+    public SearchWrapper(Collection<T> data) {
         this.data = data;
         this.totalElements = data.size();
     }
 
-    public ResponseWrapper(T data) {
+    public SearchWrapper(T data) {
         this();
         this.data.add(data);
         if (data == null) {

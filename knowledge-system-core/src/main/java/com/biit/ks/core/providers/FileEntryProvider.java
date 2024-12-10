@@ -9,7 +9,7 @@ import com.biit.ks.core.seaweed.SeaweedClient;
 import com.biit.ks.core.seaweed.SeaweedConfigurator;
 import com.biit.ks.persistence.entities.FileEntry;
 import com.biit.ks.persistence.opensearch.exceptions.OpenSearchException;
-import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
+import com.biit.ks.persistence.opensearch.search.SearchWrapper;
 import com.biit.ks.persistence.repositories.FileEntryRepository;
 import com.biit.server.exceptions.UserNotFoundException;
 import com.biit.server.security.IAuthenticatedUser;
@@ -83,7 +83,7 @@ public class FileEntryProvider extends CategorizedElementProvider<FileEntry, Fil
 
     @Override
     public void delete(UUID uuid) {
-        final ResponseWrapper<FileEntry> fileEntry = get(uuid);
+        final SearchWrapper<FileEntry> fileEntry = get(uuid);
         delete(fileEntry.getFirst());
     }
 
@@ -122,14 +122,14 @@ public class FileEntryProvider extends CategorizedElementProvider<FileEntry, Fil
     }
 
 
-    public ResponseWrapper<FileEntry> findFilesWithoutThumbnail() {
+    public SearchWrapper<FileEntry> findFilesWithoutThumbnail() {
         return getRepository().findFileEntriesWithThumbnailIsNull();
     }
 
 
-    public ResponseWrapper<FileEntry> findByAlias(String alias, Integer from, Integer size) {
+    public SearchWrapper<FileEntry> findByAlias(String alias, Integer from, Integer size) {
         if (alias == null) {
-            return new ResponseWrapper<>(new ArrayList<>());
+            return new SearchWrapper<>(new ArrayList<>());
         }
         return getRepository().findFileEntryByAlias(alias, from, size);
     }

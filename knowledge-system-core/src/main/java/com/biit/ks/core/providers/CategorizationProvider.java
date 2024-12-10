@@ -3,7 +3,7 @@ package com.biit.ks.core.providers;
 import com.biit.ks.core.exceptions.CategoryAlreadyExistsException;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.Categorization;
-import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
+import com.biit.ks.persistence.opensearch.search.SearchWrapper;
 import com.biit.ks.persistence.repositories.CategorizationRepository;
 import org.springframework.stereotype.Service;
 
@@ -20,19 +20,19 @@ public class CategorizationProvider extends OpenSearchElementProvider<Categoriza
     }
 
     //Name is unique on categories
-    public ResponseWrapper<Categorization> get(String name) {
+    public SearchWrapper<Categorization> get(String name) {
         return getRepository().get(name);
     }
 
-    public ResponseWrapper<Categorization> get(List<String> categorizations) {
+    public SearchWrapper<Categorization> get(List<String> categorizations) {
         return getRepository().get(categorizations);
     }
 
-    public ResponseWrapper<Categorization> create(String categorization, String creatorName) {
+    public SearchWrapper<Categorization> create(String categorization, String creatorName) {
         return create(new Categorization(categorization), creatorName);
     }
 
-    public ResponseWrapper<Categorization> create(Categorization element, String creatorName) {
+    public SearchWrapper<Categorization> create(Categorization element, String creatorName) {
         if (element.getCreatedBy() == null && creatorName != null) {
             element.setCreatedBy(creatorName);
         }
@@ -41,7 +41,7 @@ public class CategorizationProvider extends OpenSearchElementProvider<Categoriza
         }
         final Categorization stored = save(element);
         KnowledgeSystemLogger.info(this.getClass(), "Entity '{}' created by '{}'.", stored, creatorName);
-        return new ResponseWrapper<>(stored);
+        return new SearchWrapper<>(stored);
     }
 
 }

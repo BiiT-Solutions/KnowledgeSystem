@@ -5,7 +5,7 @@ import com.biit.ks.core.converters.models.CategorizedElementConverterRequest;
 import com.biit.ks.core.providers.CategorizedElementProvider;
 import com.biit.ks.dto.CategorizedElementDTO;
 import com.biit.ks.persistence.entities.CategorizedElement;
-import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
+import com.biit.ks.persistence.opensearch.search.SearchWrapper;
 import com.biit.ks.persistence.opensearch.search.intervals.QuantifiersOperator;
 import com.biit.ks.persistence.repositories.CategorizedElementRepository;
 
@@ -25,7 +25,7 @@ public abstract class CategorizedElementController<
         super(provider, converter);
     }
 
-    public ResponseWrapper<D> searchByCategories(Collection<String> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
+    public SearchWrapper<D> searchByCategories(Collection<String> categorizations, QuantifiersOperator quantifiersOperator, Integer from, Integer size) {
         return convertAll(getProvider().searchByCategoryNames(categorizations, quantifiersOperator, from, size));
     }
 

@@ -6,7 +6,7 @@ import com.biit.ks.core.providers.OpenSearchElementProvider;
 import com.biit.ks.dto.OpenSearchElementDTO;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.OpenSearchElement;
-import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
+import com.biit.ks.persistence.opensearch.search.SearchWrapper;
 import com.biit.ks.persistence.opensearch.search.SimpleSearch;
 import com.biit.ks.persistence.repositories.OpenSearchElementRepository;
 import com.biit.server.controller.SimpleController;
@@ -29,27 +29,27 @@ public abstract class OpenSearchElementController<
     }
 
 
-    protected ResponseWrapper<D> convert(ResponseWrapper<E> entities) {
+    protected SearchWrapper<D> convert(SearchWrapper<E> entities) {
         return convertAll(entities);
     }
 
 
-    protected ResponseWrapper<D> convertAll(ResponseWrapper<E> entities) {
-        final ResponseWrapper<D> response = new ResponseWrapper<>(this.getConverter().convertAll(
+    protected SearchWrapper<D> convertAll(SearchWrapper<E> entities) {
+        final SearchWrapper<D> response = new SearchWrapper<>(this.getConverter().convertAll(
                 entities.getData().stream().map(this::createConverterRequest).collect(Collectors.toList())));
         response.setTotalElements(entities.getTotalElements());
         return response;
     }
 
 
-    public ResponseWrapper<D> search(SimpleSearch searchQuery, Integer from, Integer size) {
-        final ResponseWrapper<E> results = getProvider().search(searchQuery, from, size);
+    public SearchWrapper<D> search(SimpleSearch searchQuery, Integer from, Integer size) {
+        final SearchWrapper<E> results = getProvider().search(searchQuery, from, size);
         return convertAll(results);
     }
 
 
-    public ResponseWrapper<D> search(String value, Integer from, Integer size) {
-        final ResponseWrapper<E> results = getProvider().search(value, from, size);
+    public SearchWrapper<D> search(String value, Integer from, Integer size) {
+        final SearchWrapper<E> results = getProvider().search(value, from, size);
         return convertAll(results);
     }
 
@@ -63,8 +63,8 @@ public abstract class OpenSearchElementController<
     }
 
 
-    public ResponseWrapper<D> get(UUID uuid) {
-        final ResponseWrapper<E> fileEntry = getProvider().get(uuid);
+    public SearchWrapper<D> get(UUID uuid) {
+        final SearchWrapper<E> fileEntry = getProvider().get(uuid);
         return convertAll(fileEntry);
     }
 
@@ -76,8 +76,8 @@ public abstract class OpenSearchElementController<
         return data;
     }
 
-    public ResponseWrapper<D> getAll(Integer from, Integer size) {
-        final ResponseWrapper<E> results = getProvider().getAll(from, size);
+    public SearchWrapper<D> getAll(Integer from, Integer size) {
+        final SearchWrapper<E> results = getProvider().getAll(from, size);
         return convertAll(results);
     }
 

@@ -13,7 +13,7 @@ import com.biit.ks.core.seaweed.SeaweedConfigurator;
 import com.biit.ks.dto.FileEntryDTO;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.persistence.entities.FileEntry;
-import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
+import com.biit.ks.persistence.opensearch.search.SearchWrapper;
 import com.biit.ks.persistence.repositories.FileEntryRepository;
 import com.biit.server.exceptions.UserNotFoundException;
 import com.biit.server.logger.DtoControllerLogger;
@@ -88,7 +88,7 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
 
 
     public Resource downloadAsResource(UUID uuid, boolean checkIfPublic, String username) {
-        final ResponseWrapper<FileEntry> fileEntry = getProvider().get(uuid);
+        final SearchWrapper<FileEntry> fileEntry = getProvider().get(uuid);
 
         if (checkIfPublic && !fileEntry.getFirst().isPublic()) {
             KnowledgeSystemLogger.warning(this.getClass(), "Trying to access to file '{}' using the public api. FileEntry is private!", uuid);
@@ -110,7 +110,7 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
 
 
     public ChunkData downloadChunk(UUID uuid, long skip, int size, boolean checkIfPublic) {
-        final ResponseWrapper<FileEntry> fileEntry = getProvider().get(uuid);
+        final SearchWrapper<FileEntry> fileEntry = getProvider().get(uuid);
         return downloadChunk(fileEntry.getFirst(), skip, size, checkIfPublic);
     }
 
@@ -196,14 +196,14 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
 
     @Scheduled(cron = "@midnight")
     public void updateThumbnails() {
-        final ResponseWrapper<FileEntry> fileEntries = fileEntryProvider.findFilesWithoutThumbnail();
+        final SearchWrapper<FileEntry> fileEntries = fileEntryProvider.findFilesWithoutThumbnail();
         KnowledgeSystemLogger.info(this.getClass(), "Found '{}' files that have a missing thumbnail.", fileEntries.getTotalElements());
         fileEntries.getData().forEach(this::updateThumbnail);
     }
 
     public void updateAllThumbnails() {
         int loop = 0;
-        ResponseWrapper<FileEntry> fileEntries = fileEntryProvider.getAll(0, SIZE);
+        SearchWrapper<FileEntry> fileEntries = fileEntryProvider.getAll(0, SIZE);
         while (!fileEntries.getData().isEmpty()) {
             KnowledgeSystemLogger.info(this.getClass(), "Regenerating thumbnail for '{}' files.", fileEntries.getData().size());
             fileEntries.getData().forEach(this::updateThumbnail);
@@ -216,7 +216,7 @@ public class FileEntryController extends CategorizedElementController<FileEntry,
     public int deleteByAlias(String alias, String deleteBy) {
         KnowledgeSystemLogger.warning(this.getClass(), "User '{}' deletes files with alias '{}'.", deleteBy, alias);
         KnowledgeSystemLogger.warning(this.getClass(), "Files to be deleted are '{}'.", fileEntryProvider.countFileEntryByAlias(alias));
-        ResponseWrapper<FileEntry> fileEntries = fileEntryProvider.findByAlias(alias, 0, SIZE);
+        SearchWrapper<FileEntry> fileEntries = fileEntryProvider.findByAlias(alias, 0, SIZE);
         int counter = fileEntries.getData().size();
         while (!fileEntries.isEmpty()) {
             fileEntries.getData().forEach(fileEntryProvider::delete);

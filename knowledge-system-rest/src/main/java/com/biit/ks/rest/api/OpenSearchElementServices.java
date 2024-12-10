@@ -6,7 +6,7 @@ import com.biit.ks.core.converters.models.OpenSearchElementConverterRequest;
 import com.biit.ks.core.providers.OpenSearchElementProvider;
 import com.biit.ks.dto.OpenSearchElementDTO;
 import com.biit.ks.persistence.entities.OpenSearchElement;
-import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
+import com.biit.ks.persistence.opensearch.search.SearchWrapper;
 import com.biit.ks.persistence.opensearch.search.SimpleSearch;
 import com.biit.ks.persistence.repositories.OpenSearchElementRepository;
 import com.biit.server.rest.SimpleServices;
@@ -46,15 +46,15 @@ public abstract class OpenSearchElementServices<
     }
 
 
-    protected D getResponseFirstData(ResponseWrapper<D> responseWrapper, HttpServletResponse response) {
-        response.addHeader(TOTAL_ELEMENT_HEADER, String.valueOf(responseWrapper.getTotalElements()));
-        return responseWrapper.getFirst();
+    protected D getResponseFirstData(SearchWrapper<D> searchWrapper, HttpServletResponse response) {
+        response.addHeader(TOTAL_ELEMENT_HEADER, String.valueOf(searchWrapper.getTotalElements()));
+        return searchWrapper.getFirst();
     }
 
 
-    protected Collection<D> getResponse(ResponseWrapper<D> responseWrapper, HttpServletResponse response) {
-        response.addHeader(TOTAL_ELEMENT_HEADER, String.valueOf(responseWrapper.getTotalElements()));
-        return responseWrapper.getData();
+    protected Collection<D> getResponse(SearchWrapper<D> searchWrapper, HttpServletResponse response) {
+        response.addHeader(TOTAL_ELEMENT_HEADER, String.valueOf(searchWrapper.getTotalElements()));
+        return searchWrapper.getData();
     }
 
 

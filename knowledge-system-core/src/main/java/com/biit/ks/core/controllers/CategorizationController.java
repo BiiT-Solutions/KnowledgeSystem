@@ -7,7 +7,7 @@ import com.biit.ks.core.providers.CategorizedElementProvider;
 import com.biit.ks.dto.CategorizationDTO;
 import com.biit.ks.persistence.entities.Categorization;
 import com.biit.ks.persistence.entities.CategorizedElement;
-import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
+import com.biit.ks.persistence.opensearch.search.SearchWrapper;
 import com.biit.ks.persistence.repositories.CategorizationRepository;
 import com.biit.ks.persistence.repositories.CategorizedElementRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -60,8 +60,8 @@ public class CategorizationController extends OpenSearchElementController<Catego
         return results;
     }
 
-    public ResponseWrapper<CategorizationDTO> get(String categorizationName) {
-        final ResponseWrapper<Categorization> categorization = getProvider().get(categorizationName);
+    public SearchWrapper<CategorizationDTO> get(String categorizationName) {
+        final SearchWrapper<Categorization> categorization = getProvider().get(categorizationName);
 
         return convertAll(categorization);
     }
@@ -70,7 +70,7 @@ public class CategorizationController extends OpenSearchElementController<Catego
     @Scheduled(cron = "@midnight")
     public void deleteOrphanCategories() {
         int loop = 0;
-        ResponseWrapper<Categorization> categorizations = categorizationProvider.getAll(0, SIZE);
+        SearchWrapper<Categorization> categorizations = categorizationProvider.getAll(0, SIZE);
         while (!categorizations.getData().isEmpty()) {
             for (Categorization categorization : categorizations.getData()) {
                 //Check if a category is not used.

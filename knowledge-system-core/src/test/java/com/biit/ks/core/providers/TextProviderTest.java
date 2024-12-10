@@ -4,7 +4,7 @@ package com.biit.ks.core.providers;
 import com.biit.ks.persistence.entities.Text;
 import com.biit.ks.persistence.entities.TextLanguages;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
-import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
+import com.biit.ks.persistence.opensearch.search.SearchWrapper;
 import com.biit.ks.persistence.repositories.IOpenSearchConfigurator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -54,27 +54,27 @@ public class TextProviderTest extends AbstractTestNGSpringContextTests {
 
     @Test
     public void searchTextByContentAnyLanguage() {
-        final ResponseWrapper<Text> textEntries = textProvider.search("Lorem Donec sem tortor", 0, 100);
+        final SearchWrapper<Text> textEntries = textProvider.search("Lorem Donec sem tortor", 0, 100);
         Assert.assertEquals(textEntries.getTotalElements(), 1);
     }
 
 
     @Test
     public void searchTextByContentInLatin() {
-        final ResponseWrapper<Text> textEntries = textProvider.search("Lorem Donec sem tortor", TextLanguages.LA, 0, 100);
+        final SearchWrapper<Text> textEntries = textProvider.search("Lorem Donec sem tortor", TextLanguages.LA, 0, 100);
         Assert.assertEquals(textEntries.getTotalElements(), 1);
     }
 
 
     @Test
     public void searchTextByContentInSpanishWrong() {
-        final ResponseWrapper<Text> textEntries = textProvider.search("Lorem Donec sem tortor", TextLanguages.ES, 0, 100);
+        final SearchWrapper<Text> textEntries = textProvider.search("Lorem Donec sem tortor", TextLanguages.ES, 0, 100);
         Assert.assertEquals(textEntries.getTotalElements(), 0);
     }
 
     @Test
     public void searchTextByContentInSpanishCorrect() {
-        final ResponseWrapper<Text> textEntries = textProvider.search("cliente torturador", TextLanguages.ES, 0, 100);
+        final SearchWrapper<Text> textEntries = textProvider.search("cliente torturador", TextLanguages.ES, 0, 100);
         Assert.assertEquals(textEntries.getTotalElements(), 1);
     }
 

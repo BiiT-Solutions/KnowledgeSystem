@@ -2,7 +2,7 @@ package com.biit.ks.core.providers;
 
 import com.biit.ks.core.exceptions.FileNotFoundException;
 import com.biit.ks.persistence.entities.OpenSearchElement;
-import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
+import com.biit.ks.persistence.opensearch.search.SearchWrapper;
 import com.biit.ks.persistence.opensearch.search.SearchPredicates;
 import com.biit.ks.persistence.opensearch.search.SimpleSearch;
 import com.biit.ks.persistence.repositories.OpenSearchElementRepository;
@@ -19,12 +19,12 @@ public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends
     }
 
 
-    public ResponseWrapper<E> search(SearchPredicates searchPredicates) {
+    public SearchWrapper<E> search(SearchPredicates searchPredicates) {
         return getRepository().search(searchPredicates);
     }
 
 
-    public ResponseWrapper<E> search(SimpleSearch searchQuery, Integer from, Integer size) {
+    public SearchWrapper<E> search(SimpleSearch searchQuery, Integer from, Integer size) {
         return getRepository().search(searchQuery, from, size);
     }
 
@@ -52,7 +52,7 @@ public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends
     }
 
 
-    public ResponseWrapper<E> search(String value, Integer from, Integer size) {
+    public SearchWrapper<E> search(String value, Integer from, Integer size) {
         return getRepository().search(value, from, size);
     }
 
@@ -69,15 +69,15 @@ public class OpenSearchElementProvider<E extends OpenSearchElement<?>, R extends
     }
 
 
-    public ResponseWrapper<E> get(UUID uuid) {
+    public SearchWrapper<E> get(UUID uuid) {
         if (uuid == null) {
-            return new ResponseWrapper<>();
+            return new SearchWrapper<>();
         }
-        return new ResponseWrapper<>(getRepository().get(uuid)
+        return new SearchWrapper<>(getRepository().get(uuid)
                 .orElseThrow(() -> new FileNotFoundException(this.getClass(), "No element with uuid '" + uuid + "'.")));
     }
 
-    public ResponseWrapper<E> getAll(Integer from, Integer size) {
+    public SearchWrapper<E> getAll(Integer from, Integer size) {
         return getRepository().getAll(from, size);
     }
 }

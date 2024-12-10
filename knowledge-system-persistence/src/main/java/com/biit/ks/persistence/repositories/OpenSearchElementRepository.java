@@ -5,7 +5,7 @@ import com.biit.ks.persistence.opensearch.OpenSearchClient;
 import com.biit.ks.persistence.opensearch.search.Fuzziness;
 import com.biit.ks.persistence.opensearch.search.FuzzinessDefinition;
 import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
-import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
+import com.biit.ks.persistence.opensearch.search.SearchWrapper;
 import com.biit.ks.persistence.opensearch.search.SearchPredicates;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import com.biit.ks.persistence.opensearch.search.SimpleSearch;
@@ -88,9 +88,9 @@ public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>
         return Optional.of(response.source());
     }
 
-    public ResponseWrapper<E> get(String name) {
+    public SearchWrapper<E> get(String name) {
         if (name == null) {
-            return new ResponseWrapper<>(new ArrayList<>());
+            return new SearchWrapper<>(new ArrayList<>());
         }
         final MustHavePredicates mustHavePredicates = new MustHavePredicates();
         mustHavePredicates.add(Pair.of("name", name));
@@ -99,7 +99,7 @@ public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>
     }
 
 
-    public ResponseWrapper<E> getAll(Integer from, Integer size) {
+    public SearchWrapper<E> getAll(Integer from, Integer size) {
         final SearchResponse<E> response = getOpenSearchClient().getAll(getElementClass(), getOpenSearchIndex(),
                 new SortResultOptions(SORTING_FIELD, SortOptionOrder.DESC), from, size);
         return getOpenSearchClient().convertResponse(response);
@@ -129,7 +129,7 @@ public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>
     public abstract SearchPredicates searchByValuePredicate(String value, Integer from, Integer size);
 
 
-    public ResponseWrapper<E> search(String value, Integer from, Integer size) {
+    public SearchWrapper<E> search(String value, Integer from, Integer size) {
         final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), getOpenSearchIndex(),
                 searchByValuePredicate(value, from, size), new SortResultOptions("createdAt", SortOptionOrder.DESC), from, size);
         return getOpenSearchClient().convertResponse(response);
@@ -147,7 +147,7 @@ public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>
     }
 
 
-    public ResponseWrapper<E> search(SearchPredicates search) {
+    public SearchWrapper<E> search(SearchPredicates search) {
         final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), getOpenSearchIndex(), search);
         return getOpenSearchClient().convertResponse(response);
     }
@@ -171,13 +171,13 @@ public abstract class OpenSearchElementRepository<E extends OpenSearchElement<?>
     }
 
 
-    public ResponseWrapper<E> search(SimpleSearch searchQuery, Integer from, Integer size) {
+    public SearchWrapper<E> search(SimpleSearch searchQuery, Integer from, Integer size) {
         if (searchQuery == null) {
-            return new ResponseWrapper<>(new ArrayList<>());
+            return new SearchWrapper<>(new ArrayList<>());
         }
         final ShouldHavePredicates shouldHavePredicates = convertSearch(searchQuery);
         if (shouldHavePredicates.getSearch().isEmpty() && shouldHavePredicates.getRanges().isEmpty() && shouldHavePredicates.getCategories().isEmpty()) {
-            return new ResponseWrapper<>(new ArrayList<>());
+            return new SearchWrapper<>(new ArrayList<>());
         }
         final SearchResponse<E> response = getOpenSearchClient().searchData(getElementClass(), getOpenSearchIndex(), shouldHavePredicates, from, size);
         return getOpenSearchClient().convertResponse(response);

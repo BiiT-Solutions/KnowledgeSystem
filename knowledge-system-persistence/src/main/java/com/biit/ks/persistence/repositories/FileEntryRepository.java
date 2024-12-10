@@ -6,7 +6,7 @@ import com.biit.ks.persistence.opensearch.OpenSearchClient;
 import com.biit.ks.persistence.opensearch.search.Fuzziness;
 import com.biit.ks.persistence.opensearch.search.FuzzinessDefinition;
 import com.biit.ks.persistence.opensearch.search.MustHavePredicates;
-import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
+import com.biit.ks.persistence.opensearch.search.SearchWrapper;
 import com.biit.ks.persistence.opensearch.search.SearchPredicates;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import com.biit.ks.persistence.opensearch.search.SimpleSearch;
@@ -51,13 +51,13 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
     }
 
 
-    public ResponseWrapper<FileEntry> findFileEntriesWithThumbnailIsNull() {
+    public SearchWrapper<FileEntry> findFileEntriesWithThumbnailIsNull() {
         final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.add("thumbnailUrl", null);
         final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, getOpenSearchIndex(), mustHaveParameters);
         if (response == null || response.hits() == null || response.hits().hits().isEmpty() || response.hits().hits().get(0) == null
                 || response.hits().hits().get(0).source() == null) {
-            return new ResponseWrapper<>(new ArrayList<>());
+            return new SearchWrapper<>(new ArrayList<>());
         }
         return getOpenSearchClient().convertResponse(response);
     }
@@ -83,16 +83,16 @@ public class FileEntryRepository extends CategorizedElementRepository<FileEntry>
     }
 
 
-    public ResponseWrapper<FileEntry> findFileEntryByAlias(String alias, Integer from, Integer size) {
+    public SearchWrapper<FileEntry> findFileEntryByAlias(String alias, Integer from, Integer size) {
         if (alias == null) {
-            return new ResponseWrapper<>(new ArrayList<>());
+            return new SearchWrapper<>(new ArrayList<>());
         }
         final MustHavePredicates mustHaveParameters = new MustHavePredicates();
         mustHaveParameters.add("alias", alias);
         final SearchResponse<FileEntry> response = getOpenSearchClient().searchData(FileEntry.class, getOpenSearchIndex(), mustHaveParameters, from, size);
         if (response == null || response.hits() == null || response.hits().hits().isEmpty() || response.hits().hits().get(0) == null
                 || response.hits().hits().get(0).source() == null) {
-            return new ResponseWrapper<>(new ArrayList<>());
+            return new SearchWrapper<>(new ArrayList<>());
         }
         return getOpenSearchClient().convertResponse(response);
     }

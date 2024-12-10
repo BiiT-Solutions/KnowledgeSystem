@@ -5,7 +5,7 @@ import com.biit.ks.persistence.entities.Categorization;
 import com.biit.ks.persistence.opensearch.OpenSearchClient;
 import com.biit.ks.persistence.opensearch.search.Fuzziness;
 import com.biit.ks.persistence.opensearch.search.FuzzinessDefinition;
-import com.biit.ks.persistence.opensearch.search.ResponseWrapper;
+import com.biit.ks.persistence.opensearch.search.SearchWrapper;
 import com.biit.ks.persistence.opensearch.search.SearchPredicates;
 import com.biit.ks.persistence.opensearch.search.ShouldHavePredicates;
 import org.apache.commons.lang3.tuple.Pair;
@@ -30,7 +30,7 @@ public class CategorizationRepository extends OpenSearchElementRepository<Catego
     }
 
 
-    public ResponseWrapper<Categorization> get(List<String> names) {
+    public SearchWrapper<Categorization> get(List<String> names) {
         final ShouldHavePredicates shouldHavePredicates = new ShouldHavePredicates();
         names.forEach(name -> shouldHavePredicates.add(Pair.of("name", name)));
         shouldHavePredicates.setMinimumShouldMatch(1);
