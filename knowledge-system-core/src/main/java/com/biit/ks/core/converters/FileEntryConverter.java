@@ -28,13 +28,13 @@ public class FileEntryConverter extends CategorizedElementConverter<FileEntry, F
 
 
     @Override
-    public FileEntry reverse(FileEntryDTO to) {
-        if (to == null) {
+    public FileEntry reverse(FileEntryDTO from) {
+        if (from == null) {
             return null;
         }
         final FileEntry fileEntry = new FileEntry();
-        BeanUtils.copyProperties(to, fileEntry);
-        copyCategorizations(to, fileEntry);
+        BeanUtils.copyProperties(from, fileEntry);
+        copyCategorizations(from, fileEntry);
         return fileEntry;
     }
 }

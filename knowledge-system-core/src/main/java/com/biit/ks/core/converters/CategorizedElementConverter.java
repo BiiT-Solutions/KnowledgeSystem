@@ -29,7 +29,7 @@ public abstract class CategorizedElementConverter<
 
 
     public void copyCategorizations(D from, E to) {
-        from.setCategorizations(new ArrayList<>());
+        to.setCategorizations(new ArrayList<>());
         if (from.getCategorizations() != null) {
             from.getCategorizations().forEach(categorizationDTO -> to.getCategorizations().add(
                     categorizationConverter.reverse(categorizationDTO)));
