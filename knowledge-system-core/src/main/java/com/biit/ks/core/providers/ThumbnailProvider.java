@@ -1,6 +1,5 @@
 package com.biit.ks.core.providers;
 
-import com.biit.ks.core.exceptions.SeaweedClientException;
 import com.biit.ks.core.files.MimeTypeToFFmpeg;
 import com.biit.ks.core.seaweed.SeaweedClient;
 import com.biit.ks.core.seaweed.SeaweedConfigurator;
@@ -69,8 +68,9 @@ public class ThumbnailProvider {
         try {
             return seaweedClient.getBytes(seaweedConfigurator.getThumbnailsPath(), uuid.toString());
         } catch (IOException e) {
-            throw new SeaweedClientException(this.getClass(), e);
+            KnowledgeSystemLogger.warning(this.getClass(), "Thumbnail for '" + uuid + "' not found!");
         }
+        return null;
     }
 
 
@@ -153,7 +153,7 @@ public class ThumbnailProvider {
             // height is a limiting factor; adjust width to keep the aspect ratio
             width = (int) (height * inputAspect);
         }
-        final BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        final BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         final Graphics2D g2 = bi.createGraphics();
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g2.drawImage(inputImage, 0, 0, width, height, null);

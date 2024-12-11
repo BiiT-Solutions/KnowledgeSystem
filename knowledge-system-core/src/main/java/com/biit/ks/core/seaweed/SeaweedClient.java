@@ -18,6 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,6 +65,8 @@ public class SeaweedClient {
     public void getFile(String fullPath, File destination) throws IOException {
         try (SeaweedInputStream seaweedInputStream = new SeaweedInputStream(filerClient, fullPath)) {
             copyInputStreamToFile(seaweedInputStream, destination);
+        } catch (FileNotFoundException e) {
+            SeaweedLogger.severe(this.getClass(), "File not found: {}", fullPath);
         }
     }
 
@@ -218,7 +221,7 @@ public class SeaweedClient {
 
     public byte[] getBytes(String folderPath, String entryName) throws IOException {
         if (entryName == null) {
-            SeaweedLogger.warning(this.getClass(), "Provided entryname is null.");
+            SeaweedLogger.warning(this.getClass(), "Provided entryName is null.");
             return null;
         }
         final File tempFile = File.createTempFile(entryName, ".seaweed");
