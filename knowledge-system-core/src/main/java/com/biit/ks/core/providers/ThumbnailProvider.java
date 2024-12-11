@@ -213,7 +213,7 @@ public class ThumbnailProvider {
 
 
     public BufferedImage createThumbFromVideo(String resource, String mimeType) {
-        return createThumbFromVideo(new FFmpegFrameGrabber(resource), mimeType);
+        return createThumbFromImage(createThumbFromVideo(new FFmpegFrameGrabber(resource), mimeType), MIN_THUMBNAIL_SIZE);
     }
 
 
