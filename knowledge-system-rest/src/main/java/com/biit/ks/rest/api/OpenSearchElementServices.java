@@ -40,6 +40,7 @@ public abstract class OpenSearchElementServices<
         extends SimpleServices<E, D, P, Rq, Cv, C> {
 
     public static final String TOTAL_ELEMENT_HEADER = "X-Total-Elements";
+    public static final String ACCESS_CONTROL_EXPOSE_HEADER = "Access-Control-Expose-Headers";
 
     protected OpenSearchElementServices(C controller) {
         super(controller);
@@ -48,12 +49,14 @@ public abstract class OpenSearchElementServices<
 
     protected D getResponseFirstData(SearchWrapper<D> searchWrapper, HttpServletResponse response) {
         response.addHeader(TOTAL_ELEMENT_HEADER, String.valueOf(searchWrapper.getTotalElements()));
+        response.addHeader(ACCESS_CONTROL_EXPOSE_HEADER, TOTAL_ELEMENT_HEADER);
         return searchWrapper.getFirst();
     }
 
 
     protected Collection<D> getResponse(SearchWrapper<D> searchWrapper, HttpServletResponse response) {
         response.addHeader(TOTAL_ELEMENT_HEADER, String.valueOf(searchWrapper.getTotalElements()));
+        response.addHeader(ACCESS_CONTROL_EXPOSE_HEADER, TOTAL_ELEMENT_HEADER);
         return searchWrapper.getData();
     }
 

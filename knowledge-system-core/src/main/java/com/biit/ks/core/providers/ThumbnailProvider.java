@@ -33,6 +33,7 @@ public class ThumbnailProvider {
     private static final int MIN_THUMBNAIL_SIZE = 200;
     private static final int PDF_DPI = 24;
     private static final String THUMBNAIL_SERVICE_URL = "/thumbnails/public/downloads/";
+    private static final String THUMBNAIL_FORMAT = "png";
 
     private final SeaweedClient seaweedClient;
     private final SeaweedConfigurator seaweedConfigurator;
@@ -49,7 +50,7 @@ public class ThumbnailProvider {
         final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try {
             if (image != null) {
-                ImageIO.write(image, "png", byteArrayOutputStream);
+                ImageIO.write(image, THUMBNAIL_FORMAT, byteArrayOutputStream);
                 return byteArrayOutputStream.toByteArray();
             }
         } catch (Exception e) {
