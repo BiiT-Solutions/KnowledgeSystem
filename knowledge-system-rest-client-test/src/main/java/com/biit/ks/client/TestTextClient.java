@@ -11,6 +11,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,5 +58,10 @@ public class TestTextClient implements ITextClient {
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    public Optional<String> get(String textName, Locale locale) {
+        return get(textName, locale.toLanguageTag());
     }
 }

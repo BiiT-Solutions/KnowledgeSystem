@@ -1,10 +1,18 @@
 package com.biit.ks.dto;
 
+import java.util.Locale;
+
 public enum TextLanguagesDTO {
-    ES,
-    EN,
-    NL,
-    LA;
+    ES(Locale.forLanguageTag("es-ES")),
+    EN(Locale.ENGLISH),
+    NL(Locale.forLanguageTag("nl-NL")),
+    LA(Locale.forLanguageTag("LA"));
+
+    private final Locale locale;
+
+    TextLanguagesDTO(Locale locale) {
+        this.locale = locale;
+    }
 
     public static TextLanguagesDTO fromString(String text) {
         for (TextLanguagesDTO textLanguagesDTO : TextLanguagesDTO.values()) {
@@ -16,6 +24,9 @@ public enum TextLanguagesDTO {
                 return textLanguagesDTO;
             }
             if (text.contains("-") && textLanguagesDTO.toString().equalsIgnoreCase(text.split("-")[0])) {
+                return textLanguagesDTO;
+            }
+            if (Locale.forLanguageTag(text).equals(textLanguagesDTO.locale)) {
                 return textLanguagesDTO;
             }
         }
