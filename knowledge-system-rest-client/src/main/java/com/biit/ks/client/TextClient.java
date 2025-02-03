@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -90,5 +91,10 @@ public class TextClient implements ITextClient {
             KnowledgeSystemLogger.warning(this.getClass(), e.getMessage());
             return Optional.empty();
         }
+    }
+
+    @Override
+    public Optional<String> get(String textName, Locale locale) {
+        return get(textName, locale.toLanguageTag());
     }
 }
