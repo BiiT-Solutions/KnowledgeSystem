@@ -4,7 +4,7 @@
     <artifactId>knowledge-system</artifactId>
     <name>Knowledge System</name>
     <groupId>com.biit.ks</groupId>
-    <version>1.2.24-SNAPSHOT</version>
+    <version>1.2.25-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
