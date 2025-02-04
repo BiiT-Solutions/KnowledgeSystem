@@ -6,7 +6,6 @@ import com.biit.ks.dto.TextLanguagesDTO;
 import com.biit.ks.logger.KnowledgeSystemLogger;
 import com.biit.ks.models.ITextClient;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +14,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-@Primary
 @Service
 @Order(0)
 @Qualifier("textClient")
