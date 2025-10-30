@@ -22,7 +22,6 @@ package com.biit.ks;
  */
 
 
-import com.biit.server.security.userguard.UserGuardDatabaseConfigurator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
