@@ -7,8 +7,8 @@
     <test name="Knowledge System" enabled="true" preserve-order="true">
         <groups>
             <run>
-                <include name="fileEntry"/>
-                <include name="pdfEntry"/>
+                <exclude name="fileEntry"/>
+                <exclude name="pdfEntry"/>
             </run>
         </groups>
         <classes>

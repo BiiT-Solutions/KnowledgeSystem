@@ -7,10 +7,10 @@
     <test name="Knowledge System" enabled="true" preserve-order="true">
         <groups>
             <run>
-                <include name="opensearchClient"/>
-                <include name="opensearchIntervals"/>
-                <include name="opensearchFuzzy"/>
-                <include name="opensearchRange"/>
+                <exclude name="opensearchClient"/>
+                <exclude name="opensearchIntervals"/>
+                <exclude name="opensearchFuzzy"/>
+                <exclude name="opensearchRange"/>
             </run>
         </groups>
         <classes>

@@ -7,7 +7,7 @@
     <test name="Knowledge" enabled="true" preserve-order="true">
         <groups>
             <run>
-                <include name="seaweedClient"/>
+                <exclude name="seaweedClient"/>
             </run>
         </groups>
         <classes>

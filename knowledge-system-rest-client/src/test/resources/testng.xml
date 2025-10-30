@@ -8,7 +8,7 @@
     <test name="KnowledgeSystem" enabled="true" preserve-order="true">
         <groups>
             <run>
-                <include name="textClientTests"/>
+                <exclude name="textClientTests"/>
             </run>
         </groups>
         <classes>

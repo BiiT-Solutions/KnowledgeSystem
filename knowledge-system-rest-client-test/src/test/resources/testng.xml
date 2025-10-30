@@ -7,7 +7,7 @@
     <test name="KnowledgeSystem" enabled="true" preserve-order="true">
         <groups>
             <run>
-<!--                <include name=""/>-->
+<!--                <exclude name=""/>-->
             </run>
         </groups>
         <classes>

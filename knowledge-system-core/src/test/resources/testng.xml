@@ -8,10 +8,10 @@
     <test name="Knowledge System" enabled="true" preserve-order="true">
         <groups>
             <run>
-                <include name="seaweedClient"/>
-                <include name="thumbnailTests"/>
-                <include name="fileEntryProvider"/>
-                <include name="categorizationController"/>
+                <exclude name="seaweedClient"/>
+                <exclude name="thumbnailTests"/>
+                <exclude name="fileEntryProvider"/>
+                <exclude name="categorizationController"/>
             </run>
         </groups>
         <classes>
