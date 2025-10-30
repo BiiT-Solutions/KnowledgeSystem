@@ -4,7 +4,7 @@
     <artifactId>knowledge-system</artifactId>
     <name>Knowledge System</name>
     <groupId>com.biit-solutions.ks</groupId>
-    <version>1.2.26</version>
+    <version>1.2.27-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -41,7 +41,7 @@
         <connection>scm:git:ssh://git@github.com/BiiT-Solutions/KnowledgeSystem.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/BiiT-Solutions/KnowledgeSystem.git</developerConnection>
         <url>https://github.com/BiiT-Solutions/KnowledgeSystem.git</url>
-        <tag>knowledge-system-1.2.26</tag>
+        <tag>Knowledge System</tag>
     </scm>
 
     <distributionManagement>
