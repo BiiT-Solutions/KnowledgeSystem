@@ -1,3 +1,7 @@
+# Knowledge System
+
+Based on OpenSearch and seaweed, allows to store and index file. Include API for playing video and audio. 
+
 # Searching in OpenSearchClient
 
 OpenSearchClient is a bean that can be used at any part of the code.

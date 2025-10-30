@@ -7,7 +7,7 @@
 
     <parent>
         <artifactId>knowledge-system</artifactId>
-        <groupId>com.biit.ks</groupId>
+        <groupId>com.biit-solutions.ks</groupId>
         <version>1.2.26-SNAPSHOT</version>
     </parent>
 
@@ -17,7 +17,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.biit</groupId>
+            <groupId>com.biit-solutions</groupId>
             <artifactId>common-utils</artifactId>
         </dependency>
         <dependency>

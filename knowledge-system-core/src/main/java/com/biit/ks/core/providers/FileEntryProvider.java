@@ -1,5 +1,26 @@
 package com.biit.ks.core.providers;
 
+/*-
+ * #%L
+ * Knowledge System (Core)
+ * %%
+ * Copyright (C) 2022 - 2025 BiiT Sourcing Solutions S.L.
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
+
 
 import com.biit.ks.core.exceptions.FileAlreadyExistsException;
 import com.biit.ks.core.exceptions.FileHandlingException;
@@ -12,8 +33,8 @@ import com.biit.ks.persistence.opensearch.exceptions.OpenSearchException;
 import com.biit.ks.persistence.opensearch.search.SearchWrapper;
 import com.biit.ks.persistence.repositories.FileEntryRepository;
 import com.biit.server.exceptions.UserNotFoundException;
-import com.biit.server.security.IAuthenticatedUser;
 import com.biit.server.security.IAuthenticatedUserProvider;
+import com.biit.server.security.model.IAuthenticatedUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,12 +51,12 @@ public class FileEntryProvider extends CategorizedElementProvider<FileEntry, Fil
 
     private final SeaweedClient seaweedClient;
     private final SeaweedConfigurator seaweedConfigurator;
-    private final IAuthenticatedUserProvider authenticatedUserProvider;
+    private final IAuthenticatedUserProvider<?> authenticatedUserProvider;
 
     @Autowired
     public FileEntryProvider(FileEntryRepository fileEntryRepository,
                              SeaweedClient seaweedClient, SeaweedConfigurator seaweedConfigurator,
-                             IAuthenticatedUserProvider authenticatedUserProvider) {
+                             IAuthenticatedUserProvider<?> authenticatedUserProvider) {
         super(fileEntryRepository);
         this.seaweedClient = seaweedClient;
         this.seaweedConfigurator = seaweedConfigurator;
@@ -97,7 +118,7 @@ public class FileEntryProvider extends CategorizedElementProvider<FileEntry, Fil
         if (fileEntry.getCreatedAt() == null) {
             fileEntry.setCreatedAt(LocalDateTime.now());
         }
-        final IAuthenticatedUser user = authenticatedUserProvider.findByUsername(createdBy).orElseThrow(() ->
+        final IAuthenticatedUser user = (IAuthenticatedUser) authenticatedUserProvider.findByUsername(createdBy).orElseThrow(() ->
                 new UserNotFoundException(this.getClass(), "No User with username '" + createdBy + "' found on the system."));
         fileEntry.setCreatedBy(user.getUID());
         fileEntry.setFilePath(seaweedConfigurator.getUploadsPath() + File.separator + user.getUID());

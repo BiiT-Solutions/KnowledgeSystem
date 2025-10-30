@@ -7,7 +7,7 @@
 
     <parent>
         <artifactId>knowledge-system</artifactId>
-        <groupId>com.biit.ks</groupId>
+        <groupId>com.biit-solutions.ks</groupId>
         <version>1.2.26-SNAPSHOT</version>
     </parent>
 
@@ -17,22 +17,22 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.biit.ks</groupId>
+            <groupId>com.biit-solutions.ks</groupId>
             <artifactId>knowledge-system-persistence</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.biit.ks</groupId>
+            <groupId>com.biit-solutions.ks</groupId>
             <artifactId>knowledge-system-dto</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.biit</groupId>
+            <groupId>com.biit-solutions</groupId>
             <artifactId>rest-server-definitions</artifactId>
         </dependency>
         <!-- Kafka -->
         <dependency>
-            <groupId>com.biit</groupId>
+            <groupId>com.biit-solutions.kafka</groupId>
             <artifactId>kafka-client</artifactId>
         </dependency>
         <dependency>
@@ -40,11 +40,11 @@
             <artifactId>pdfbox</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.biit</groupId>
+            <groupId>com.biit-solutions</groupId>
             <artifactId>rest-server-dto</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>com.biit</groupId>
+                    <groupId>com.biit-solutions</groupId>
                     <artifactId>rest-server-persistence</artifactId>
                 </exclusion>
                 <exclusion>
@@ -74,7 +74,7 @@
             <artifactId>tika-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.biit</groupId>
+            <groupId>com.biit-solutions</groupId>
             <artifactId>user-manager-system-rest-client</artifactId>
         </dependency>
         <dependency>
@@ -100,7 +100,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.biit</groupId>
+            <groupId>com.biit-solutions</groupId>
             <artifactId>user-manager-system-test</artifactId>
             <scope>test</scope>
         </dependency>
